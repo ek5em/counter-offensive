@@ -5,8 +5,8 @@ const DOMAIN = 'http://counter-offensive'; */
 
 //prod
 
-const PORT = null;
-const DOMAIN = "http://counter-offensive";
+const PORT = 3000;
+const DOMAIN = "http://localhost";
 
 export const HOST = PORT ? `${DOMAIN}:${PORT}` : DOMAIN;
 
@@ -35,7 +35,7 @@ export const MAP_SIZE = {
 export const requestDelay = {
     chat: 2000,
     lobby: 300,
-    game: 150,
+    game: 26,
     gamerUpdate: 150,
 };
 
