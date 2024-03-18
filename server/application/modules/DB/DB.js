@@ -591,8 +591,7 @@ class DB {
         let query = "SELECT * FROM gamers WHERE person_id=?";
         return await this.queryHandler(query,[personId]);
     }
-
-
+    
     async checkLiveGamer(){
         let query = "SELECT CASE WHEN EXISTS (SELECT 1 FROM gamers WHERE status='alive') THEN TRUE ELSE FALSE END AS status_exists;";
         return await this.queryHandler(query,[]);
@@ -642,6 +641,10 @@ class DB {
         return await this.queryHandler(query, []);//All
     }
 
+    async getPersonParamsById(personId) {
+        let query = "SELECT * FROM persons WHERE id=?";
+        return await this.queryHandler(query,[personId]);
+    }
 
     async getTankmans(){
         let query = "SELECT person_id, user_id, tank_id FROM tank_lobby;";
