@@ -1,0 +1,53 @@
+@import "../../../styles/root.scss";
+@import "../../../styles/mixins.scss";
+
+$activeColor: #92f663;
+$fontSize: 25px;
+
+.button {
+    @include text($fontSize, Neucha, bold);
+    @include border(3px);
+    padding: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu {
+    @include text(auto, Rubik Dirt, normal);
+    @include border(4px, 30px);
+    background: linear-gradient(
+        180deg,
+        rgba(120, 170, 119, 0) 0%,
+        #58db56 100%
+    );
+
+    &:hover {
+        background: linear-gradient(
+            180deg,
+            rgba(40, 70, 39, 0) 0%,
+            #3a7d3a 100%
+        );
+    }
+}
+
+.primary {
+    color: $black;
+    background: $primary-green;
+
+    &:hover {
+        background: $primary-green-hover;
+    }
+}
+
+.dark {
+    background: $dark-green;
+
+    &:hover {
+        background: $dark-green-hover;
+    }
+}
+
+.active {
+    background: $activeColor;
+}

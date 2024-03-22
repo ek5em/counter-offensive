@@ -1,0 +1,19 @@
+@import "../../../../styles/root.scss";
+@import "../../../../styles/mixins.scss";
+
+.time {
+    position: absolute;
+    user-select: none;
+    left: 50%;
+    top: 5px;
+    transform: translate(-50%);
+
+    span {
+        @include text(28px, "Pangolin");
+        @include border(1px, 0);
+        text-align: center;
+        user-select: none;
+        background-color: $white 50%;
+        padding: 0 3px;
+    }
+}

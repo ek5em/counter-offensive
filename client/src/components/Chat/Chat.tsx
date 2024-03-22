@@ -18,10 +18,15 @@ import {
     chatIcon,
 } from "./assets";
 
-import "./Chat.css";
+import styles from "./Chat.module.scss";
+
+export enum EChat {
+    lobby = "lobby",
+    game = "game",
+}
 
 interface IChatProps {
-    chatType: "lobby" | "game";
+    chatType: EChat;
     ref?: React.MutableRefObject<HTMLInputElement | null>;
 }
 
@@ -101,35 +106,31 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
         };
 
         return (
-            <div className={cn("chat_container", `chat_container_${chatType}`)}>
-                <div className="body_chat">
-                    {chatType === "game" && (
-                        <div className="header_chat">
+            <div className={cn(styles.chat_container, styles[chatType])}>
+                <div className={styles.body_chat}>
+                    {chatType === EChat.game && (
+                        <div className={styles.header_chat}>
                             <div onClick={handleCloseChat} id="test_game_chat">
                                 <img
                                     src={chatIcon}
                                     alt="chat_icon"
-                                    className="chat_icon_game"
+                                    className={styles.chat_icon_game}
                                 />
-                                <span className="chat_text">Чат</span>
+                                <span className={styles.chat_text}>Чат</span>
                             </div>
                         </div>
                     )}
                     <div
-                        className={cn(
-                            "chat_messages",
-                            `chat_messages_${chatType}`,
-                            {
-                                disabled: chatType === "game" && !isOpen,
-                            }
-                        )}
+                        className={cn(styles.message_container, {
+                            disabled: chatType === EChat.game && !isOpen,
+                        })}
                     >
                         {messages && messages.length ? (
                             messages.map((message, index) => (
                                 <div
                                     key={index}
-                                    className={cn("message_author", {
-                                        message_author_user:
+                                    className={cn(styles.message_author, {
+                                        [styles.message_author_user]:
                                             server.STORE.user?.id ===
                                             message.userId,
                                     })}
@@ -138,23 +139,23 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                                     <img
                                         src={messageImage(message.rank_name)}
                                         alt="rank"
-                                        className="rank_img"
+                                        className={styles.rank_img}
                                     />
                                     ]: {}
-                                    <span className="message_text">
+                                    <span className={styles.message_text}>
                                         {message.text}
                                     </span>
                                 </div>
                             ))
                         ) : (
-                            <div className="no_message">Пусто!</div>
+                            <div className={styles.no_message}>Пусто!</div>
                         )}
                         <div ref={messagesEndRef} />
                     </div>
                 </div>
-                {chatType === "game" && (
+                {chatType === EChat.game && (
                     <form
-                        className={cn("chat_input", {
+                        className={cn(styles.form, {
                             disabled: !isOpen,
                         })}
                         onSubmit={handleSendMessage}
@@ -162,17 +163,13 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                         <input
                             ref={ref}
                             type="text"
-                            className="input_chat"
+                            className={styles.input_chat}
                             value={inputText}
                             onChange={handleInputChange}
                             placeholder="Написать в чат"
                         />
-                        <button className="chat_send_btn ">
-                            <img
-                                src={sendMessage}
-                                alt="send"
-                                className="send_btn_game"
-                            />
+                        <button className={styles.send_btn}>
+                            <img src={sendMessage} alt="Send" />
                         </button>
                     </form>
                 )}

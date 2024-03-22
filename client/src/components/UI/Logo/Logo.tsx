@@ -1,13 +1,12 @@
 import { FC } from "react";
-
 import LogoSRC from "./Logo.png";
-import "./Logo.css";
 
+import styles from "./Logo.module.scss";
 
-const Logo: FC = () => {
-   return (
-      <img src={LogoSRC} className="logo" alt="counter-nastup"/>
-   );
+export const Logo: FC = () => {
+    return (
+        <div className={styles.logo}>
+            <img src={LogoSRC} alt="counter-nastup" />
+        </div>
+    );
 };
-
-export default Logo;

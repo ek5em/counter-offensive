@@ -1,0 +1,46 @@
+@import "../../../styles/root.scss";
+@import "../../../styles/mixins.scss";
+
+$progressBg: #1c8a00;
+
+.progress_bar {
+    position: relative;
+    width: 100%;
+    font-size: 40px;
+
+    span {
+        @include text(64px, Neucha);
+    }
+}
+
+.progress_bar {
+    @include border(4px);
+    display: flex;
+    width: 100%;
+    height: 50px;
+    background: $gray;
+}
+
+.progress {
+    position: relative;
+    background: $progressBg;
+    height: 100%;
+    transition: width 0.3s ease-in-out;
+}
+
+.progress_num {
+    @include text(40px, "Dokdo");
+    user-select: none;
+    position: absolute;
+    right: 4px;
+}
+
+.triangle {
+    position: absolute;
+    background: $gray;
+    height: 100%;
+    width: 20px;
+    right: -0.3px;
+    clip-path: polygon(100% 0, 0 100%, 100% 100%);
+    transition: 1s;
+}

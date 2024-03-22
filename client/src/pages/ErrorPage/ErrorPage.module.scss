@@ -1,0 +1,43 @@
+@import "../../styles/root.scss";
+@import "../../styles/mixins.scss";
+
+@import "../../styles/root.scss";
+@import "../../styles/mixins.scss";
+
+$codeTextGap: 30px;
+$codeFSize: 25px;
+$textFSize: 40px;
+
+.wrapper {
+    @include center();
+    flex-direction: column;
+    height: 100%;
+    gap: 60px;
+}
+
+.error {
+    @include border();
+    background-color: $white;
+    width: 40%;
+    min-width: 250px;
+    padding: 20px;
+}
+
+.code,
+.text {
+    display: flex;
+    justify-content: center;
+}
+
+.code {
+    @include text($codeFSize, Rubik Dirt, 400);
+    margin-bottom: $codeTextGap;
+}
+
+.text {
+    @include text($textFSize, "Neucha", 400);
+}
+
+.back {
+    padding: 5px 10px;
+}

@@ -1,0 +1,56 @@
+@import "./root.scss";
+
+@mixin text($fontSize, $fontFam, $fontW: 500, $color: $black) {
+    font-size: $fontSize;
+    font-family: $fontFam;
+    font-weight: $fontW;
+    color: $color;
+}
+
+@mixin border($w: 5px, $r: 17px) {
+    border: $w solid $black;
+    border-radius: $r;
+}
+
+@mixin center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@mixin unit {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    button {
+        @include center;
+        @include border(2px);
+        justify-content: space-between;
+        cursor: pointer;
+        padding: 5px;
+        flex-direction: column;
+        background-color: $gray;
+        height: 30%;
+        width: 100%;
+
+        &:hover {
+            background-color: $white;
+        }
+
+        div {
+            @include center;
+            height: 100%;
+        }
+
+        img {
+            mix-blend-mode: darken;
+            width: 80%;
+        }
+
+        span {
+            display: flex;
+            font-size:25px;
+        }
+    }
+}

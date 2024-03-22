@@ -1,11 +1,11 @@
 import { useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ServerContext } from "../../App";
-import { Chat } from "../../components";
+import { Chat, EChat } from "../../components";
 import GameCanvas from "./components/GameCanvas/GameCanvas";
 import GameOverlay from "./components/GameOverlay/GameOverlay";
 import GameTime from "./components/GameTime/GameTime";
-import "./GamePage.css";
+import styles from "./GamePage.module.scss";
 
 const GamePage: React.FC = () => {
     const chatInputRef = useRef<HTMLInputElement | null>(null);
@@ -19,19 +19,19 @@ const GamePage: React.FC = () => {
         }
     };
     return (
-        <div className="game_page">
+        <div className={styles.game}>
             <GameOverlay />
             <GameTime />
             <button
                 id="test_leave_game_button"
-                className="game_leave_button"
+                className={styles.leave_button}
                 onClick={leaveGameHandler}
             >
                 Сбежать
             </button>
             <GameCanvas inputRef={chatInputRef} />
-            <div className="game_chat_block">
-                <Chat chatType="game" ref={chatInputRef} />
+            <div className={styles.chat}>
+                <Chat chatType={EChat.game} ref={chatInputRef} />
             </div>
         </div>
     );

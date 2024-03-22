@@ -1,7 +1,7 @@
 import { FC, useContext, useEffect, useState } from "react";
 import { MediatorContext } from "../../../../App";
 
-import "./GameTime.css";
+import styles from "./GameTime.module.scss";
 
 const GameTime: FC = () => {
     const mediator = useContext(MediatorContext);
@@ -23,8 +23,8 @@ const GameTime: FC = () => {
     };
 
     return (
-        <div className="game_time_div">
-            <span className="game_time_span">{timeConvert(time)}</span>
+        <div className={styles.time}>
+            <span>{timeConvert(time)}</span>
         </div>
     );
 };

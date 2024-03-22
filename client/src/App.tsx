@@ -4,7 +4,7 @@ import { Mediator, Server } from "./modules";
 import { HOST, MEDIATOR } from "./config";
 import { Modal, AppRouter } from "./components";
 
-import "./styles/global.css";
+import "./styles/global.scss";
 
 export const ServerContext = createContext<Server>(null!);
 export const MediatorContext = createContext<Mediator>(null!);

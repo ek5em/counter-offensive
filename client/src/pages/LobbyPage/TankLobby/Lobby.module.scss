@@ -1,0 +1,58 @@
+@import "../../../styles/root.scss";
+@import "../../../styles/mixins.scss";
+
+$tankLobbyBg: #93704d;
+
+.lobby {
+    @include border(2px);
+    padding: 5px;
+    background: $tankLobbyBg;
+    grid-column: secondcolstart / end;
+}
+
+.list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.tank {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background-color: antiquewhite;
+    align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.circles {
+    display: flex;
+    gap: 20px;
+
+    div {
+        height: 30px;
+        width: 30px;
+        border-radius: 50%;
+        background-color: $primary-green;
+    }
+
+    .occupied {
+        background-color: $red;
+    }
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    text-align: center;
+
+    button {
+        font-size: 40px;
+    }
+}

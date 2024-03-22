@@ -2,79 +2,83 @@ import { FC, useContext } from "react";
 import cn from "classnames";
 import { ServerContext } from "../../../../App";
 import { ERank, IUserInfo } from "../../../../modules/Server/interfaces";
-import { Button } from "../../../../components";
-
+import { Button, EButtonAppearance } from "../../../../components";
 import DossierImage from "./dossierImage.png";
-import "./Dossier.css";
+
+import styles from "./Dossier.module.scss";
 
 export const Dossier: FC = () => {
-   const server = useContext(ServerContext);
-   const { nickname, rank_name, gamer_exp, next_rang } = server.STORE
-      .user as IUserInfo;
+    const server = useContext(ServerContext);
+    const {
+        nickname,
+        rank_name,
+        gamer_exp,
+        next_rang: next_rank,
+    } = server.STORE.user as IUserInfo;
 
-   const rank = (rankName: ERank) => {
-      switch (rankName) {
-         case ERank.General: {
-            return "Генерал";
-         }
-         case ERank.Officer: {
-            return "Офицер";
-         }
-         case ERank.Private: {
-            return "Рядовой";
-         }
-         case ERank.Sergeant: {
-            return "Сержант";
-         }
-      }
-   };
+    const rank = (rankName: ERank) => {
+        switch (rankName) {
+            case ERank.General: {
+                return "Генерал";
+            }
+            case ERank.Officer: {
+                return "Офицер";
+            }
+            case ERank.Private: {
+                return "Рядовой";
+            }
+            case ERank.Sergeant: {
+                return "Сержант";
+            }
+        }
+    };
 
-   const expCalc = (): number => {
-      const persent = gamer_exp / (gamer_exp + next_rang);
-      if (persent >= 1) {
-         return 1;
-      }
-      return persent;
-   };
+    const expCalc = (): number => {
+        const persent = gamer_exp / (gamer_exp + next_rank);
+        if (persent >= 1) {
+            return 1;
+        }
+        return persent;
+    };
 
-   const expString = (): string => {
-      if (next_rang <= 0) {
-         return `${gamer_exp}`;
-      }
-      return `${gamer_exp}/${gamer_exp + next_rang}`;
-   };
+    const expString = (): string => {
+        if (next_rank <= 0) {
+            return `${gamer_exp}`;
+        }
+        return `${gamer_exp}/${gamer_exp + next_rank}`;
+    };
 
-   return (
-      <div className="dossier">
-         <div className="dossier_user">
-            <div className="dossier_image">
-               <img src={DossierImage} />
+    return (
+        <div className={styles.dossier}>
+            <div className={styles.user}>
+                <div className={styles.image}>
+                    <img src={DossierImage} />
+                </div>
+                <div className={styles.info}>
+                    <p>{nickname}</p>
+                    <p>{rank(rank_name)}</p>
+                </div>
+                <Button
+                    id="test_button_showcaseOfAchievements"
+                    appearance={EButtonAppearance.primary}
+                    className={styles.achievements}
+                >
+                    Витрина достижений
+                </Button>
             </div>
-            <div className="dossier_info">
-               <p className="user_name">{nickname}</p>
-               <p className="user_rang">{rank(rank_name)}</p>
+            <div className={styles.exp_progress}>
+                <div className={styles.progress_bar}>
+                    <div
+                        className={cn(styles.progress, {
+                            [styles.full]: expCalc() === 1,
+                        })}
+                        style={{
+                            width: `${expCalc() * 100}%`,
+                        }}
+                    />
+                    <span>{expString()}</span>
+                </div>
             </div>
-            <Button
-               id="test_button_showcaseOfAchievements"
-               appearance="primary"
-               className="achievements_button"
-            >
-               Витрина достижений
-            </Button>
-         </div>
-         <div className="dossier_exp_progress">
-            <div className="dossier_exp_progress_bar">
-               <div
-                  className={cn("exp_progress", {
-                     exp_progress_full: expCalc() === 1,
-                  })}
-                  style={{
-                     width: `${expCalc() * 100}%`,
-                  }}
-               />
-               <span>{expString()}</span>
-            </div>
-         </div>
-      </div>
-   );
+        </div>
+    );
 };

@@ -10,10 +10,10 @@ import {
     ETank,
     ILobby,
 } from "../../modules/Server/interfaces";
-import { Button, Logo } from "..";
+import { Logo } from "..";
 import { tank2, tank3, general } from "./assets";
 
-import "./Layout.css";
+import styles from "./Layout.module.scss";
 
 export const withLayout = (
     Component: FunctionComponent<{ lobby: ILobby | null }>
@@ -84,47 +84,48 @@ export const withLayout = (
         };
 
         return (
-            <div className="lobby_wrapper">
+            <div className={styles.wrapper}>
                 <Logo />
-                <div className="lobby_block">
-                    <div
-                        className={cn("lobby_units_block", "lobby_main_units")}
-                    >
-                        <Button
+                <div className={styles.lobby}>
+                    <div className={cn(styles.units)}>
+                        <button
                             id="test_button_general"
-                            className={cn("general units_item", {
+                            className={cn({
                                 selected_role: !lobby.general,
                             })}
-                            appearance="image"
                             onClick={() => setRoleHandler(EGamerRole.general)}
                         >
-                            Генерал
-                            <img src={general} alt="General" />
-                        </Button>
-                        <Button
+                            <span>Генерал</span>
+                            <div>
+                                <img src={general} alt="Генерал" />
+                            </div>
+                        </button>
+                        <button
                             id="test_button_2tank"
-                            className={cn("units_item", {
+                            className={cn({
                                 tank_selected: path === "middle_tanks",
                             })}
-                            appearance="image"
                             onClick={() =>
                                 onClickTankLobbyHandler(ETank.middle)
                             }
                         >
-                            Двухместный танк
-                            <img src={tank2} alt="Tank_2" />
-                        </Button>
-                        <Button
+                            <span>Двухместный танк</span>
+                            <div>
+                                <img src={tank2} alt="Танк2" />
+                            </div>
+                        </button>
+                        <button
                             id="test_button_3tank"
-                            className={cn("units_item", {
+                            className={cn({
                                 tank_selected: path === "heavy_tanks",
                             })}
-                            appearance="image"
                             onClick={() => onClickTankLobbyHandler(ETank.heavy)}
                         >
-                            Трёхместный танк
-                            <img src={tank3} alt="Tank_3" />
-                        </Button>
+                            <span>Трёхместный танк</span>
+                            <div>
+                                <img src={tank3} alt="Танк3" />
+                            </div>
+                        </button>
                     </div>
                     <Component lobby={lobby} />
                 </div>

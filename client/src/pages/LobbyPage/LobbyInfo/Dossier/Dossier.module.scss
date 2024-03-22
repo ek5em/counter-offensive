@@ -1,0 +1,76 @@
+@import "../../../../styles/root.scss";
+@import "../../../../styles/mixins.scss";
+
+$dossierBg: #9ed17f;
+
+.dossier {
+    @include border(6px, 15px);
+    display: grid;
+    grid-template-rows: 2fr 1fr;
+    background: $dossierBg;
+}
+
+.info {
+    @include text(40px, Neucha, 400);
+    @include center();
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+    font-style: normal;
+}
+
+.user {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-bottom: 5px solid $black;
+}
+
+.image {
+    border-top-left-radius: 15px;
+    border-right: 5px solid $black;
+
+    img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        border: none;
+        border-top-left-radius: 8px;
+        pointer-events: none;
+        user-select: none;
+    }
+}
+
+.achievements {
+    border-radius: 0;
+    border: none;
+    border-left: 5px solid $black;
+    border-top-right-radius: 17px;
+}
+
+.exp_progress {
+    @include center;
+}
+
+.progress_bar {
+    @include border(5px, 15px);
+    position: relative;
+    align-self: center;
+    text-align: center;
+    width: 75%;
+
+    span {
+        position: relative;
+        font-size: 30px;
+    }
+
+    .full {
+        border-radius: 7px;
+    }
+}
+
+.progress {
+    height: 100%;
+    position: absolute;
+    background: $green;
+    border-top-left-radius: 7px;
+    border-bottom-left-radius: 7px;
+}

@@ -1,45 +1,45 @@
-import React from "react";
+import { FC } from "react";
 import cn from "classnames";
 
-import "./Button.css";
+import styles from "./Button.module.scss";
 
-export interface ButtonProps
-   extends React.DetailedHTMLProps<
-      React.ButtonHTMLAttributes<HTMLButtonElement>,
-      HTMLButtonElement
-   > {
-   appearance: "menu" | "primary" | "primary-disable" | "image";
-   active?: boolean;
+export enum EButtonAppearance {
+    menu = "menu",
+    primary = "primary",
+    dark = "dark",
 }
 
-const Button: React.FC<ButtonProps> = ({
-   appearance,
-   className,
-   children,
-   active,
-    id,
-   ...props
-}) => {
-   return (
-      <button
-          id={id}
-         className={cn(
-            "button",
-            {
-               menu: appearance === "menu",
-               primary:
-                  appearance === "primary" || appearance === "primary-disable",
-               disable: appearance === "primary-disable",
-               image: appearance === "image",
-               active,
-            },
-            className
-         )}
-         {...props}
-      >
-         {children}
-      </button>
-   );
-};
+export interface ButtonProps
+    extends React.DetailedHTMLProps<
+        React.ButtonHTMLAttributes<HTMLButtonElement>,
+        HTMLButtonElement
+    > {
+    appearance: EButtonAppearance;
+    active?: boolean;
+}
 
-export default Button;
+export const Button: FC<ButtonProps> = ({
+    appearance,
+    className,
+    children,
+    active,
+    id,
+    ...props
+}) => {
+    return (
+        <button
+            id={id}
+            className={cn(
+                styles.button,
+                [styles[appearance]],
+                {
+                    [styles.active]: active,
+                },
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </button>
+    );
+};

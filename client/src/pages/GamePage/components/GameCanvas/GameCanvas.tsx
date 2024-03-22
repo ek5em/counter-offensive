@@ -42,6 +42,8 @@ import {
 } from "../../modules";
 import { IGameScene } from "../../modules/Game/Game";
 
+import styles from "./GameCanvas.module.scss";
+
 export interface IPressedKeys {
     Up: boolean;
     Down: boolean;
@@ -806,7 +808,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         drawMobs(mobs);
         drawTanks(tanks);
 
-        !(unit instanceof General)  && tracer?.trace(unit, WIN);
+        !(unit instanceof General) && tracer?.trace(unit, WIN);
 
         drawGamers(gamers);
         const base = map.find((el) => el.type === EMapObject.base);
@@ -891,7 +893,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         }
     }
 
-    return <canvas id={canvasId} />;
+    return <canvas id={canvasId} className={styles.game_scene} />;
 };
 
 export default GameCanvas;
