@@ -1,0 +1,13 @@
+@import "../../../styles/mixins.scss";
+
+$maxImgWidth: 80vw;    
+
+.logo {
+    @include center;
+    width: 100%;
+
+    img {
+        width: 100%;
+        max-width: $maxImgWidth;
+    }
+}
