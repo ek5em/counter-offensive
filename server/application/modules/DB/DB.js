@@ -1,5 +1,6 @@
 const ORM = require('./ORM');
 // const Pool = require('pg');
+const mysql = require("mysql");
 
 class DB {
     constructor() {
@@ -11,7 +12,6 @@ class DB {
         //     port: '5432',
         // });
         
-        const mysql = require("mysql");
         this.connection = mysql.createConnection({
             host: "localhost",
             user: "root",
