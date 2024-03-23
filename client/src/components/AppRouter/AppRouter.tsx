@@ -10,27 +10,38 @@ import styles from "./AppRouter.module.scss";
 export const AppRouter: FC = () => {
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
-    const [routes, setRoutes] = useState<RouteProps[]>(
-        server.STORE.getToken() ? privateRoutes : publicRoutes
-    );
+    const [routes, setRoutes] = useState<RouteProps[]>(getRouter());
     const navigate = useNavigate();
     const errorHandler = useErrorHandler();
 
     useEffect(() => {
         errorHandler();
+        const checkToken = async () => {
+            const token = server.STORE.getToken();
+            /* if (token) {
+                const res = await server.tokenVerification(token);
+                if (res) {
+                    return server.STORE.setUser(res);
+                }
+                navigate("/");
+            } */
+        };
+        checkToken();
+    });
 
+    useEffect(() => {
         const { LOGIN, LOGOUT, AUTH_ERROR, THROW_TO_GAME } =
             mediator.getTriggerTypes();
 
         mediator.set(LOGIN, (user: IUserInfo) => {
-            server.STORE.user = user;
-            setRoutes(server.STORE.getToken() ? privateRoutes : publicRoutes);
+            server.STORE.setUser(user);
+            setRoutes(getRouter());
             navigate("/");
         });
 
         mediator.set(LOGOUT, () => {
             server.STORE.setToken(null);
-            setRoutes(publicRoutes);
+            setRoutes(getRouter());
             navigate("/");
         });
 
@@ -42,6 +53,10 @@ export const AppRouter: FC = () => {
             mediator.get(LOGOUT);
         });
     }, []);
+
+    function getRouter(): RouteProps[] {
+        return server.STORE.getToken() ? privateRoutes : publicRoutes;
+    }
 
     return (
         <div className={styles.app}>

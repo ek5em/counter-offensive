@@ -38,7 +38,7 @@ const TankDetail: FC<{ lobby: ILobby | null }> = ({ lobby }) => {
         }
         setTank({
             ...tank,
-            id: Number(`1${server.STORE.user?.id}`),
+            id: 1,
         });
     }, [lobby]);
 
@@ -66,9 +66,12 @@ const TankDetail: FC<{ lobby: ILobby | null }> = ({ lobby }) => {
                 <div
                     id={"test_button_shooter2"}
                     onClick={() =>
-                        setRoleHandler(EGamerRole.middleTankGunner, tank.id)
+                        setRoleHandler(
+                            EGamerRole.middleTankGunner,
+                            tank.id ? tank.id : null
+                        )
                     }
-                    className={cn(styles.tank_gunner, {
+                    className={cn(styles.gunner, {
                         [styles.unavailable]: tank.Gunner,
                     })}
                 >

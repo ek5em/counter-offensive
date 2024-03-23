@@ -40,6 +40,7 @@ $svgWrapperDiv: #0f0;
     div {
         @include border(2px);
         @include text(40px, Neucha, 400);
+        transition: 0.1s;
         display: flex;
         cursor: pointer;
         background-color: $svgWrapperDiv;
@@ -47,6 +48,10 @@ $svgWrapperDiv: #0f0;
         padding: 10px 15px;
         text-align: center;
         position: absolute;
+
+        &:hover {
+            scale: 1.1;
+        }
     }
 }
 
@@ -77,12 +82,12 @@ $svgWrapperDiv: #0f0;
         top: 20%;
         left: 30%;
     }
+}
 
-    .unavailable {
-        background-color: $red !important;
-        pointer-events: none;
-        -webkit-text-stroke: 0.5px $white;
-    }
+.unavailable {
+    background-color: $red !important;
+    pointer-events: none;
+    -webkit-text-stroke: 0.5px $white;
 }
 
 @media (max-width: 850px) {

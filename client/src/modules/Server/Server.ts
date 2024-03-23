@@ -68,6 +68,10 @@ export default class Server {
         return this.request("login", { login, hash, rnd });
     }
 
+    tokenVerification(token: string): Promise<IUserInfo | null> {
+        return this.request("tokenVerification", { token });
+    }
+
     logout(): Promise<true | null> {
         return this.request("logout", { token: this.STORE.getToken() });
     }
@@ -89,7 +93,7 @@ export default class Server {
         });
     }
 
-    sendMessages(message: string): Promise<true | null> {
+    sendMessage(message: string): Promise<true | null> {
         return this.request("sendMessage", {
             token: this.STORE.getToken(),
             message,

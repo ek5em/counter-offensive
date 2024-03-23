@@ -76,7 +76,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
             e.preventDefault();
             const message = inputText.trim();
             if (chatType && message) {
-                const res = await server.sendMessages(message);
+                const res = await server.sendMessage(message);
                 if (res) {
                     setInputText("");
                     scrollToBottom();

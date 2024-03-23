@@ -45,10 +45,10 @@ export interface ILobbyState {
 }
 
 export interface IUserInfo {
+    token: string | null;
     id: number;
     login: string;
     nickname: string;
-    token: string | null;
     rank_name: ERank;
     gamer_exp: number;
     next_rang: number;

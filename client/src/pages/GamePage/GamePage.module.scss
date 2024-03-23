@@ -19,7 +19,7 @@ $gameChatBg: #fff5;
     }
 }
 
-.game_leave_button {
+.leave_button {
     @include text(20px, "Times New Roman", 800, $white);
     @include border(1px, 20px);
     position: absolute;

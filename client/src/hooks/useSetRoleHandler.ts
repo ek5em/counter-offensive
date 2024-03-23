@@ -8,10 +8,8 @@ export const useSetRoleHandler = () => {
    const navigate = useNavigate();
    return async (role: EGamerRole, tank_id: number | null = null) => {
       const res = await server.setGamerRole(role, tank_id);
+
       if (res) {
-         if (server.STORE.user) {
-            // server.STORE.user.role = role;
-         }
          switch (role) {
             case EGamerRole.heavyTankCommander:
             case EGamerRole.heavyTankGunner:
