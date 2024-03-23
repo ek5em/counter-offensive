@@ -1,14 +1,11 @@
 const express = require('express');
 const app = express();
 
+const DB = require('./application/modules/DB/DB');
 const UserManager = require('./application/modules/UserManager/UserManager');
 const ChatManager = require('./application/modules/ChatManager/ChatManager');
 const LobbyManager = require('./application/modules/LobbyManager/LobbyManager');
 const GameManager = require('./application/modules/GameManager/GameManager');
-
-const DB = require('./application/modules/DB/DB');
-
-
 const Router = require('./application/router/Router');
 
 const db = new DB;
@@ -30,4 +27,4 @@ app.use(function(req, res, next) {
 app.use(express.static(`${__dirname}/public`));
 app.use('/', router);
 
-app.listen(3000, () => console.log('Backend Live Matters!!!')); 
+app.listen(3000, () => console.log('Backend Lives Matter!!!')); 
