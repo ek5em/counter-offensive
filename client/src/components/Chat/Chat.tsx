@@ -6,9 +6,14 @@ import React, {
     useState,
 } from "react";
 import cn from "classnames";
-import { ServerContext } from "../../App";
+import { MediatorContext, ServerContext } from "../../App";
 import { requestDelay } from "../../config";
-import { EHash, ERank, IMessage } from "../../modules/Server/interfaces";
+import {
+    EHash,
+    ERank,
+    IMessage,
+    IMessages,
+} from "../../modules/Server/interfaces";
 import {
     firstRank,
     secondRank,
@@ -33,6 +38,7 @@ interface IChatProps {
 export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
     ({ chatType }, ref) => {
         const server = useContext(ServerContext);
+        const mediator = useContext(MediatorContext);
 
         const [messages, setMessages] = useState<IMessage[]>();
         const [inputText, setInputText] = useState<string>("");
@@ -40,8 +46,10 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
 
         const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
+        const { NEW_MESSAGE } = mediator.getTriggerTypes();
+
         useEffect(() => {
-            const interval = setInterval(async () => {
+            /* const interval = setInterval(async () => {
                 const newMessages = await server.getMessages();
                 if (newMessages && newMessages !== true) {
                     setMessages(newMessages.messages.reverse());
@@ -52,7 +60,11 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
             return () => {
                 clearInterval(interval);
                 server.STORE.setHash(EHash.chat, null);
-            };
+            }; */
+
+            mediator.set(NEW_MESSAGE, (newMessages: IMessages) => {
+                setMessages(newMessages.messages.reverse());
+            });
         }, []);
 
         useEffect(() => {

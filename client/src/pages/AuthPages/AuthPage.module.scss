@@ -17,6 +17,7 @@ $authWindowBg: #85c18b82;
 .wrapper {
     @include center;
     height: 100%;
+    padding: 20px;
 }
 
 .content {
@@ -27,7 +28,6 @@ $authWindowBg: #85c18b82;
     flex-direction: column;
     gap: $contentGap;
     background: $authWindowBg;
-    margin-bottom: 10vh;
 }
 
 .title {
@@ -59,77 +59,3 @@ $authWindowBg: #85c18b82;
         gap: $inputsGap;
     }
 }
-
-/* @media (max-width: 1750px) {
-    $fontSize: 55px;
-}
-
-@media (max-width: 1500px) {
-    $fontSize: 50px;
-    .auth_title {
-        margin-bottom: 15px;
-        padding: 5px 30px;
-    }
-
-    .auth_footer {
-        button {
-            padding: 0 10px;
-        }
-    }
-
-    .errors_div {
-        div {
-            font-size: 40px;
-        }
-    }
-}
-
-@media (max-width: 1130px) {
-    $fontSize: 45px;
-
-    .errors_div {
-        div {
-            border: 4px solid $black;
-        }
-    }
-}
-
-@media (max-width: 760px) {
-    $fontSize: 30px;
-    .auth_footer {
-        button {
-            padding: 0 10px;
-        }
-    }
-
-    .auth_title {
-        font-size: 30px;
-        padding: 10px 30px;
-    }
-}
-
-@media (max-width: 550px) {
-    .errors_div {
-        div {
-            font-size: 30px;
-            border: 3px solid $black;
-        }
-    }
-
-    .auth_footer {
-        button {
-            font-size: 25px;
-            padding: 0 10px;
-        }
-    }
-}
-
-@media (max-width: 350px) {
-    .errors_div {
-        div {
-            font-size: 17px;
-            border: 2px solid $black;
-        }
-    }
-}
- */

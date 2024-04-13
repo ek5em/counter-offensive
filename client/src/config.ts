@@ -24,8 +24,16 @@ export const MEDIATOR = {
         THROW_TO_LOBBY: "THROW_TO_LOBBY",
         UPDATE_SCENE: "UPDATE_SCENE",
         UPDATE_TIME: "UPDATE_TIME",
+        NEW_MESSAGE: "NEW_MESSAGE",
     },
 };
+
+export enum ESOCKET {
+    SEND_MESSAGE = "SEND_MESSAGE",
+    GET_MESSAGES = "GET_MESSAGES",
+    LOGIN = "LOGIN",
+    REGISTRATION = "REGISTRATION",
+}
 
 export const MAP_SIZE = {
     width: 150,

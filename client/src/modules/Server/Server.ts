@@ -1,4 +1,5 @@
 import { SHA256 } from "crypto-js";
+import { io, Socket } from "socket.io-client";
 import Mediator from "../Mediator/Mediator";
 import Store from "../Store/Store";
 import {
@@ -10,16 +11,30 @@ import {
     EHash,
     IScene,
 } from "./interfaces";
+import { ESOCKET } from "../../config";
 
 export default class Server {
     mediator: Mediator;
     HOST: string;
     STORE: Store;
+    socket: Socket;
 
     constructor(HOST: string, mediator: Mediator) {
         this.HOST = HOST;
         this.mediator = mediator;
         this.STORE = new Store();
+
+        this.socket = io(HOST);
+
+        const { NEW_MESSAGE, LOGIN } = mediator.getTriggerTypes();
+
+        this.socket.on(ESOCKET.GET_MESSAGES, (data: IMessages) => {
+            mediator.get(NEW_MESSAGE, data);
+        });
+
+        this.socket.on(ESOCKET.LOGIN, (data: IUserInfo) => {
+            mediator.get(LOGIN, data);
+        });
     }
 
     async request<T>(method: string, params: any): Promise<T | null> {
@@ -60,6 +75,11 @@ export default class Server {
         return this.request("registration", { login, nickname, hash });
     }
 
+    /* registration(login: string, nickname: string, password: string) {
+        const hash = SHA256(login + password).toString();
+        this.socket.emit(ESOCKET.REGISTRATION, { login, nickname, hash });
+    } */
+
     login(login: string, password: string): Promise<IUserInfo | null> {
         const rnd = Math.random();
         const hash = SHA256(
@@ -67,6 +87,14 @@ export default class Server {
         ).toString();
         return this.request("login", { login, hash, rnd });
     }
+
+    /* login(login: string, password: string) {
+        const rnd = Math.random();
+        const hash = SHA256(
+            SHA256(login + password).toString() + rnd
+        ).toString();
+        this.socket.emit(ESOCKET.LOGIN, { login, hash, rnd });
+    } */
 
     tokenVerification(token: string): Promise<IUserInfo | null> {
         return this.request("tokenVerification", { token });
@@ -92,6 +120,13 @@ export default class Server {
             hash: this.STORE.getHash(EHash.chat),
         });
     }
+
+    /* sendMessages(message: string) {
+        this.socket.emit(ESOCET.SEND_MESSAGE, {
+            token: this.STORE.getToken(),
+            message,
+        });
+    } */
 
     sendMessage(message: string): Promise<true | null> {
         return this.request("sendMessage", {
