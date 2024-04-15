@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `game` (
   `hashBodies` VARCHAR(100) NOT NULL DEFAULT '',
   `hashTanks` VARCHAR(100) NOT NULL DEFAULT '',
   `timestamp` BIGINT NOT NULL DEFAULT 0,
-  `timeout` INT NOT NULL DEFAULT 1000,
+  `timeout` INT NOT NULL DEFAULT 26,
   `startGameTimestamp` BIGINT NOT NULL DEFAULT 0,
   `pBanner_timestamp` BIGINT NOT NULL DEFAULT 0,
   `banner_timeout` INT NOT NULL DEFAULT 15000,
@@ -109,9 +109,10 @@ CREATE TABLE IF NOT EXISTS `messages` (
 
 CREATE TABLE IF NOT EXISTS `tank_lobby` (
   `id` MEDIUMINT NOT NULL AUTO_INCREMENT, 
-  `person_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `user_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `tank_id` INT NOT NULL DEFAULT -1,
+  `type` MEDIUMINT NOT NULL DEFAULT -1,
+  `driver_id` MEDIUMINT NULL DEFAULT NULL,
+  `gunner_id` MEDIUMINT NULL DEFAULT NULL,
+  `commander_id` MEDIUMINT NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
 ); 
 
@@ -230,8 +231,8 @@ INSERT INTO `persons` (`name`, `hp`, `reloadSpeed`, `movementSpeed`, `rotateSpee
 ('heavyTankCommander', 400, 7, 1, 1, 12),
 ('middleTankMeh', 250, 7, 1, 1, 5),
 ('middleTankGunner', 250, 7, 1, 1, 5),
-('infantry', 8, 0.3, 0.2, 1, 1),
-('infantryRPG', 8, 5, 0.2, 1, 1);
+('infantry', 8, 0.3, 1, 1, 1),
+('infantryRPG', 8, 5, 1, 1, 1);
 
 INSERT INTO `objects` (`x`, `y`, `angle`, `type`, `hp`, `sizeX`, `sizeY`, `status`) VALUES
 /* Создание домов*/
