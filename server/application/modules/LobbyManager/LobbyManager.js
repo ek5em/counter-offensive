@@ -1,14 +1,29 @@
 const BaseModule = require('../BaseModule/BaseModule');
+const { SOCKETS } = require("../../../config.js");
 
-class LobbyManager{
-    constructor(db){
-        this.db = db;
+class LobbyManager extends BaseModule {
+    constructor(db, io, Mediator) {
+        super(db, io, Mediator);
+        const { GET_USER } = this.Mediator.getTriggerTypes();
         this.lobbyState = {
-            "general": true,
             "bannerman": true
         };
         this.crypto = require('crypto');
         this.uuid = require('uuid');
+    
+        if (!this.io) {
+            return;
+        }
+
+        io.on('connection', (socket) => {
+            socket.on(SOCKETS.SET_GAMER_ROLE, (data) => this.registration(data, socket));
+            socket.on(SOCKETS.GET_USER_INFO, (data) => this.getGamerInfo(data, socket));
+            socket.on(SOCKETS.GET_LOBBY, (data) => this.getLobby(data, socket));
+            socket.on(SOCKETS.SUICIDE, (data) => this.suicide(data, socket));
+            socket.on(SOCKETS.TOKEN_VERIFICATION, (data) => this.tokenVerification(data, socket));
+            socket.on('disconnect', () => console.log('disconnect', socket.id));
+        });
+
     }
 
     tankRoleField(roleId){
@@ -180,15 +195,16 @@ class LobbyManager{
 
     
 
-    async setGamerRole(userId, role, tankId) {
+    async setGamerRole({userId, role, tankId}, socket) {
         if([1, 2, 8, 9].includes(role)){
-            return await this.setFootRoleHandler(userId, role);
+            socket.emit(SOCKETS.SET_GAMER_ROLE, await this.setFootRoleHandler(userId, role));
+            this.updateLobbyToAll();
         }
         if([3, 4, 5, 6, 7].includes(role)){
-            console.log(role)
-            return await this.setTankRoleHandler(userId, role, tankId);
+            socket.emit(SOCKETS.SET_GAMER_ROLE, await this.setTankRoleHandler(userId, role, tankId));
+            this.updateLobbyToAll();
         }
-        return 463;
+        socket.emit(SOCKETS.SET_GAMER_ROLE, 463);
     }
     
 
@@ -248,24 +264,40 @@ class LobbyManager{
         return {heavyTank: heavyTank, middleTank:middleTank};
     }
     
+    async getGamerInfo({token}, socket) {
 
-    async getLobby(userId, oldHash) {
-        let hash = await this.db.getGame();       
-        if (hash[0].hashLobby !== oldHash) {
-            await this.db.deleteEmptyTank();
-            await this.checkRoleAvailability(userId);
-            let tanks = await this.getTanks();
-            let rank = await this.db.getRankById(userId);
-            this.lobbyState.userInfo = {
-                rank_name: rank[0].rank_name,
-                gamer_exp: rank[0].gamer_exp,
-                next_rang: rank[0].next_rang
-            };
-            this.lobbyState.tanks = tanks;
-            this.lobbyState.is_alive = await this.getGamer(userId);
-            return {lobby: this.lobbyState, lobbyHash: hash[0].hashLobby};
-        }
-        return true;
+        const user = (this.db.getUserByToken(token))[0];
+        const rank = (await this.db.getRankById(user.id))[0];
+        let result = {
+            id: user[0].id,
+            token: token,
+            login: login,
+            nickname: nickname,
+            rank_name: rank[0].rank_name,
+            gamer_exp: rank[0].gamer_exp,
+            next_rang: rank[0].next_rang,
+            level: rank[0].level
+        };
+        result.is_alive = await this.getGamer(user.id);
+        socket.emit(SOCKETS.GET_USER_INFO, result);
+    }
+
+    async getLobbyInfo() {
+        await this.db.deleteEmptyTank();
+        await this.checkRoleAvailability();
+        let tanks = await this.getTanks();
+        this.lobbyState.tanks = tanks;
+    }
+
+    async updateLobbyToAll() {
+        this.getLobbyInfo();
+        this.io.emit(SOCKETS.GET_LOBBY, {lobby: this.lobbyState});
+    }
+
+    async getLobby({}, socket) {
+        this.getLobbyInfo();
+        socket.emit(SOCKETS.GET_LOBBY, {lobby: this.lobbyState});
+        
     }
 
 
@@ -277,34 +309,40 @@ class LobbyManager{
     }
     
 
-    async suicide(userId) {
-        let gamer = await this.db.getGamerById(userId);
-        let tank = await this.db.getTankByUserId(userId);
-        if(tank[0]){
-            switch(gamer[0].person_id){
-                case 3:
-                    this.suicideAndEndTanks(tank[0].commander_id, userId, tank[0].driver_id, tank[0].id);
-                    break;
-                case 4:
-                    this.suicideAndEndTanks(tank[0].commander_id, tank[0].gunner_id, userId, tank[0].id);
-                    break;
-                case 5:
-                    this.suicideAndEndTanks(tank[0].driver_id, tank[0].gunner_id, userId, tank[0].id);
-                    break;
-                case 6:
-                    this.suicideAndEndTanks(tank[0].gunner_id, userId, null, tank[0].id);
-                    break;
-                case 7:
-                    this.suicideAndEndTanks(tank[0].driver_id, userId, null, tank[0].id);
-                    break;
+    async suicide({userId}, socket) {
+        const user = (await userManager.getUser(token))[0];
+        if (user && user.token) {
+            let gamer = await this.db.getGamerById(userId);
+            let tank = await this.db.getTankByUserId(userId);
+            if(tank[0]){
+                switch(gamer[0].person_id){
+                    case 3:
+                        this.suicideAndEndTanks(tank[0].commander_id, userId, tank[0].driver_id, tank[0].id);
+                        break;
+                    case 4:
+                        this.suicideAndEndTanks(tank[0].commander_id, tank[0].gunner_id, userId, tank[0].id);
+                        break;
+                    case 5:
+                        this.suicideAndEndTanks(tank[0].driver_id, tank[0].gunner_id, userId, tank[0].id);
+                        break;
+                    case 6:
+                        this.suicideAndEndTanks(tank[0].gunner_id, userId, null, tank[0].id);
+                        break;
+                    case 7:
+                        this.suicideAndEndTanks(tank[0].driver_id, userId, null, tank[0].id);
+                        break;
+                }
+                this.updateLobbyToAll();
             }
-        }
-        else {
-            await this.db.suicide(userId);
-        }
-        const hashLobby = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
-        await this.db.updateLobbyHash(hashLobby);
-        return true;
+
+            else {
+                await this.db.suicide(userId);
+                this.updateLobbyToAll();
+            }
+            const hashLobby = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
+            await this.db.updateLobbyHash(hashLobby);
+            socket.emit(SOCKETS.SUICIDE, true);
+        } else socket.emit(SOCKETS.SUICIDE, 401);;
     }
     
 }
