@@ -521,6 +521,11 @@ class DB {
         await this.queryHandler(query, [tankType, userId]);
     }
 
+    async getTankInLobbyByUserId(userId) {
+        let query = `SELECT * FROM tank_lobby WHERE driver_id=? OR gunner_id=? OR commander_id=?;`;
+        return await this.queryHandler(query, [userId, userId, userId]);
+    }
+
     async setGamerInTankLobby(userId, field, tankId) {
         let query = `UPDATE tank_lobby SET ${field}=? WHERE id=?;`;
         await this.queryHandler(query, [userId, tankId]);
@@ -653,7 +658,6 @@ class DB {
 
 
     async deleteTank(tankId){
-        console.log(tankId, 'sdfsdf')
         let query = "DELETE FROM tank_lobby WHERE id = ?";
         await this.queryHandler(query, [tankId]);
     }

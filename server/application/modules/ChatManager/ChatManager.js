@@ -23,12 +23,12 @@ class ChatManager extends BaseModule {
             if (user && user.token) {
                 await this.db.addMessage(user[0].id, message);
                 socket.emit(SOCKETS.SEND_MESSAGE, true);
-                this.io.emit(SOCKETS.GET_MESSAGE, await this.db.getMessages());
+                this.io.emit(SOCKETS.GET_MESSAGE, this.answer.good(await this.db.getMessages()));
                 return;
             }
-            socket.emit(SOCKETS.SEND_MESSAGE, 401);
+            socket.emit(SOCKETS.SEND_MESSAGE, this.answer.bad(401));
         }
-        else socket.emit(SOCKETS.SEND_MESSAGE, 432);
+        socket.emit(SOCKETS.SEND_MESSAGE, this.answer.bad(432));
 
         
     }
