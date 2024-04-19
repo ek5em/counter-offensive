@@ -1,43 +1,61 @@
 import { FC, useContext, useEffect, useState } from "react";
-import { Route, RouteProps, Routes, useNavigate } from "react-router-dom";
+import {
+    Route,
+    RouteProps,
+    Routes,
+    useLocation,
+    useNavigate,
+} from "react-router-dom";
 import { MediatorContext, ServerContext } from "../../App";
 import { publicRoutes, privateRoutes } from "../../router";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
-import { IUserInfo } from "../../modules/Server/interfaces";
+import { ETank, ILobby, IToken } from "../../modules/Server/interfaces";
 
 import styles from "./AppRouter.module.scss";
 
 export const AppRouter: FC = () => {
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
+
     const [routes, setRoutes] = useState<RouteProps[]>(getRouter());
     const navigate = useNavigate();
     const errorHandler = useErrorHandler();
+    const location = useLocation();
 
     useEffect(() => {
         errorHandler();
-        const checkToken = async () => {
-            const token = server.STORE.getToken();
-            /* if (token) {
-                const res = await server.tokenVerification(token);
-                if (res) {
-                    return server.STORE.setUser(res);
-                }
-                navigate("/");
-            } */
-        };
-        checkToken();
-    });
+        server.tokenVerification();
+        server.getLobby();
+    }, []);
 
     useEffect(() => {
-        const { LOGIN, LOGOUT, AUTH_ERROR, THROW_TO_GAME } =
-            mediator.getTriggerTypes();
+        const {
+            LOGIN,
+            LOGOUT,
+            AUTH_ERROR,
+            THROW_TO_GAME,
+            GO_TO_TANK,
+            LOBBY_UPDATE,
+        } = mediator.getTriggerTypes();
 
-        mediator.set(LOGIN, (user: IUserInfo) => {
-            server.STORE.setUser(user);
+        mediator.set(LOGIN, (data: IToken) => {
+            server.STORE.setToken(data.token);
             setRoutes(getRouter());
-            navigate("/");
+            server.getUser();
+            navigate(location.pathname);
         });
+
+        mediator.subscribe(
+            GO_TO_TANK,
+            (tank: { tankId: number; tankType: ETank }) => {
+                navigate(
+                    `/${tank.tankType ? "middle_tanks" : "heavy_tanks"}/${
+                        tank.tankId
+                    }`
+                );
+                mediator.get(LOBBY_UPDATE);
+            }
+        );
 
         mediator.set(LOGOUT, () => {
             server.STORE.setToken(null);

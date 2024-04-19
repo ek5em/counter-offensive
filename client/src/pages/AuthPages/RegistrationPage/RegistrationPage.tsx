@@ -1,7 +1,6 @@
-import { FC, useContext, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { MediatorContext, ServerContext } from "../../../App";
-import useRegValidator from "./useRegValidator";
 import { IUserData } from "../userData.interface";
 import {
     Button,
@@ -23,9 +22,65 @@ const RegistrationPage: FC = () => {
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
 
-    const validator = useRegValidator(mediator, server);
+    const { WARNING } = mediator.getTriggerTypes();
 
-    const { LOGIN } = mediator.getTriggerTypes();
+    const isPasswordValid = (pass: string) => {
+        const passLength = pass.length;
+        if (passLength < 8 || passLength > 20) {
+            mediator.get(WARNING, {
+                message: "В пароле должно быть от 8 до 20 символов",
+                style: "warning",
+                id: "test_warning_reg_password_length",
+            });
+            return false;
+        }
+        return true;
+    };
+
+    const isLoginValid = (login: string) => {
+        const loginLength = login.length;
+        if (loginLength < 6 || loginLength > 15) {
+            mediator.get(WARNING, {
+                message: "Логин должен содержать от 6 до 15 символов",
+                style: "warning",
+                id: "test_warning_reg_login_length",
+            });
+            return false;
+        }
+        const validLoginRegExp = /^[a-zA-Zа-яА-Я0-9Ёё]*$/;
+        if (!validLoginRegExp.test(login)) {
+            mediator.get(WARNING, {
+                message:
+                    "Логин может содержать символы кириллицы, латиницы и цифры",
+                style: "warning",
+                id: "test_warning_reg_acceptableSymbolsLogin",
+            });
+            return false;
+        }
+        return true;
+    };
+
+    const isNicknameValid = (nick: string) => {
+        const nickLength = nick.length;
+        if (nickLength < 3 || nickLength > 16) {
+            mediator.get(WARNING, {
+                message: "Никнейм должен содержать от 3 до 16 символов",
+                style: "warning",
+                id: "test_warning_reg_nickname_length",
+            });
+            return false;
+        }
+        const validNickRegExp = /^[0-9\p{L}]+$/u;
+        if (!validNickRegExp.test(nick)) {
+            mediator.get(WARNING, {
+                message: "Никнейм может содержать символы любого языка и цифры",
+                style: "warning",
+                id: "test_warning_reg_acceptableSymbolsNickname",
+            });
+            return false;
+        }
+        return true;
+    };
 
     const onChangeHandler = (value: string, data: string) => {
         setUserData({ ...userData, [data]: value });
@@ -35,10 +90,13 @@ const RegistrationPage: FC = () => {
         e.preventDefault();
         const login = userData.login.trim();
         const pass = userData.password.trim();
-        const nick = userData.nickName?.trim();
-        const res = await validator(login, pass, nick ?? "");
-        if (res) {
-            mediator.get(LOGIN, res);
+        const nick = userData.nickName?.trim() ?? "";
+        if (
+            isLoginValid(login) &&
+            isNicknameValid(nick) &&
+            isPasswordValid(pass)
+        ) {
+            server.registration(login, nick, pass);
         }
     };
 

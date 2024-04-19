@@ -1,73 +1,20 @@
-import { FunctionComponent, useContext, useEffect, useState } from "react";
+import { FunctionComponent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import cn from "classnames";
-import { MediatorContext, ServerContext } from "../../App";
-import { requestDelay } from "../../config";
 import { useSetRoleHandler } from "../../hooks/useSetRoleHandler";
-import {
-    EGamerRole,
-    EHash,
-    ETank,
-    ILobby,
-} from "../../modules/Server/interfaces";
+import { EGamerRole, ETank } from "../../modules/Server/interfaces";
 import { Logo } from "..";
 import { tank2, tank3, general } from "./assets";
 
 import styles from "./Layout.module.scss";
 
-export const withLayout = (
-    Component: FunctionComponent<{ lobby: ILobby | null }>
-) => {
+export const withLayout = (Component: FunctionComponent) => {
     return (): JSX.Element => {
-        const [lobby, setLobby] = useState<ILobby>({
-            userInfo: null,
-            bannerman: true,
-            general: true,
-            is_alive: null,
-            tanks: {
-                heavyTank: [],
-                middleTank: [],
-            },
-        });
-
-        const server = useContext(ServerContext);
-        const mediator = useContext(MediatorContext);
         const setRoleHandler = useSetRoleHandler();
         const navigate = useNavigate();
         const location = useLocation();
 
-        const { THROW_TO_GAME } = mediator.getTriggerTypes();
         const path = location.pathname.split("/")[1];
-
-        useEffect(() => {
-            const interval = setInterval(async () => {
-                const res = await server.getLobby();
-                if (res && res !== true) {
-                    if (res.lobby.is_alive) {
-                        if (server.STORE.user) {
-                            server.STORE.user.unit = res.lobby.is_alive;
-                            return mediator.get(THROW_TO_GAME);
-                        }
-                    }
-                    if (res.lobby.userInfo && server.STORE.user) {
-                        const { gamer_exp, next_rang, rank_name } =
-                            res.lobby.userInfo;
-                        server.STORE.user = {
-                            ...server.STORE.user,
-                            gamer_exp,
-                            next_rang,
-                            rank_name,
-                        };
-                    }
-                    server.STORE.setHash(EHash.lobby, res.lobbyHash);
-                    setLobby(res.lobby);
-                }
-            }, requestDelay.lobby);
-            return () => {
-                server.STORE.setHash(EHash.lobby, null);
-                clearInterval(interval);
-            };
-        }, []);
 
         const onClickTankLobbyHandler = (switchTo: ETank): void => {
             const replace: boolean =
@@ -91,7 +38,7 @@ export const withLayout = (
                         <button
                             id="test_button_general"
                             className={cn({
-                                selected_role: !lobby.general,
+                                /* selected_role: !lobby.general, */
                             })}
                             onClick={() => setRoleHandler(EGamerRole.general)}
                         >
@@ -127,7 +74,7 @@ export const withLayout = (
                             </div>
                         </button>
                     </div>
-                    <Component lobby={lobby} />
+                    <Component />
                 </div>
             </div>
         );

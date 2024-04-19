@@ -86,23 +86,18 @@ export default class Game {
                 }
                 if (gamers) {
                     this.scene.gamers = gamers;
-                    this.server.STORE.setHash(EHash.gamers, hashGamers);
                 }
                 if (mobs) {
-                    this.scene.mobs = mobs;
-                    this.server.STORE.setHash(EHash.mobs, hashMobs);
+                    this.scene.mobs = mobs
                 }
                 if (bullets) {
                     this.scene.bullets = bullets;
-                    this.server.STORE.setHash(EHash.bullets, hashBullets);
                 }
                 if (bodies) {
                     this.scene.bodies = bodies;
-                    server.STORE.setHash(EHash.bodies, hashBodies);
                 }
                 if (tanks) {
                     this.scene.tanks = tanks;
-                    server.STORE.setHash(EHash.gamers, hashGamers);
                 }
                 if (map) {
                     this.scene.map = [];
@@ -233,7 +228,6 @@ export default class Game {
                         })
                     );
                     mediator.get(UPDATE_SCENE, this.scene.map)
-                    server.STORE.setHash(EHash.map, hashMap);
                 }
             }
         }, requestDelay.game);

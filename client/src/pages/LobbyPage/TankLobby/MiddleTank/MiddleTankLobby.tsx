@@ -1,19 +1,17 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import cn from "classnames";
-import { ILobby, IMiddleTank } from "../../../../modules/Server/interfaces";
+import { ServerContext } from "../../../../App";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
 import { Button, EButtonAppearance } from "../../../../components";
 
 import styles from "../Lobby.module.scss";
 
-const MiddleTankLobby: FC<{ lobby: ILobby | null }> = ({ lobby }) => {
-    const [tanks, setTanks] = useState<IMiddleTank[]>([]);
+const MiddleTankLobby: FC = () => {
+    const server = useContext(ServerContext);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        lobby && setTanks(lobby.tanks.middleTank);
-    }, [lobby]);
+    const tanks = server.STORE.getLobby().tanks.middleTank;
 
     const addTankHandler = () => {
         navigate("/middle_tanks/myTank");

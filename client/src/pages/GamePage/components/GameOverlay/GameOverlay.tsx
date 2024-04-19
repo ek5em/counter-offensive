@@ -24,7 +24,6 @@ const GameOverlay: FC<Props> = ({ className, ...props }) => {
         mediator.set(THROW_TO_LOBBY, (status: EGameStatus) => {
             setGameStatus(status);
             setTimeout(() => {
-                server.STORE.clearHash();
                 setGameStatus(null);
                 navigate("/");
             }, 3000);

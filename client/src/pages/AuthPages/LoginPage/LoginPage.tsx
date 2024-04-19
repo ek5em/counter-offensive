@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
-import useLoginValidator from "./useLoginValidator";
 import { MediatorContext, ServerContext } from "../../../App";
 import { IUserData } from "../userData.interface";
 import {
@@ -22,9 +21,19 @@ const LoginPage: React.FC = () => {
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
 
-    const validate = useLoginValidator(mediator, server);
+    const { WARNING } = mediator.getTriggerTypes();
 
-    const { LOGIN } = mediator.getTriggerTypes();
+    const isValid = (login: string, password: string) => {
+        if (!login || !password) {
+            mediator.get(WARNING, {
+                message: "Заполните все поля",
+                style: "warning",
+                id: "test_warning_auth_emptyFields",
+            });
+            return false;
+        }
+        return true;
+    };
 
     const onChangeHandler = (value: string, data: string) => {
         setUserData({ ...userData, [data]: value });
@@ -34,10 +43,7 @@ const LoginPage: React.FC = () => {
         e.preventDefault();
         const login = userData.login.trim();
         const pass = userData.password.trim();
-        const res = await validate(login, pass);
-        if (res) {
-            mediator.get(LOGIN, res);
-        }
+        isValid(login, pass) && server.login(login, pass);
     };
 
     return (

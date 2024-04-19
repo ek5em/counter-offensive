@@ -13,6 +13,24 @@ export interface IMessage {
     userId: number;
 }
 
+export enum EResult {
+    ok = "ok",
+    error = "error",
+}
+
+export interface IAnswer<T> {
+    result: EResult.ok;
+    data: T;
+}
+
+export interface IError {
+    result: EResult.error;
+    error: {
+        code: number;
+        text: string;
+    };
+}
+
 export interface IMessages {
     chatHash: string;
     messages: IMessage[];
@@ -29,30 +47,28 @@ export interface IHeavyTank extends IMiddleTank {
 }
 
 export interface ILobby {
-    userInfo: IUserInfo | null;
     general: boolean;
     bannerman: boolean;
     tanks: {
         heavyTank: IHeavyTank[];
         middleTank: IMiddleTank[];
     };
-    is_alive: IUserUnit | null;
 }
 
-export interface ILobbyState {
-    lobby: ILobby;
-    lobbyHash: string;
+export interface IToken {
+    token: string;
 }
 
-export interface IUserInfo {
-    token: string | null;
+export interface IGamerInfo {
+    gamer_exp: number;
     id: number;
+    is_alive: boolean;
+    level: number;
     login: string;
+    next_rank: number;
     nickname: string;
     rank_name: ERank;
-    gamer_exp: number;
-    next_rang: number;
-    level: number;
+    token: string;
     unit: IUserUnit;
 }
 
@@ -151,8 +167,8 @@ export enum EHash {
 }
 
 export enum ETank {
-    middle,
     heavy,
+    middle,
 }
 
 export enum EMapObject {

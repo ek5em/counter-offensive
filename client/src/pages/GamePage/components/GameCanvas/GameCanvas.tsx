@@ -63,9 +63,10 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const canvasId = "canvas";
 
     let unit: TUnit = new BaseUnit();
-    if (server.STORE.user) {
-        const { x, y, angle } = server.STORE.user.unit;
-        switch (server.STORE.user.unit.personId) {
+    const user = server.STORE.getUser(); 
+    if (user) {
+        const { x, y, angle } = user.unit;
+        switch (server.STORE.getUser()?.unit.personId) {
             case EGamerRole.infantryRPG: {
                 const { r, speed, weaponLength, visiableAngle } =
                     entitiesConfig.infantryRGP;
@@ -172,7 +173,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
 
     const updateUnitInterval = setInterval(() => {
         const { x, y, angle } = unit;
-        const user = server.STORE.user;
         if (user) {
             const userUnit = user.unit.personId;
             if (
@@ -249,7 +249,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
             canvas = null;
             tracer = null;
             clearInterval(game.interval);
-            game.server.STORE.clearHash();
             clearInterval(updateUnitInterval);
         };
     });
@@ -381,7 +380,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
 
     const makeShot = () => {
         const { x, y, angle, weaponLength } = unit;
-        const user = server.STORE.user;
         if (user) {
             const userUnit = user.unit.personId;
             if (

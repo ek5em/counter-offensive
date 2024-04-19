@@ -3,13 +3,15 @@ import { io, Socket } from "socket.io-client";
 import Mediator from "../Mediator/Mediator";
 import Store from "../Store/Store";
 import {
-    IUserInfo,
+    IGamerInfo,
     IError,
     IMessages,
     EGamerRole,
-    ILobbyState,
-    EHash,
     IScene,
+    IToken,
+    IAnswer,
+    ILobby,
+    ETank,
 } from "./interfaces";
 import { ESOCKET } from "../../config";
 
@@ -26,19 +28,67 @@ export default class Server {
 
         this.socket = io(HOST);
 
-        const { NEW_MESSAGE, LOGIN } = mediator.getTriggerTypes();
+        const {
+            NEW_MESSAGE,
+            LOGIN,
+            SEND_MESSAGE_STATUS,
+            LOGOUT,
+            UPDATE_USER,
+            GO_TO_TANK,
+            LOBBY_UPDATE,
+        } = mediator.getTriggerTypes();
 
-        this.socket.on(ESOCKET.GET_MESSAGES, (data: IMessages) => {
-            mediator.get(NEW_MESSAGE, data);
+        const { SERVER_ERROR } = this.mediator.getEventTypes();
+
+        this.socket.on(ESOCKET.ERROR, (answer: IError) => {
+            mediator.call(SERVER_ERROR, answer.error);
         });
 
-        this.socket.on(ESOCKET.LOGIN, (data: IUserInfo) => {
-            mediator.get(LOGIN, data);
+        this.socket.on(ESOCKET.GET_MESSAGE, (answer: IAnswer<IMessages[]>) => {
+            mediator.get(NEW_MESSAGE, answer.data);
+        });
+
+        this.socket.on(ESOCKET.SEND_MESSAGE, (answer: IAnswer<true>) => {
+            mediator.get(SEND_MESSAGE_STATUS, answer.data);
+        });
+
+        this.socket.on(ESOCKET.REGISTRATION, (answer: IAnswer<IToken>) => {
+            mediator.get(LOGIN, answer.data);
+        });
+
+        this.socket.on(ESOCKET.LOGIN, (answer: IAnswer<IToken>) => {
+            mediator.get(LOGIN, answer.data);
+        });
+
+        this.socket.on(ESOCKET.GET_USER_INFO, (answer: IAnswer<IGamerInfo>) => {
+            this.STORE.setUser(answer.data);
+            mediator.get(UPDATE_USER, answer.data);
+        });
+
+        this.socket.on(ESOCKET.LOGOUT, () => {
+            mediator.get(LOGOUT);
+        });
+
+        this.socket.on(ESOCKET.TOKEN_VERIFICATION, () => {
+            mediator.get(LOGIN, { token: this.STORE.getToken() });
+        });
+
+        this.socket.on(
+            ESOCKET.SET_GAMER_ROLE,
+            (answer: IAnswer<{ tankId: number; tankType: ETank }>) => {
+                if (answer.data.tankId) {
+                    mediator.get(GO_TO_TANK, answer.data);
+                }
+            }
+        );
+
+        this.socket.on(ESOCKET.GET_LOBBY, (answer: IAnswer<ILobby>) => {
+            this.STORE.setLobby(answer.data);
+            mediator.get(LOBBY_UPDATE);
         });
     }
 
     async request<T>(method: string, params: any): Promise<T | null> {
-        const { SERVER_ERROR } = this.mediator.getEventTypes();
         try {
             const str = Object.keys(params)
                 .map(
@@ -53,103 +103,70 @@ export default class Server {
             if (answer.result === "ok") {
                 return answer.data as T;
             }
-            this.mediator.call<IError>(SERVER_ERROR, answer.error);
+            /*  this.mediator.call(SERVER_ERROR, answer.error); */
             return null;
         } catch (e) {
-            this.mediator.call<IError>(SERVER_ERROR, {
+            /* this.mediator.call(SERVER_ERROR, {
                 code: 9000,
                 text: "Вообще всё плохо!",
-            });
+            }); */
             return null;
         }
     }
 
     // АВТОРИЗАЦИЯ
 
-    registration(
-        login: string,
-        nickname: string,
-        password: string
-    ): Promise<IUserInfo | null> {
-        const hash = SHA256(login + password).toString();
-        return this.request("registration", { login, nickname, hash });
-    }
-
-    /* registration(login: string, nickname: string, password: string) {
+    registration(login: string, nickname: string, password: string) {
         const hash = SHA256(login + password).toString();
         this.socket.emit(ESOCKET.REGISTRATION, { login, nickname, hash });
-    } */
-
-    login(login: string, password: string): Promise<IUserInfo | null> {
-        const rnd = Math.random();
-        const hash = SHA256(
-            SHA256(login + password).toString() + rnd
-        ).toString();
-        return this.request("login", { login, hash, rnd });
     }
 
-    /* login(login: string, password: string) {
+    login(login: string, password: string) {
         const rnd = Math.random();
         const hash = SHA256(
             SHA256(login + password).toString() + rnd
         ).toString();
         this.socket.emit(ESOCKET.LOGIN, { login, hash, rnd });
-    } */
-
-    tokenVerification(token: string): Promise<IUserInfo | null> {
-        return this.request("tokenVerification", { token });
     }
 
-    logout(): Promise<true | null> {
-        return this.request("logout", { token: this.STORE.getToken() });
-    }
-
-    updatePassword(login: string, newPassword: string): Promise<true | null> {
-        const hash = SHA256(login + newPassword).toString();
-        return this.request("updatePassword", {
+    tokenVerification() {
+        this.socket.emit(ESOCKET.TOKEN_VERIFICATION, {
             token: this.STORE.getToken(),
-            hash,
+        });
+    }
+
+    getUser() {
+        this.socket.emit(ESOCKET.GET_USER_INFO, {
+            token: this.STORE.getToken(),
+        });
+    }
+
+    logout() {
+        this.socket.emit(ESOCKET.LOGOUT, {
+            token: this.STORE.getToken(),
         });
     }
 
     // ЛОББИ
 
-    getMessages(): Promise<IMessages | true | null> {
-        return this.request("getMessages", {
-            token: this.STORE.getToken(),
-            hash: this.STORE.getHash(EHash.chat),
-        });
-    }
-
-    /* sendMessages(message: string) {
-        this.socket.emit(ESOCET.SEND_MESSAGE, {
-            token: this.STORE.getToken(),
-            message,
-        });
-    } */
-
-    sendMessage(message: string): Promise<true | null> {
-        return this.request("sendMessage", {
+    sendMessage(message: string) {
+        this.socket.emit(ESOCKET.SEND_MESSAGE, {
             token: this.STORE.getToken(),
             message,
         });
     }
 
-    setGamerRole(
-        role: EGamerRole,
-        tankId: number | null = null
-    ): Promise<true | null> {
-        return this.request("setGamerRole", {
+    setGamerRole(role: EGamerRole, tankId: number | null = null) {
+        this.socket.emit(ESOCKET.SET_GAMER_ROLE, {
             token: this.STORE.getToken(),
             role,
             tankId,
         });
     }
 
-    getLobby(): Promise<ILobbyState | true | null> {
-        return this.request("getLobby", {
+    getLobby() {
+        this.socket.emit(ESOCKET.GET_LOBBY, {
             token: this.STORE.getToken(),
-            hash: this.STORE.getHash(EHash.lobby),
         });
     }
 
@@ -158,11 +175,6 @@ export default class Server {
     getScene(): Promise<IScene | null> {
         return this.request("getScene", {
             token: this.STORE.getToken(),
-            hashMap: this.STORE.getHash(EHash.map),
-            hashGamers: this.STORE.getHash(EHash.gamers),
-            hashMobs: this.STORE.getHash(EHash.mobs),
-            hashBullets: this.STORE.getHash(EHash.bullets),
-            hashBodies: this.STORE.getHash(EHash.bodies),
         });
     }
 

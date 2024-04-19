@@ -1,37 +1,39 @@
-import { EHash, IUserInfo } from "../Server/interfaces";
-
-interface IHash {
-    lobby: string | null;
-    chat: string | null;
-    bullets: string | null;
-    gamers: string | null;
-    mobs: string | null;
-    map: string | null;
-    bodies: string | null;
-}
+import { IGamerInfo, ILobby } from "../Server/interfaces";
 
 export default class Store {
-    hash: IHash;
     token: string | null;
-    user: IUserInfo | null;
+    user: IGamerInfo | null;
+    lobby: ILobby | null;
 
     constructor() {
-        this.hash = {
-            bullets: null,
-            chat: null,
-            gamers: null,
-            lobby: null,
-            mobs: null,
-            map: null,
-            bodies: null,
-        };
         this.user = null;
-        this.token = null /* this.getCookie().token */;
+        this.token = this.getCookie().token;
+        this.lobby = null;
     }
 
-    setUser(user: IUserInfo) {
+    setUser(user: IGamerInfo) {
         this.user = user;
-        this.token = user.token;
+    }
+
+    getUser() {
+        return this.user;
+    }
+
+    setLobby(lobby: ILobby) {
+        this.lobby = lobby;
+    }
+
+    getLobby(): ILobby {
+        return this.lobby
+            ? this.lobby
+            : {
+                  bannerman: true,
+                  general: true,
+                  tanks: {
+                      heavyTank: [],
+                      middleTank: [],
+                  },
+              };
     }
 
     getCookie(): { [key: string]: string } {
@@ -45,16 +47,8 @@ export default class Store {
         return cookie;
     }
 
-    getHash(type: EHash): string | null {
-        return this.hash[type];
-    }
-
     getToken(): string | null {
         return this.token;
-    }
-
-    setHash(type: EHash, hash: string | null) {
-        this.hash[type] = hash;
     }
 
     setToken(token: string | null) {
@@ -64,17 +58,5 @@ export default class Store {
         } else {
             document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         }
-    }
-
-    clearHash() {
-        this.hash = {
-            bullets: null,
-            chat: null,
-            gamers: null,
-            lobby: null,
-            map: null,
-            mobs: null,
-            bodies: null,
-        };
     }
 }

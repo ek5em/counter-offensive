@@ -1,8 +1,8 @@
 import { FC, useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import cn from "classnames";
 import { useSetRoleHandler } from "../../../../hooks/useSetRoleHandler";
-import { ServerContext } from "../../../../App";
+import { MediatorContext, ServerContext } from "../../../../App";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
 import {
     EGamerRole,
@@ -15,32 +15,38 @@ import CrossIcon from "../closeIcon.png";
 
 import styles from "../Detail.module.scss";
 
-const TankDetail: FC<{ lobby: ILobby | null }> = ({ lobby }) => {
+const TankDetail: FC = () => {
     const [tank, setTank] = useState<IMiddleTank>({
         Gunner: false,
         Mechanic: false,
         id: 0,
     });
     const server = useContext(ServerContext);
+    const mediator = useContext(MediatorContext);
     const navigate = useNavigate();
     const params = useParams();
+    const location = useLocation();
     const setRoleHandler = useSetRoleHandler();
 
     useEffect(() => {
+        const { LOBBY_UPDATE } = mediator.getTriggerTypes();
+        mediator.set(LOBBY_UPDATE, () => {
+            tankUpdate();
+        });
+        tankUpdate();
+    }, []);
+
+    const tankUpdate = () => {
         const id = Number(params.id);
         if (id) {
-            const newTank = lobby?.tanks.middleTank.find(
+            const newTank = server.STORE.getLobby().tanks.middleTank.find(
                 (tank) => tank.id === id
             );
             if (newTank) {
                 return setTank(newTank);
             }
         }
-        setTank({
-            ...tank,
-            id: 1,
-        });
-    }, [lobby]);
+    };
 
     const goBack = () => {
         navigate("/middle_tanks");
@@ -68,7 +74,7 @@ const TankDetail: FC<{ lobby: ILobby | null }> = ({ lobby }) => {
                     onClick={() =>
                         setRoleHandler(
                             EGamerRole.middleTankGunner,
-                            tank.id ? tank.id : null
+                            tank.id
                         )
                     }
                     className={cn(styles.gunner, {

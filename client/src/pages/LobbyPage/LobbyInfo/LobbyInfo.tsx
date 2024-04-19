@@ -1,7 +1,7 @@
 import { FC, useContext, useState } from "react";
 import cn from "classnames";
 import { useSetRoleHandler } from "../../../hooks/useSetRoleHandler";
-import { MediatorContext, ServerContext } from "../../../App";
+import { ServerContext } from "../../../App";
 import { withLayout } from "../../../components/LobbyLayout/Layout";
 import { EGamerRole, ILobby } from "../../../modules/Server/interfaces";
 import { Button, Chat, EButtonAppearance, EChat } from "../../../components";
@@ -16,16 +16,15 @@ enum EOpen {
     info,
 }
 
-const LobbyInfo: FC<{ lobby: ILobby | null }> = ({ lobby }) => {
+const LobbyInfo: FC = () => {
     const [isOpen, setIsOpen] = useState<EOpen>(EOpen.info);
-    const mediator = useContext(MediatorContext);
     const server = useContext(ServerContext);
     const setRoleHandler = useSetRoleHandler();
 
-    const logoutHandler = async () => {
-        const { LOGOUT } = mediator.getTriggerTypes();
-        const res = await server.logout();
-        res && mediator.get(LOGOUT);
+    const lobby = server.STORE.getLobby();
+
+    const logoutHandler = () => {
+        server.logout();
     };
 
     const handleChat = () => {
@@ -88,9 +87,7 @@ const LobbyInfo: FC<{ lobby: ILobby | null }> = ({ lobby }) => {
                     </div>
                 ) : (
                     <>
-                        <div>
-                            <Dossier />
-                        </div>
+                        <Dossier />
                         <Button
                             appearance={EButtonAppearance.primary}
                             id="test-button-goToMenu"

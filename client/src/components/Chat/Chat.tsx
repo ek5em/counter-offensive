@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import cn from "classnames";
 import { MediatorContext, ServerContext } from "../../App";
-import { requestDelay } from "../../config";
 import {
     EHash,
     ERank,
@@ -46,24 +45,18 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
 
         const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
-        const { NEW_MESSAGE } = mediator.getTriggerTypes();
+        const { NEW_MESSAGE, SEND_MESSAGE_STATUS } = mediator.getTriggerTypes();
 
         useEffect(() => {
-            /* const interval = setInterval(async () => {
-                const newMessages = await server.getMessages();
-                if (newMessages && newMessages !== true) {
-                    setMessages(newMessages.messages.reverse());
-                    server.STORE.setHash(EHash.chat, newMessages.chatHash);
-                }
-            }, requestDelay.chat);
-
-            return () => {
-                clearInterval(interval);
-                server.STORE.setHash(EHash.chat, null);
-            }; */
-
             mediator.set(NEW_MESSAGE, (newMessages: IMessages) => {
                 setMessages(newMessages.messages.reverse());
+            });
+
+            mediator.set(SEND_MESSAGE_STATUS, (status: true | null) => {
+                if (status) {
+                    setInputText("");
+                    scrollToBottom();
+                }
             });
         }, []);
 
@@ -88,11 +81,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
             e.preventDefault();
             const message = inputText.trim();
             if (chatType && message) {
-                const res = await server.sendMessage(message);
-                if (res) {
-                    setInputText("");
-                    scrollToBottom();
-                }
+                server.sendMessage(message);
             }
         };
 
@@ -143,7 +132,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                                     key={index}
                                     className={cn(styles.message_author, {
                                         [styles.message_author_user]:
-                                            server.STORE.user?.id ===
+                                            server.STORE.getUser()?.id ===
                                             message.userId,
                                     })}
                                 >
