@@ -23,7 +23,7 @@ const HeavyTankLobby: FC = () => {
     }, []);
 
     const updateTankList = () => {
-        setTanks(server.STORE.getLobby().tanks.heavyTank);
+        setTanks(server.STORE.getLobby().tanks.heavyTank ?? []);
     };
 
     const addTankHandler = () => {
