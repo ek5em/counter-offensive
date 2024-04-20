@@ -34,11 +34,10 @@ export default class Server {
             SEND_MESSAGE_STATUS,
             LOGOUT,
             UPDATE_USER,
-            GO_TO_TANK,
             LOBBY_UPDATE,
         } = mediator.getTriggerTypes();
 
-        const { SERVER_ERROR } = this.mediator.getEventTypes();
+        const { SERVER_ERROR, GO_TO_TANK } = this.mediator.getEventTypes();
 
         this.socket.on(ESOCKET.ERROR, (answer: IError) => {
             mediator.call(SERVER_ERROR, answer.error);
@@ -77,7 +76,7 @@ export default class Server {
             ESOCKET.SET_GAMER_ROLE,
             (answer: IAnswer<{ tankId: number; tankType: ETank }>) => {
                 if (answer.data.tankId) {
-                    mediator.get(GO_TO_TANK, answer.data);
+                    mediator.call(GO_TO_TANK, answer.data);
                 }
             }
         );

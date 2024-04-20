@@ -22,26 +22,26 @@ $selectedRoleBg: #989898;
 .units {
     @include unit;
     grid-column: start / firstcolend;
+
+    .tank_selected {
+        background-color: $selectedTankBg;
+
+        &:hover {
+            background-color: $selectedTankBg;
+        }
+    }
+
+    .selected_role {
+        transition: all 0;
+        cursor: default;
+        background-color: $selectedRoleBg;
+
+        &:hover {
+            background-color: $selectedRoleBg;
+        }
+    }
 }
 
 .lobby_tanks_info {
     grid-column: secondcolstart / end;
-}
-
-.tank_selected {
-    background-color: $selectedTankBg;
-
-    &:hover {
-        background-color: $selectedTankBg;
-    }
-}
-
-.selected_role {
-    transition: all 0;
-    cursor: default;
-    background-color: $selectedRoleBg;
-
-    &:hover {
-        background-color: $selectedRoleBg;
-    }
 }

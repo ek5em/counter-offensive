@@ -12,7 +12,7 @@ export const Dossier: FC = () => {
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
 
-    const { UPDATE_USER } = mediator.getEventTypes();
+    const { UPDATE_USER } = mediator.getTriggerTypes();
 
     useEffect(() => {
         const user = server.STORE.getUser();

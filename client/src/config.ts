@@ -13,9 +13,11 @@ export const HOST = PORT ? `${DOMAIN}:${PORT}` : DOMAIN;
 export const MEDIATOR = {
     EVENTS: {
         SERVER_ERROR: "SERVER_ERROR",
-    },
-    TRIGGERS: {
         GO_TO_TANK: "GO_TO_TANK",
+    },
+    
+    TRIGGERS: {
+        LOBBY_UPDATE: "LOBBY_UPDATE",
         WARNING: "WARNING",
         LOGIN: "LOGIN",
         LOGOUT: "LOGOUT",
@@ -28,7 +30,6 @@ export const MEDIATOR = {
         NEW_MESSAGE: "NEW_MESSAGE",
         SEND_MESSAGE_STATUS: "SEND_MESSAGE_STATUS",
         UPDATE_USER: "UPDATE_USER",
-        LOBBY_UPDATE: "LOBBY_UPDATE",
     },
 };
 

@@ -34,7 +34,7 @@ export const withLayout = (Component: FunctionComponent) => {
             <div className={styles.wrapper}>
                 <Logo />
                 <div className={styles.lobby}>
-                    <div className={cn(styles.units)}>
+                    <div className={styles.units}>
                         <button
                             id="test_button_general"
                             className={cn({
@@ -50,13 +50,13 @@ export const withLayout = (Component: FunctionComponent) => {
                         <button
                             id="test_button_2tank"
                             className={cn({
-                                tank_selected: path === "middle_tanks",
+                                [styles.tank_selected]: path === "middle_tanks",
                             })}
                             onClick={() =>
                                 onClickTankLobbyHandler(ETank.middle)
                             }
                         >
-                            <span>Двухместный танк</span>
+                            <span>Средний танк</span>
                             <div>
                                 <img src={tank2} alt="Танк2" />
                             </div>
@@ -64,11 +64,11 @@ export const withLayout = (Component: FunctionComponent) => {
                         <button
                             id="test_button_3tank"
                             className={cn({
-                                tank_selected: path === "heavy_tanks",
+                                [styles.tank_selected]: path === "heavy_tanks",
                             })}
                             onClick={() => onClickTankLobbyHandler(ETank.heavy)}
                         >
-                            <span>Трёхместный танк</span>
+                            <span>Тяжёлый танк</span>
                             <div>
                                 <img src={tank3} alt="Танк3" />
                             </div>

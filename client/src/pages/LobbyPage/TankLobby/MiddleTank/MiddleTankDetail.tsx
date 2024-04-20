@@ -25,22 +25,26 @@ const TankDetail: FC = () => {
     const mediator = useContext(MediatorContext);
     const navigate = useNavigate();
     const params = useParams();
-    const location = useLocation();
     const setRoleHandler = useSetRoleHandler();
 
     useEffect(() => {
         const { LOBBY_UPDATE } = mediator.getTriggerTypes();
+        const { GO_TO_TANK } = mediator.getEventTypes();
+
+        mediator.subscribe(GO_TO_TANK, (tank: { tankId: number }) => {
+            tankUpdate(tank.tankId);
+        });
+
         mediator.set(LOBBY_UPDATE, () => {
             tankUpdate();
         });
-        tankUpdate();
     }, []);
 
-    const tankUpdate = () => {
-        const id = Number(params.id);
+    const tankUpdate = (id: number | null = null) => {
+        const currentId = id ? id : Number(params.id);
         if (id) {
             const newTank = server.STORE.getLobby().tanks.middleTank.find(
-                (tank) => tank.id === id
+                (tank) => tank.id === currentId
             );
             if (newTank) {
                 return setTank(newTank);
@@ -64,18 +68,14 @@ const TankDetail: FC = () => {
     return (
         <div className={styles.details}>
             <div className={styles.info}>
-                <p>Двухместный танк</p>
-                <p>Танк {tank.id}</p>
+                <p>Средний танк {tank.id ? `№${tank.id}` : ""}</p>
                 <p>Занято мест {calcPlaces()}</p>
             </div>
             <div className={cn(styles.svg_wrapper, styles.middle_tank)}>
                 <div
                     id={"test_button_shooter2"}
                     onClick={() =>
-                        setRoleHandler(
-                            EGamerRole.middleTankGunner,
-                            tank.id
-                        )
+                        setRoleHandler(EGamerRole.middleTankGunner, tank.id)
                     }
                     className={cn(styles.gunner, {
                         [styles.unavailable]: tank.Gunner,

@@ -9,7 +9,7 @@ import {
 import { MediatorContext, ServerContext } from "../../App";
 import { publicRoutes, privateRoutes } from "../../router";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
-import { ETank, ILobby, IToken } from "../../modules/Server/interfaces";
+import { ETank, IToken } from "../../modules/Server/interfaces";
 
 import styles from "./AppRouter.module.scss";
 
@@ -29,14 +29,25 @@ export const AppRouter: FC = () => {
     }, []);
 
     useEffect(() => {
-        const {
-            LOGIN,
-            LOGOUT,
-            AUTH_ERROR,
-            THROW_TO_GAME,
+        const { LOGIN, LOGOUT, AUTH_ERROR, THROW_TO_GAME } =
+            mediator.getTriggerTypes();
+
+        const { GO_TO_TANK } = mediator.getEventTypes();
+
+        mediator.subscribe(
             GO_TO_TANK,
-            LOBBY_UPDATE,
-        } = mediator.getTriggerTypes();
+            (tank: { tankId: number; tankType: ETank }) => {
+                if (
+                    Number(location.pathname.split("/").pop()) !== tank.tankId
+                ) {
+                    navigate(
+                        `/${tank.tankType ? "middle_tanks" : "heavy_tanks"}/${
+                            tank.tankId
+                        }`
+                    );
+                }
+            }
+        );
 
         mediator.set(LOGIN, (data: IToken) => {
             server.STORE.setToken(data.token);
@@ -44,18 +55,6 @@ export const AppRouter: FC = () => {
             server.getUser();
             navigate(location.pathname);
         });
-
-        mediator.subscribe(
-            GO_TO_TANK,
-            (tank: { tankId: number; tankType: ETank }) => {
-                navigate(
-                    `/${tank.tankType ? "middle_tanks" : "heavy_tanks"}/${
-                        tank.tankId
-                    }`
-                );
-                mediator.get(LOBBY_UPDATE);
-            }
-        );
 
         mediator.set(LOGOUT, () => {
             server.STORE.setToken(null);

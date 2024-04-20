@@ -203,6 +203,9 @@ class LobbyManager extends BaseModule {
                     const tank = (
                         await this.db.getTankInLobbyByUserId(user.id)
                     )[0];
+                    
+                    await this.updateLobbyToAll();
+                    
                     socket.emit(
                         SOCKETS.SET_GAMER_ROLE,
                         this.answer.good({ tankId: tank.id, tankType: tank.type })

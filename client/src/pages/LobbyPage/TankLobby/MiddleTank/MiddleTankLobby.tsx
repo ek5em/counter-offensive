@@ -1,17 +1,30 @@
 import { FC, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import cn from "classnames";
-import { ServerContext } from "../../../../App";
+import { MediatorContext, ServerContext } from "../../../../App";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
+import { IMiddleTank } from "../../../../modules/Server/interfaces";
 import { Button, EButtonAppearance } from "../../../../components";
 
 import styles from "../Lobby.module.scss";
 
 const MiddleTankLobby: FC = () => {
+    const [tanks, setTanks] = useState<IMiddleTank[]>([]);
     const server = useContext(ServerContext);
+    const mediator = useContext(MediatorContext);
     const navigate = useNavigate();
 
-    const tanks = server.STORE.getLobby().tanks.middleTank;
+    useEffect(() => {
+        const { LOBBY_UPDATE } = mediator.getTriggerTypes();
+        mediator.set(LOBBY_UPDATE, () => {
+            updateTankList();
+        });
+        updateTankList();
+    }, []);
+
+    const updateTankList = () => {
+        setTanks(server.STORE.getLobby().tanks.middleTank);
+    };
 
     const addTankHandler = () => {
         navigate("/middle_tanks/myTank");

@@ -30,17 +30,22 @@ const HeavyTankDetail: FC = () => {
 
     useEffect(() => {
         const { LOBBY_UPDATE } = mediator.getTriggerTypes();
+        const { GO_TO_TANK } = mediator.getEventTypes();
+
+        mediator.subscribe(GO_TO_TANK, (tank: { tankId: number }) => {
+            tankUpdate(tank.tankId);
+        });
+
         mediator.set(LOBBY_UPDATE, () => {
             tankUpdate();
         });
-        tankUpdate();
     }, []);
 
-    const tankUpdate = () => {
-        const id = Number(params.id);
+    const tankUpdate = (id: number | null = null) => {
+        const currentId = id ? id : Number(params.id);
         if (id) {
             const newTank = server.STORE.getLobby().tanks.heavyTank.find(
-                (tank) => tank.id === id
+                (tank) => tank.id === currentId
             );
             if (newTank) {
                 return setTank(newTank);
@@ -65,8 +70,7 @@ const HeavyTankDetail: FC = () => {
     return (
         <div className={styles.details}>
             <div className={styles.info}>
-                <p>Трёхместный танк</p>
-                <p>Танк {tank.id}</p>
+                <p>Тяжёлый танк {tank.id ? `№${tank.id}` : ""}</p>
                 <p>Занято мест {calcPlaces()}</p>
             </div>
             <div className={cn(styles.svg_wrapper, styles.heavy_tank)}>
