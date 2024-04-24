@@ -6,29 +6,11 @@ $fontSize: 25px;
 
 .button {
     @include text($fontSize, Neucha, bold);
-    @include border(3px);
+    @include border(1px, 10px);
     padding: 5px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
-}
-
-.menu {
-    @include text(auto, Rubik Dirt, normal);
-    @include border(4px, 30px);
-    background: linear-gradient(
-        180deg,
-        rgba(120, 170, 119, 0) 0%,
-        #58db56 100%
-    );
-
-    &:hover {
-        background: linear-gradient(
-            180deg,
-            rgba(40, 70, 39, 0) 0%,
-            #3a7d3a 100%
-        );
-    }
 }
 
 .primary {
@@ -40,14 +22,12 @@ $fontSize: 25px;
     }
 }
 
-.dark {
-    background: $dark-green;
+.secondary {
+    @include textWrapper(1px);
+    color: $white;
+    background-color: $orange;
 
     &:hover {
-        background: $dark-green-hover;
+        background-color: $dark-orange;
     }
-}
-
-.active {
-    background: $activeColor;
 }
