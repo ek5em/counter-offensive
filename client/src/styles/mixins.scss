@@ -7,7 +7,7 @@
     color: $color;
 }
 
-@mixin border($w: 5px, $r: 17px) {
+@mixin border($w: 5px, $r: 10px) {
     border: $w solid $black;
     border-radius: $r;
 }
@@ -18,39 +18,10 @@
     align-items: center;
 }
 
-@mixin unit {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 
-    button {
-        @include center;
-        @include border(2px);
-        justify-content: space-between;
-        cursor: pointer;
-        padding: 5px;
-        flex-direction: column;
-        background-color: $gray;
-        height: 30%;
-        width: 100%;
-
-        &:hover {
-            background-color: $white;
-        }
-
-        div {
-            @include center;
-            height: 100%;
-        }
-
-        img {
-            mix-blend-mode: darken;
-            width: 80%;
-        }
-
-        span {
-            display: flex;
-            font-size:25px;
-        }
-    }
+@mixin textWrapper($size: 1px, $color: $black) {
+    text-shadow: $size 0 1px $color,
+            0 $size 1px $color,
+            -$size 0 1px $color,
+            0 (-$size) 1px $color;
 }

@@ -54,7 +54,7 @@ const LoginPage: React.FC = () => {
                     <div className={styles.title}>
                         <Link to="/registration" tabIndex={-1}>
                             <Button
-                                appearance={EButtonAppearance.dark}
+                                appearance={EButtonAppearance.primary}
                                 id="test_login_goToReg_button"
                             >
                                 Получить повестку

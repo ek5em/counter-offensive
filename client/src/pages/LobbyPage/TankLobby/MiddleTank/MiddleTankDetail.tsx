@@ -1,17 +1,13 @@
 import { FC, useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import cn from "classnames";
 import { useSetRoleHandler } from "../../../../hooks/useSetRoleHandler";
 import { MediatorContext, ServerContext } from "../../../../App";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
-import {
-    EGamerRole,
-    ILobby,
-    IMiddleTank,
-} from "../../../../modules/Server/interfaces";
+import { EGamerRole, IMiddleTank } from "../../../../modules/Server/interfaces";
 
+import { closeIcon } from "../../../../assets/png";
 import { ReactComponent as MiddleTank } from "./middleTank.svg";
-import CrossIcon from "../closeIcon.png";
 
 import styles from "../Detail.module.scss";
 
@@ -31,8 +27,15 @@ const TankDetail: FC = () => {
         const { LOBBY_UPDATE } = mediator.getTriggerTypes();
         const { GO_TO_TANK } = mediator.getEventTypes();
 
+<<<<<<< HEAD
         mediator.subscribe(GO_TO_TANK, (tank: { tankId: number }) => {
             tankUpdate(tank.tankId);
+=======
+        mediator.subscribe(GO_TO_TANK, (newTank: { tankId: number }) => {
+            if (newTank.tankId !== tank.id) {
+                tankUpdate(newTank.tankId);
+            }
+>>>>>>> 35e4b0df73cde1a5b4ee3453dec1a996f808eaef
         });
 
         mediator.set(LOBBY_UPDATE, () => {
@@ -42,7 +45,11 @@ const TankDetail: FC = () => {
 
     const tankUpdate = (id: number | null = null) => {
         const currentId = id ? id : Number(params.id);
+<<<<<<< HEAD
         if (id) {
+=======
+        if (currentId) {
+>>>>>>> 35e4b0df73cde1a5b4ee3453dec1a996f808eaef
             const newTank = server.STORE.getLobby().tanks.middleTank.find(
                 (tank) => tank.id === currentId
             );
@@ -99,7 +106,7 @@ const TankDetail: FC = () => {
             <img
                 id={"test_button_cross"}
                 className={styles.close}
-                src={CrossIcon}
+                src={closeIcon}
                 alt="Закрыть"
                 onClick={goBack}
             />

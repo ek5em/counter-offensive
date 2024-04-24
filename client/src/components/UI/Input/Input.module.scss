@@ -1,26 +1,28 @@
 @import "../../../styles/root.scss";
 @import "../../../styles/mixins.scss";
 
-$svgSize: 40px;
-$fontSize: 30px;
+$svgSize: 35px;
+$fontSize: 25px;
+$fontWeight: 400;
 
 .wrapper {
-    @include border(5px, 40px);
+    @include border(2px, 15px);
     display: flex;
     align-items: center;
     position: relative;
     background-color: $green-yellow;
+    width: $inputWidth;
 }
 
 .input {
-    @include text($fontSize, Neucha);
+    @include text($fontSize, Neucha, $fontWeight);
     box-sizing: content-box;
     width: 100%;
     height: 90%;
     border-radius: 50px;
     border: none;
     outline: none;
-    padding: 5px 15px;
+    padding: 5px 10px;
     background-color: transparent;
 }
 
@@ -36,7 +38,7 @@ input::-ms-clear {
 }
 
 .eye {
-    margin-right: 10px;
+    margin-right: 1px;
     cursor: pointer;
 
     svg {

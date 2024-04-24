@@ -4,20 +4,18 @@
 $fontSize: 25px;
 $formSize: 70%;
 $inputsGap: 10px;
-$formGap: 20px;
 $contentGap: 30px;
 $authWindowBg: #85c18b82;
 
 .authPage {
     @include center;
     flex-direction: column;
-    height: 100%;
 }
 
 .wrapper {
     @include center;
-    height: 100%;
     padding: 20px;
+    margin-top: 10vh;
 }
 
 .content {
@@ -33,24 +31,22 @@ $authWindowBg: #85c18b82;
 .title {
     button {
         @include text($fontSize, Rubik Dirt, 400);
-        @include border(5px, 60px);
-        padding: 8px 15px;
-        width: fit-content;
-        background-color: $dark-green;
+        @include border(3px, 60px);
+        padding: 5px 15px;
         width: 100%;
     }
 }
 
 .submit {
-    padding: 3px 15px;
-    font-size: calc($fontSize + 5px);
+    padding: 0 15px;
+    font-size: calc($fontSize + 3px);
 }
 
 .form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: $formGap;
+    gap: $gap;
     height: $formSize;
 
     .values {

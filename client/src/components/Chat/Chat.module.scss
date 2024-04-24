@@ -1,10 +1,103 @@
 @import "../../styles/root.scss";
 @import "../../styles/mixins.scss";
 
-$message_author_bg: #ffc531;
-$fontFam: Neucha, "Times New Roman", serif;
+$chatImg: 40px;
+$titleSize: 40px;
 
-.chat_container {
+.wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.chat {
+    @include border(1px, 10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 5px 10px;
+}
+
+.lobby {
+    background-color: $yellow;
+}
+
+.game {
+    background-color: $gray;
+}
+
+.messages {
+    max-height: 65vh;
+    padding: 10px 0;
+    overflow-y: auto;
+}
+
+.chatOpenner {
+    @include border(1px, 10px);
+    @include text($titleSize, Neucha, bold);
+    display: grid;
+    justify-self: right;
+    grid-template-columns: $chatImg auto;
+    gap: 5px;
+    align-items: center;
+    background-color: $yellow;
+    cursor: pointer;
+    padding: 0 10px;
+
+    img {
+        height: $chatImg;
+        width: $chatImg;
+    }
+}
+
+.title {
+    @include text($titleSize, Neucha, 400, $white);
+    @include textWrapper;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid $black;
+
+    img {
+        width: $chatImg;
+        height: $chatImg;
+        cursor: pointer;
+    }
+}
+
+.form {
+    @include border(2px, 20px);
+    display: flex;
+    align-items: center;
+    position: relative;
+    background-color: $orange;
+}
+
+.input_chat {
+    width: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0 10px;
+    font-size: 19px;
+}
+
+.send {
+    @include center;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+
+    img {
+        max-width: 55px;
+        scale: 1.1;
+    }
+}
+
+/* .chat_container {
     @include border(0);
     box-sizing: content-box;
     display: flex;
@@ -69,39 +162,9 @@ $fontFam: Neucha, "Times New Roman", serif;
     background: $message_author_bg;
 }
 
-.form {
-    @include border(2px);
-    display: flex;
-    align-items: center;
-    position: relative;
-    max-height: 25px;
-    border-bottom: none;
-}
 
-.input_chat {
-    width: 100%;
-    height: 100%;
-    background: none;
-    border: none;
-    outline: none;
-    padding: 5px;
-    font-family: $fontFam;
-    font-size: 19px;
-}
 
-.send_btn {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    border: none;
-    background: none;
-    padding: 0;
 
-    img {
-        max-width: 55px;
-        scale: 1.1;
-    }
-}
 
 .rank_img {
     max-width: 40px;
@@ -145,4 +208,4 @@ $fontFam: Neucha, "Times New Roman", serif;
     .rank_img {
         display: none;
     }
-}
+} */

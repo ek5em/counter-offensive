@@ -3,21 +3,15 @@ import cn from "classnames";
 import { useSetRoleHandler } from "../../../hooks/useSetRoleHandler";
 import { ServerContext } from "../../../App";
 import { withLayout } from "../../../components/LobbyLayout/Layout";
-import { EGamerRole, ILobby } from "../../../modules/Server/interfaces";
+import { EGamerRole } from "../../../modules/Server/interfaces";
 import { Button, Chat, EButtonAppearance, EChat } from "../../../components";
-import { Dossier } from "./Dossier/Dossier";
-import { chatIcon } from "../../../components/Chat/assets";
-import { automat, RPG, flag } from "./assets";
+import { automat, RPG, flag, general } from "./assets";
 
 import styles from "./LobbyInfo.module.scss";
-
-enum EOpen {
-    chat,
-    info,
-}
+import { UnitButton } from "../../../components/UI";
 
 const LobbyInfo: FC = () => {
-    const [isOpen, setIsOpen] = useState<EOpen>(EOpen.info);
+    const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
     const server = useContext(ServerContext);
     const setRoleHandler = useSetRoleHandler();
 
@@ -28,76 +22,69 @@ const LobbyInfo: FC = () => {
     };
 
     const handleChat = () => {
-        switch (isOpen) {
-            case EOpen.chat: {
-                return setIsOpen(EOpen.info);
-            }
-            case EOpen.info: {
-                return setIsOpen(EOpen.chat);
-            }
-        }
+        setIsChatOpen(!isChatOpen);
     };
 
     return (
         <>
-            <div className={cn(styles.units)}>
-                <button
-                    id="test_button_standartBearer"
-                    className={cn({
-                        selected_role: !lobby?.bannerman,
-                    })}
-                    onClick={() => setRoleHandler(EGamerRole.bannerman)}
-                >
-                    <span>Знаменосец</span>
-                    <div>
-                        <img src={flag} alt="Знаменосец" />
-                    </div>
-                </button>
-                <button
-                    id="test_button_infantrymanRPG"
-                    onClick={() => setRoleHandler(EGamerRole.infantryRPG)}
-                >
-                    <span>Пехотинец с гранотомётом</span>
-                    <div>
-                        <img src={RPG} alt="Гранатометчик" />
-                    </div>
-                </button>
-                <button
-                    id="test_button_infantrymanGun"
-                    onClick={() => setRoleHandler(EGamerRole.infantry)}
-                >
-                    <span>Пехотинец-автоматчик</span>
-                    <div>
-                        <img src={automat} alt="Автоматчик" />
-                    </div>
-                </button>
-            </div>
-            <div className={styles.info}>
-                <button
-                    className={styles.chat_btn}
-                    id="test-button-openCloseChat"
-                    onClick={handleChat}
-                >
-                    <img src={chatIcon} alt="Чат" />
-                    <span>Чат</span>
-                </button>
-                {isOpen === EOpen.chat ? (
-                    <div className={styles.chat}>
-                        <Chat chatType={EChat.lobby} />
-                    </div>
-                ) : (
-                    <>
-                        <Dossier />
-                        <Button
-                            appearance={EButtonAppearance.primary}
-                            id="test-button-goToMenu"
-                            onClick={logoutHandler}
-                            className={styles.logout}
-                        >
-                            Выйти из Бахмута
-                        </Button>
-                    </>
-                )}
+            <UnitButton
+                src={automat}
+                role="Солдат"
+                id="test_button_infantrymanGun"
+                onClick={() => setRoleHandler(EGamerRole.infantry)}
+            />
+            <UnitButton
+                src={RPG}
+                role="РПГ-шник"
+                id="test_button_infantrymanRPG"
+                onClick={() => setRoleHandler(EGamerRole.infantryRPG)}
+            />
+            <UnitButton
+                src={flag}
+                role="Знаменосец"
+                id="test_button_standartBearer"
+                className={cn({
+                    selected_role: !lobby?.bannerman,
+                })}
+                onClick={() => setRoleHandler(EGamerRole.bannerman)}
+            />
+            <UnitButton
+                src={general}
+                role="Генерал"
+                id="test_button_general"
+                className={cn({
+                    selected_role: !lobby.general,
+                    disabled: isChatOpen,
+                })}
+                onClick={() => setRoleHandler(EGamerRole.general)}
+            />
+            <div className={cn({ [styles.opened]: isChatOpen })}>
+                <div className={styles.info}>
+                    <Chat
+                        isOpen={isChatOpen}
+                        setIsOpen={handleChat}
+                        chatType={EChat.lobby}
+                        className={styles.chat}
+                    />
+                    {!isChatOpen && (
+                        <div className={styles.ratingAndLogout}>
+                            <Button
+                                appearance={EButtonAppearance.secondary}
+                                className={styles.rating}
+                            >
+                                Рейтинг
+                            </Button>
+                            <Button
+                                appearance={EButtonAppearance.primary}
+                                id="test-button-goToMenu"
+                                onClick={logoutHandler}
+                                className={styles.logout}
+                            >
+                                Выйти из Бахмута
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </div>
         </>
     );

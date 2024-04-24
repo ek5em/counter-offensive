@@ -1,7 +1,6 @@
 @import "../../styles/root.scss";
 @import "../../styles/mixins.scss";
 
-$gameChatBg: #fff5;
 
 .game {
     overflow: hidden;
@@ -19,23 +18,9 @@ $gameChatBg: #fff5;
     }
 }
 
-.leave_button {
-    @include text(20px, "Times New Roman", 800, $white);
-    @include border(1px, 20px);
-    position: absolute;
-    background-color: $red;
-    padding: 5px 10px;
-    top: 5px;
-    left: 5px;
-    text-align: center;
-    user-select: none;
-    cursor: pointer;
-}
-
 .chat {
     @include border(2px);
     position: absolute;
     left: 20px;
     bottom: 20px;
-    background-color: $gameChatBg;
 }

@@ -4,8 +4,8 @@ import cn from "classnames";
 import styles from "./Button.module.scss";
 
 export enum EButtonAppearance {
-    menu = "menu",
     primary = "primary",
+    secondary = "secondary",
     dark = "dark",
 }
 
@@ -15,28 +15,19 @@ export interface ButtonProps
         HTMLButtonElement
     > {
     appearance: EButtonAppearance;
-    active?: boolean;
 }
 
 export const Button: FC<ButtonProps> = ({
     appearance,
     className,
     children,
-    active,
     id,
     ...props
 }) => {
     return (
         <button
             id={id}
-            className={cn(
-                styles.button,
-                [styles[appearance]],
-                {
-                    [styles.active]: active,
-                },
-                className
-            )}
+            className={cn(styles.button, className, [styles[appearance]])}
             {...props}
         >
             {children}

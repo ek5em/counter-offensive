@@ -1,47 +1,24 @@
 @import "../../styles/root.scss";
 @import "../../styles/mixins.scss";
 
-$selectedTankBg: #b48686;
-$selectedRoleBg: #989898;
-
 .wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
     height: 100%;
-    box-sizing: border-box;
+    gap: $gap;
 }
 
 .lobby {
-    margin-top: 20px;
     display: grid;
-    grid-template-columns: [start] 3fr [firstcolend] 30px [secondcolstart] 3fr [secondcolend] 40px [info] 5fr [end];
+    grid-template-columns: [start] repeat(2, 1fr) [tanksend] repeat(5, 1fr) [end];
     height: 100%;
+    width: 100%;
+    gap: $gap;
 }
 
-.units {
-    @include unit;
-    grid-column: start / firstcolend;
-
-    .tank_selected {
-        background-color: $selectedTankBg;
-
-        &:hover {
-            background-color: $selectedTankBg;
-        }
-    }
-
-    .selected_role {
-        transition: all 0;
-        cursor: default;
-        background-color: $selectedRoleBg;
-
-        &:hover {
-            background-color: $selectedRoleBg;
-        }
-    }
-}
-
-.lobby_tanks_info {
-    grid-column: secondcolstart / end;
+.tank_selected {
+    @include border(3px, 5px);
+    border-color: $green;
 }

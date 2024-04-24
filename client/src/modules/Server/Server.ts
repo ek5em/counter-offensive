@@ -5,13 +5,13 @@ import Store from "../Store/Store";
 import {
     IGamerInfo,
     IError,
-    IMessages,
     EGamerRole,
     IScene,
     IToken,
     IAnswer,
     ILobby,
     ETank,
+    IMessage,
 } from "./interfaces";
 import { ESOCKET } from "../../config";
 
@@ -43,7 +43,8 @@ export default class Server {
             mediator.call(SERVER_ERROR, answer.error);
         });
 
-        this.socket.on(ESOCKET.GET_MESSAGE, (answer: IAnswer<IMessages[]>) => {
+        this.socket.on(ESOCKET.GET_MESSAGE, (answer: IAnswer<IMessage[]>) => {
+            console.log(answer.data);
             mediator.get(NEW_MESSAGE, answer.data);
         });
 
@@ -152,6 +153,12 @@ export default class Server {
         this.socket.emit(ESOCKET.SEND_MESSAGE, {
             token: this.STORE.getToken(),
             message,
+        });
+    }
+
+    getMessages() {
+        this.socket.emit(ESOCKET.GET_MESSAGE, {
+            token: this.STORE.getToken(),
         });
     }
 

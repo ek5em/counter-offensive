@@ -5,7 +5,7 @@ $svgWrapperDiv: #0f0;
 
 .details {
     @include border(3px, 15px);
-    grid-column: secondcolstart / end;
+    grid-column: tanksend / end;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -14,7 +14,6 @@ $svgWrapperDiv: #0f0;
     height: 100%;
     background: $gray;
     padding: 5px 10px;
-    box-sizing: border-box;
 
     svg {
         width: 100%;
