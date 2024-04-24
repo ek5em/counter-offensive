@@ -31,11 +31,6 @@ export interface IError {
     };
 }
 
-export interface IMessages {
-    chatHash: string;
-    messages: IMessage[];
-}
-
 export interface IMiddleTank {
     id: number;
     Mechanic: boolean;

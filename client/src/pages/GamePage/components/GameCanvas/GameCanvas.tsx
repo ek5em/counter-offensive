@@ -57,6 +57,7 @@ interface GameCanvasProps {
 }
 
 const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
+    console.log(123);
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
 

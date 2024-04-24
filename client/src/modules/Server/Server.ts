@@ -5,13 +5,13 @@ import Store from "../Store/Store";
 import {
     IGamerInfo,
     IError,
-    IMessages,
     EGamerRole,
     IScene,
     IToken,
     IAnswer,
     ILobby,
     ETank,
+    IMessage,
 } from "./interfaces";
 import { ESOCKET } from "../../config";
 
@@ -34,17 +34,17 @@ export default class Server {
             SEND_MESSAGE_STATUS,
             LOGOUT,
             UPDATE_USER,
-            GO_TO_TANK,
             LOBBY_UPDATE,
         } = mediator.getTriggerTypes();
 
-        const { SERVER_ERROR } = this.mediator.getEventTypes();
+        const { SERVER_ERROR, GO_TO_TANK } = this.mediator.getEventTypes();
 
         this.socket.on(ESOCKET.ERROR, (answer: IError) => {
             mediator.call(SERVER_ERROR, answer.error);
         });
 
-        this.socket.on(ESOCKET.GET_MESSAGE, (answer: IAnswer<IMessages[]>) => {
+        this.socket.on(ESOCKET.GET_MESSAGE, (answer: IAnswer<IMessage[]>) => {
+            console.log(answer.data);
             mediator.get(NEW_MESSAGE, answer.data);
         });
 
@@ -77,7 +77,7 @@ export default class Server {
             ESOCKET.SET_GAMER_ROLE,
             (answer: IAnswer<{ tankId: number; tankType: ETank }>) => {
                 if (answer.data.tankId) {
-                    mediator.get(GO_TO_TANK, answer.data);
+                    mediator.call(GO_TO_TANK, answer.data);
                 }
             }
         );
@@ -153,6 +153,12 @@ export default class Server {
         this.socket.emit(ESOCKET.SEND_MESSAGE, {
             token: this.STORE.getToken(),
             message,
+        });
+    }
+
+    getMessages() {
+        this.socket.emit(ESOCKET.GET_MESSAGE, {
+            token: this.STORE.getToken(),
         });
     }
 

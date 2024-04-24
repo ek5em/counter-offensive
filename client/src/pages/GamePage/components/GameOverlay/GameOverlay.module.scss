@@ -1,27 +1,21 @@
-@import "../../../../styles/root.scss";
 @import "../../../../styles/mixins.scss";
-
-$notificationFSize: 80px;
+@import "../../../../styles/root.scss";
 
 .overlay {
-    @include center();
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    transition: opacity 0.5s ease-in-out;
-
-    h1 {
-        font-size: $notificationFSize;
-    }
+    width: 100vw;
+    height: 100vh;
 }
 
-.defeat {
-    color: $red;
-}
-
-.victory {
-    color: $green;
+.leave {
+    @include text(20px, "Times New Roman", 800, $white);
+    @include border(1px, 20px);
+    position: absolute;
+    background-color: $red;
+    padding: 5px 10px;
+    top: 5px;
+    left: 5px;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
 }

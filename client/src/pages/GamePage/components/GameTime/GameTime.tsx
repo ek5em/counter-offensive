@@ -1,5 +1,6 @@
 import { FC, useContext, useEffect, useState } from "react";
 import { MediatorContext } from "../../../../App";
+import { timeConvert } from "../../../../helpers";
 
 import styles from "./GameTime.module.scss";
 
@@ -12,15 +13,15 @@ const GameTime: FC = () => {
         mediator.set(UPDATE_TIME, (time: number) => {
             setTime(time);
         });
-    });
 
-    const timeConvert = (ms: number): string => {
-        const min = Math.floor((ms / (1000 * 60)) % 60);
-        const sec = Math.floor((ms / 1000) % 60);
-        const formMin = min < 10 ? `0${min}` : `${min}`;
-        const formSec = sec < 10 ? `0${sec}` : `${sec}`;
-        return `${formMin}:${formSec}`;
-    };
+        const timer = setInterval(() => {
+            setTime((t) => t + 1000);
+        }, 1000);
+
+        return () => {
+            clearInterval(timer);
+        };
+    }, []);
 
     return (
         <div className={styles.time}>
