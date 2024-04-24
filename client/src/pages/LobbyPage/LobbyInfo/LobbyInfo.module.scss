@@ -1,48 +1,41 @@
 @import "../../../styles/root.scss";
 @import "../../../styles/mixins.scss";
 
-$chatImg: 40px;
-
-.units {
-    @include unit;
-    grid-column: secondcolstart / secondcolend;
-}
+$fontSize: 30px;
 
 .info {
-    grid-column: info / end;
-    display: grid;
-    grid-template-rows: 100px auto auto;
-    gap: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    gap: $gap;
+}
+
+.opened {
+    grid-column: span 2;
+
+    .info {
+        flex-direction: column-reverse;
+    }
+}
+
+.ratingAndLogout {
+    @include center;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+
+    button {
+        width: 100%;
+    }
+}
+
+.rating {
+    font-size: $fontSize;
 }
 
 .logout {
-    font-size: 30px;
-    align-self: flex-end;
-    justify-self: flex-end;
+    font-size: $fontSize;
     padding: 5px 10px;
-}
-
-.chat {
-    grid-row: 2 / span 2;
-    height: fit-content;
-    align-self: flex-end;
-}
-
-.chat_btn {
-    @include border;
-    @include text(40px, Neucha, bold);
-    display: grid;
-    justify-self: right;
-    grid-template-columns: $chatImg auto;
-    gap: 5px;
-    align-items: center;
-    background-color: $yellow;
-    cursor: pointer;
-    padding: 0 10px;
-    height: 60px;
-
-    img {
-        height: $chatImg;
-        width: $chatImg;
-    }
 }

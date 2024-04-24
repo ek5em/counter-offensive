@@ -1,17 +1,13 @@
 import { FC, useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import cn from "classnames";
 import { useSetRoleHandler } from "../../../../hooks/useSetRoleHandler";
 import { MediatorContext, ServerContext } from "../../../../App";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
-import {
-    EGamerRole,
-    ILobby,
-    IMiddleTank,
-} from "../../../../modules/Server/interfaces";
+import { EGamerRole, IMiddleTank } from "../../../../modules/Server/interfaces";
 
+import { closeIcon } from "../../../../assets/png";
 import { ReactComponent as MiddleTank } from "./middleTank.svg";
-import CrossIcon from "../closeIcon.png";
 
 import styles from "../Detail.module.scss";
 
@@ -25,22 +21,28 @@ const TankDetail: FC = () => {
     const mediator = useContext(MediatorContext);
     const navigate = useNavigate();
     const params = useParams();
-    const location = useLocation();
     const setRoleHandler = useSetRoleHandler();
 
     useEffect(() => {
         const { LOBBY_UPDATE } = mediator.getTriggerTypes();
+        const { GO_TO_TANK } = mediator.getEventTypes();
+
+        mediator.subscribe(GO_TO_TANK, (newTank: { tankId: number }) => {
+            if (newTank.tankId !== tank.id) {
+                tankUpdate(newTank.tankId);
+            }
+        });
+
         mediator.set(LOBBY_UPDATE, () => {
             tankUpdate();
         });
-        tankUpdate();
     }, []);
 
-    const tankUpdate = () => {
-        const id = Number(params.id);
-        if (id) {
+    const tankUpdate = (id: number | null = null) => {
+        const currentId = id ? id : Number(params.id);
+        if (currentId) {
             const newTank = server.STORE.getLobby().tanks.middleTank.find(
-                (tank) => tank.id === id
+                (tank) => tank.id === currentId
             );
             if (newTank) {
                 return setTank(newTank);
@@ -64,18 +66,14 @@ const TankDetail: FC = () => {
     return (
         <div className={styles.details}>
             <div className={styles.info}>
-                <p>Двухместный танк</p>
-                <p>Танк {tank.id}</p>
+                <p>Средний танк {tank.id ? `№${tank.id}` : ""}</p>
                 <p>Занято мест {calcPlaces()}</p>
             </div>
             <div className={cn(styles.svg_wrapper, styles.middle_tank)}>
                 <div
                     id={"test_button_shooter2"}
                     onClick={() =>
-                        setRoleHandler(
-                            EGamerRole.middleTankGunner,
-                            tank.id
-                        )
+                        setRoleHandler(EGamerRole.middleTankGunner, tank.id)
                     }
                     className={cn(styles.gunner, {
                         [styles.unavailable]: tank.Gunner,
@@ -99,7 +97,7 @@ const TankDetail: FC = () => {
             <img
                 id={"test_button_cross"}
                 className={styles.close}
-                src={CrossIcon}
+                src={closeIcon}
                 alt="Закрыть"
                 onClick={goBack}
             />
