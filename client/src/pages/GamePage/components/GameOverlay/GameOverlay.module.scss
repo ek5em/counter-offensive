@@ -1,6 +1,8 @@
 @import "../../../../styles/mixins.scss";
 @import "../../../../styles/root.scss";
 
+$absoluteOffset:10px;
+
 .overlay {
     position: fixed;
     width: 100vw;
@@ -13,9 +15,17 @@
     position: absolute;
     background-color: $red;
     padding: 5px 10px;
-    top: 5px;
-    left: 5px;
+    top: $absoluteOffset;
+    left: $absoluteOffset;
     text-align: center;
     user-select: none;
     cursor: pointer;
+}
+
+.chatBlock {
+    position: absolute;
+    left: $absoluteOffset;
+    bottom: $absoluteOffset;
+    width: 50%;
+    max-width: 450px;
 }

@@ -4,11 +4,13 @@ export default class Store {
     token: string | null;
     user: IGamerInfo | null;
     lobby: ILobby | null;
+    unit: null;
 
     constructor() {
         this.user = null;
         this.token = this.getCookie().token;
         this.lobby = null;
+        this.unit = null;
     }
 
     setUser(user: IGamerInfo) {

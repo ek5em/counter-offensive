@@ -42,7 +42,6 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
 
         useEffect(() => {
             mediator.set(NEW_MESSAGE, (newMessages: IMessage[]) => {
-                console.log(newMessages);
                 setMessages(newMessages.reverse());
             });
 
@@ -95,28 +94,30 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                             <div className={styles.messages}>
                                 {messages.length ? (
                                     <>
-                                        {messages.map((message) => (
+                                        {messages.map((message, i) => (
                                             <div
-                                                key={Date.now()}
-                                                className={cn(
-                                                    styles.message_author,
-                                                    {
-                                                        [styles.message_author_user]:
-                                                            server.STORE.getUser()
-                                                                ?.id ===
-                                                            message.userId,
-                                                    }
-                                                )}
+                                                key={i}
+                                                className={cn(styles.message, {
+                                                    [styles.myMessge]:
+                                                        server.STORE.getUser()
+                                                            ?.id ===
+                                                        message.userId,
+                                                })}
                                             >
-                                                [{message.nickname}
-                                                <img
-                                                    src={getRankImg(
-                                                        message.rank_name
-                                                    )}
-                                                    alt="rank"
-                                                    className={styles.rank_img}
-                                                />
-                                                ]: {}
+                                                <span className={styles.name}>
+                                                    [{message.nickname}
+                                                    <img
+                                                        src={getRankImg(
+                                                            message.rank_name
+                                                        )}
+                                                        alt="rank"
+                                                        className={
+                                                            styles.rank_img
+                                                        }
+                                                    />
+                                                    ]
+                                                </span>
+                                                : {}
                                                 <span
                                                     className={
                                                         styles.message_text
@@ -168,41 +169,3 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
         );
     }
 );
-{
-    /* <div className={cn(styles.chat_container, styles[chatType])}>
-                <div className={styles.body_chat}>
-                    {chatType === EChat.game && (
-                        <div className={styles.header_chat}>
-                            <div onClick={handleCloseChat} id="test_game_chat">
-                                <img
-                                    src={chatIcon}
-                                    alt="chat_icon"
-                                    className={styles.chat_icon_game}
-                                />
-                                <span className={styles.chat_text}>Чат</span>
-                            </div>
-                        </div>
-                    )}
-                    <div
-                        className={cn(styles.message_container, {
-                            disabled: chatType === EChat.game && !isOpen,
-                        })}
-                    >
-                        {messages && messages.length ? (
-                            messages.map((message, index) => (
-                                <div
-                                    key={index}
-                                    
-                                >
-                                    
-                                </div>
-                            ))
-                        ) : (
-                        )}
-                    </div>
-                </div>
-                {chatType === EChat.game && (
-                    
-                )}
-            </div> */
-}

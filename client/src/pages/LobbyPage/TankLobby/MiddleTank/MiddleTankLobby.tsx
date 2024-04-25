@@ -15,10 +15,11 @@ const MiddleTankLobby: FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const { LOBBY_UPDATE } = mediator.getTriggerTypes();
-        mediator.set(LOBBY_UPDATE, () => {
+        const { LOBBY_UPDATE } = mediator.getEventTypes();
+        mediator.subscribe(LOBBY_UPDATE, () => {
             updateTankList();
         });
+
         updateTankList();
     }, []);
 

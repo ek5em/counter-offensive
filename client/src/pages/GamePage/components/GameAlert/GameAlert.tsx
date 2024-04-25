@@ -1,6 +1,4 @@
-import { FC, HTMLAttributes, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { MediatorContext } from "../../../../App";
+import { FC } from "react";
 
 import styles from "./GameAlert.module.scss";
 
@@ -9,28 +7,15 @@ export enum EGameStatus {
     defeat = "defeat",
 }
 
-interface Props extends HTMLAttributes<HTMLDivElement> {}
+interface IGameAlert {
+    gameStatus: EGameStatus | null;
+}
 
-const GameAlert: FC<Props> = ({ className, ...props }) => {
-    const mediator = useContext(MediatorContext);
-    const navigate = useNavigate();
-
-    const [gameStatus, setGameStatus] = useState<EGameStatus | null>(null);
-
-    useEffect(() => {
-        const { THROW_TO_LOBBY } = mediator.getTriggerTypes();
-        mediator.set(THROW_TO_LOBBY, (status: EGameStatus) => {
-            setGameStatus(status);
-            setTimeout(() => {
-                setGameStatus(null);
-                navigate("/");
-            }, 3000);
-        });
-    });
+export const GameAlert: FC<IGameAlert> = ({ gameStatus }) => {
     return (
         <>
             {gameStatus && (
-                <div id="test_game_time" className={styles.aler}>
+                <div id="test_game_time" className={styles.alert}>
                     <h1 className={styles[gameStatus]}>
                         {gameStatus === EGameStatus.victory
                             ? "Победа"
@@ -41,5 +26,3 @@ const GameAlert: FC<Props> = ({ className, ...props }) => {
         </>
     );
 };
-
-export default GameAlert;

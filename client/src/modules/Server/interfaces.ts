@@ -75,6 +75,7 @@ interface IPoint {
 
 export interface IUserUnit extends IPoint {
     personId: EGamerRole;
+    speed: number;
 }
 
 export interface IBullet extends Omit<IPoint, "angle"> {

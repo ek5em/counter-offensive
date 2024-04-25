@@ -1,12 +1,12 @@
 import { FC, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import cn from "classnames";
+import { MediatorContext, ServerContext } from "../../../../App";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
 import { Button, EButtonAppearance } from "../../../../components";
+import { IHeavyTank } from "../../../../modules/Server/interfaces";
 
 import styles from "../Lobby.module.scss";
-import { MediatorContext, ServerContext } from "../../../../App";
-import { IHeavyTank } from "../../../../modules/Server/interfaces";
 
 const HeavyTankLobby: FC = () => {
     const [tanks, setTanks] = useState<IHeavyTank[]>([]);
@@ -15,8 +15,8 @@ const HeavyTankLobby: FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const { LOBBY_UPDATE } = mediator.getTriggerTypes();
-        mediator.set(LOBBY_UPDATE, () => {
+        const { LOBBY_UPDATE } = mediator.getEventTypes();
+        mediator.subscribe(LOBBY_UPDATE, () => {
             updateTankList();
         });
         updateTankList();

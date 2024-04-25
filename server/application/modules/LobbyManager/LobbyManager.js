@@ -148,17 +148,21 @@ class LobbyManager extends BaseModule {
         let minPersonLevel = await this.db.getMinPersonLevelById(roleId);
 
         // Проверка доступности роли
-        if (gamerRank[0].level < minPersonLevel[0].level) return 234;
+        if (gamerRank[0].level < minPersonLevel[0].level) {
+            return 234;
+        }
 
         if (
             nowPerson.length !== 0 &&
             gamerRank[0].gamer_exp < nowPerson[0].experience
-        )
+        ) {
             return 235;
+        }
 
         // Подготовка к установке роли
         await this.db.deleteRole(1);
         this.addGamer(userId, roleId);
+        return true;
     }
 
     async setFootRoleHandler(userId, roleId) {
@@ -217,31 +221,35 @@ class LobbyManager extends BaseModule {
     }
 
     async getGamer(userId) {
-        let gamer = await this.db.getGamerById(userId);
-        if (gamer[0].person_id != -1) {
-            let person = await this.db.getPersonParamsById(gamer[0].person_id);
-            if ([3, 4, 5, 6, 7].includes(gamer[0].person_id)) {
-                let tank = await this.db.getTankByUserId(userId);
-                if (tank[0]) {
+        let gamer = (await this.db.getGamerById(userId))[0];
+        if (gamer.person_id != -1) {
+            let person = await this.db.getPersonParamsById(gamer.person_id);
+            if ([3, 4, 5, 6, 7].includes(gamer.person_id)) {
+                let tank = (await this.db.getTankByUserId(userId))[0];
+                if (tank) {
                     return {
-                        personId: gamer[0].person_id,
-                        x: tank[0].x,
-                        y: tank[0].y,
-                        angle: tank[0].angle,
-                        towerAngle: tank[0].tower_angle,
-                        speed: person[0].movementSpeed,
-                        commanderAngle: tank[0].commander_angle,
+                        personId: gamer.person_id,
+                        x: tank.x,
+                        y: tank.y,
+                        angle: tank.angle,
+                        towerAngle: tank.tower_angle,
+                        speed: person.movementSpeed,
+                        commanderAngle: tank.commander_angle,
                     };
-                } else return false;
+                } else {
+                    return false;
+                } 
             }
             return {
-                personId: gamer[0].person_id,
-                x: gamer[0].x,
-                y: gamer[0].y,
-                speed: person[0].movementSpeed,
-                angle: gamer[0].angle,
+                personId: gamer.person_id,
+                x: gamer.x,
+                y: gamer.y,
+                speed: person.movementSpeed,
+                angle: gamer.angle,
             };
-        } else return false;
+        } else {
+            return false;
+        }
     }
 
     async getTanks() {

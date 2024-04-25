@@ -14,10 +14,12 @@ export const MEDIATOR = {
     EVENTS: {
         SERVER_ERROR: "SERVER_ERROR",
         GO_TO_TANK: "GO_TO_TANK",
-    },
-    
-    TRIGGERS: {
+        UPDATE_USER: "UPDATE_USER",
         LOBBY_UPDATE: "LOBBY_UPDATE",
+        END_GAME: "END_GAME",
+    },
+
+    TRIGGERS: {
         WARNING: "WARNING",
         LOGIN: "LOGIN",
         LOGOUT: "LOGOUT",
@@ -29,7 +31,6 @@ export const MEDIATOR = {
         UPDATE_TIME: "UPDATE_TIME",
         NEW_MESSAGE: "NEW_MESSAGE",
         SEND_MESSAGE_STATUS: "SEND_MESSAGE_STATUS",
-        UPDATE_USER: "UPDATE_USER",
     },
 };
 

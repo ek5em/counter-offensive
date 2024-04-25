@@ -25,37 +25,24 @@ const HeavyTankDetail: FC = () => {
     const setRoleHandler = useSetRoleHandler();
 
     useEffect(() => {
-        const { LOBBY_UPDATE } = mediator.getTriggerTypes();
-        const { GO_TO_TANK } = mediator.getEventTypes();
+        const { GO_TO_TANK, LOBBY_UPDATE } = mediator.getEventTypes();
 
-<<<<<<< HEAD
-        mediator.subscribe(GO_TO_TANK, (tank: { tankId: number }) => {
-            tankUpdate(tank.tankId);
-=======
         mediator.subscribe(GO_TO_TANK, (newTank: { tankId: number }) => {
             if (newTank.tankId !== tank.id) {
                 tankUpdate(newTank.tankId);
             }
->>>>>>> 35e4b0df73cde1a5b4ee3453dec1a996f808eaef
         });
 
-        mediator.set(LOBBY_UPDATE, () => {
+        mediator.subscribe(LOBBY_UPDATE, () => {
             tankUpdate();
         });
-<<<<<<< HEAD
-=======
 
         tankUpdate();
->>>>>>> 35e4b0df73cde1a5b4ee3453dec1a996f808eaef
     }, []);
 
     const tankUpdate = (id: number | null = null) => {
         const currentId = id ? id : Number(params.id);
-<<<<<<< HEAD
-        if (id) {
-=======
         if (currentId) {
->>>>>>> 35e4b0df73cde1a5b4ee3453dec1a996f808eaef
             const newTank = server.STORE.getLobby().tanks.heavyTank.find(
                 (tank) => tank.id === currentId
             );

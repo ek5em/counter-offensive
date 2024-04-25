@@ -7,16 +7,16 @@ import {
     useNavigate,
 } from "react-router-dom";
 import { MediatorContext, ServerContext } from "../../App";
-import { publicRoutes, privateRoutes } from "../../router";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
-import { ETank, IToken } from "../../modules/Server/interfaces";
+import { useGetRouter } from "../../hooks/useGetRouter";
+import { ETank, IGamerInfo, IToken } from "../../modules/Server/interfaces";
 
 import styles from "./AppRouter.module.scss";
 
 export const AppRouter: FC = () => {
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
-
+    const getRouter = useGetRouter();
     const [routes, setRoutes] = useState<RouteProps[]>(getRouter());
     const navigate = useNavigate();
     const errorHandler = useErrorHandler();
@@ -32,7 +32,13 @@ export const AppRouter: FC = () => {
         const { LOGIN, LOGOUT, AUTH_ERROR, THROW_TO_GAME } =
             mediator.getTriggerTypes();
 
-        const { GO_TO_TANK } = mediator.getEventTypes();
+        const { GO_TO_TANK, UPDATE_USER, END_GAME } = mediator.getEventTypes();
+
+        mediator.subscribe(END_GAME, () => {
+            setTimeout(() => {
+                navigate("/");
+            }, 3000);
+        });
 
         mediator.subscribe(
             GO_TO_TANK,
@@ -48,6 +54,10 @@ export const AppRouter: FC = () => {
                 }
             }
         );
+
+        mediator.subscribe(UPDATE_USER, (user: IGamerInfo) => {
+            console.log(user);
+        });
 
         mediator.set(LOGIN, (data: IToken) => {
             server.STORE.setToken(data.token);
@@ -70,10 +80,6 @@ export const AppRouter: FC = () => {
             mediator.get(LOGOUT);
         });
     }, []);
-
-    function getRouter(): RouteProps[] {
-        return server.STORE.getToken() ? privateRoutes : publicRoutes;
-    }
 
     return (
         <div className={styles.app}>

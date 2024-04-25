@@ -1,7 +1,6 @@
 @import "../../styles/root.scss";
 @import "../../styles/mixins.scss";
 
-
 .game {
     overflow: hidden;
     position: absolute;
@@ -16,11 +15,4 @@
         width: 0;
         overflow: hidden;
     }
-}
-
-.chat {
-    @include border(2px);
-    position: absolute;
-    left: 20px;
-    bottom: 20px;
 }

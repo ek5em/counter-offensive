@@ -10,6 +10,7 @@ class ChatManager extends BaseModule {
 
         io.on('connection', (socket) => {
             socket.on(SOCKETS.SEND_MESSAGE, (data) => this.sendMessage(data, socket));
+            socket.on(SOCKETS.GET_MESSAGE, (data) => this.getMessage(data, socket));
             socket.on('disconnect', () => console.log('disconnect', socket.id));
         });
     }
@@ -21,16 +22,25 @@ class ChatManager extends BaseModule {
         const pattern = /^[A-Za-zА-Яа-я0-9\s]{1,300}$/;
         if (pattern.test(message)) {
             if (user && user.token) {
-                await this.db.addMessage(user[0].id, message);
-                socket.emit(SOCKETS.SEND_MESSAGE, true);
+                await this.db.addMessage(user.id, message);
+                socket.emit(SOCKETS.SEND_MESSAGE, this.answer.good(true));
                 this.io.emit(SOCKETS.GET_MESSAGE, this.answer.good(await this.db.getMessages()));
                 return;
             }
-            socket.emit(SOCKETS.SEND_MESSAGE, this.answer.bad(401));
+            socket.emit(SOCKETS.ERROR, this.answer.bad(401));
         }
-        socket.emit(SOCKETS.SEND_MESSAGE, this.answer.bad(432));
+        socket.emit(SOCKETS.ERROR, this.answer.bad(432));
+    }
 
-        
+    async getMessage({ token }, socket) {
+        const { GET_USER } = this.Mediator.getTriggerTypes();
+        const user = (await this.Mediator.get(GET_USER, token))[0];
+
+        if (user && user.token) {
+            socket.emit(SOCKETS.GET_MESSAGE, this.answer.good(await this.db.getMessages()));
+            return;
+        }
+        socket.emit(SOCKETS.ERROR, this.answer.bad(401));   
     }
 }
 

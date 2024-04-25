@@ -7,9 +7,9 @@ import {
     getExpString,
     getExpPersents,
 } from "../../helpers";
+import { IGamerInfo } from "../../modules/Server/interfaces";
 import { Logo } from "../UI";
 import { ELogo } from "../UI/Logo/Logo";
-import { IGamerInfo } from "../../modules/Server/interfaces";
 import DossierImage from "./dossierImage.png";
 
 import styles from "./Header.module.scss";
@@ -20,15 +20,14 @@ export const Header: FC = () => {
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
 
-    const { UPDATE_USER } = mediator.getTriggerTypes();
-
     useEffect(() => {
         const user = server.STORE.getUser();
         user && setUser(user);
     }, [server.STORE.user]);
 
     useEffect(() => {
-        mediator.set(UPDATE_USER, (user: IGamerInfo) => {
+        const { UPDATE_USER } = mediator.getEventTypes();
+        mediator.subscribe(UPDATE_USER, (user: IGamerInfo) => {
             setUser(user);
         });
     }, []);

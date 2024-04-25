@@ -11,15 +11,6 @@ const GamePage: React.FC = () => {
         <div className={styles.game}>
             <GameOverlay />
             <GameCanvas inputRef={chatInputRef} />
-
-            <div className={styles.chat}>
-                <Chat
-                    isOpen={false}
-                    setIsOpen={() => {}}
-                    chatType={EChat.game}
-                    ref={chatInputRef}
-                />
-            </div>
         </div>
     );
 };

@@ -28,23 +28,17 @@ export default class Server {
 
         this.socket = io(HOST);
 
-        const {
-            NEW_MESSAGE,
-            LOGIN,
-            SEND_MESSAGE_STATUS,
-            LOGOUT,
-            UPDATE_USER,
-            LOBBY_UPDATE,
-        } = mediator.getTriggerTypes();
+        const { NEW_MESSAGE, LOGIN, SEND_MESSAGE_STATUS, LOGOUT } =
+            mediator.getTriggerTypes();
 
-        const { SERVER_ERROR, GO_TO_TANK } = this.mediator.getEventTypes();
+        const { SERVER_ERROR, GO_TO_TANK, UPDATE_USER, LOBBY_UPDATE } =
+            this.mediator.getEventTypes();
 
         this.socket.on(ESOCKET.ERROR, (answer: IError) => {
             mediator.call(SERVER_ERROR, answer.error);
         });
 
         this.socket.on(ESOCKET.GET_MESSAGE, (answer: IAnswer<IMessage[]>) => {
-            console.log(answer.data);
             mediator.get(NEW_MESSAGE, answer.data);
         });
 
@@ -62,7 +56,7 @@ export default class Server {
 
         this.socket.on(ESOCKET.GET_USER_INFO, (answer: IAnswer<IGamerInfo>) => {
             this.STORE.setUser(answer.data);
-            mediator.get(UPDATE_USER, answer.data);
+            mediator.call(UPDATE_USER, answer.data);
         });
 
         this.socket.on(ESOCKET.LOGOUT, () => {
@@ -84,7 +78,7 @@ export default class Server {
 
         this.socket.on(ESOCKET.GET_LOBBY, (answer: IAnswer<ILobby>) => {
             this.STORE.setLobby(answer.data);
-            mediator.get(LOBBY_UPDATE);
+            mediator.call(LOBBY_UPDATE, answer.data);
         });
     }
 

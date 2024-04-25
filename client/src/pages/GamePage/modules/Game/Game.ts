@@ -41,7 +41,7 @@ export default class Game {
         this.server = server;
         this.mediator = mediator;
         this.roundEnd = cbs.roundEnd;
-        this.serverUnit = { personId: 1, x: 0, y: 0, angle: 0 };
+        this.serverUnit = { personId: 1, x: 0, y: 0, angle: 0, speed: 1 };
         this.scene = {
             bullets: [],
             mobs: [],
@@ -50,7 +50,8 @@ export default class Game {
             bodies: [],
             map: [],
         };
-        const { THROW_TO_LOBBY, UPDATE_SCENE, UPDATE_TIME } = mediator.getTriggerTypes();
+        const { THROW_TO_LOBBY, UPDATE_SCENE, UPDATE_TIME } =
+            mediator.getTriggerTypes();
         let isDead = false,
             isEnd = false;
         this.interval = setInterval(async () => {
@@ -88,7 +89,7 @@ export default class Game {
                     this.scene.gamers = gamers;
                 }
                 if (mobs) {
-                    this.scene.mobs = mobs
+                    this.scene.mobs = mobs;
                 }
                 if (bullets) {
                     this.scene.bullets = bullets;
@@ -227,7 +228,7 @@ export default class Game {
                             }
                         })
                     );
-                    mediator.get(UPDATE_SCENE, this.scene.map)
+                    mediator.get(UPDATE_SCENE, this.scene.map);
                 }
             }
         }, requestDelay.game);
