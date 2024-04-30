@@ -1,15 +1,17 @@
-import { FC, useContext, useEffect, useState } from "react";
-import { MediatorContext, ServerContext } from "../../../../App";
+import { FC, useEffect, useState } from "react";
+import { useGlobalContext } from "../../../../hooks/useGlobalContext";
 import GameTime from "../GameTime/GameTime";
 import { GameAlert, EGameStatus } from "../GameAlert/GameAlert";
 import { Chat, EChat } from "../../../../components";
 
 import styles from "./GameOverlay.module.scss";
 
-export const GameOverlay: FC = () => {
-    const server = useContext(ServerContext);
-    const mediator = useContext(MediatorContext);
+interface IGameOverlay {
+    inputRef: React.MutableRefObject<HTMLInputElement | null>;
+}
 
+export const GameOverlay: FC<IGameOverlay> = ({ inputRef }) => {
+    const { server, mediator } = useGlobalContext();
     const [gameStatus, setGameStatus] = useState<EGameStatus | null>(null);
     const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
@@ -39,6 +41,7 @@ export const GameOverlay: FC = () => {
             )}
             <div className={styles.chatBlock}>
                 <Chat
+                    ref={inputRef}
                     isOpen={isChatOpen}
                     setIsOpen={chatHandler}
                     chatType={EChat.game}

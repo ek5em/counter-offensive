@@ -57,14 +57,13 @@ export interface IToken {
 export interface IGamerInfo {
     gamer_exp: number;
     id: number;
-    is_alive: boolean;
+    is_alive: null | IUserUnit;
     level: number;
     login: string;
     next_rank: number;
     nickname: string;
     rank_name: ERank;
     token: string;
-    unit: IUserUnit;
 }
 
 interface IPoint {
@@ -150,16 +149,6 @@ export enum ERank {
     Sergeant = "Sergeant",
     Officer = "Officer",
     General = "General",
-}
-
-export enum EHash {
-    lobby = "lobby",
-    bullets = "bullets",
-    gamers = "gamers",
-    mobs = "mobs",
-    chat = "chat",
-    map = "map",
-    bodies = "bodies",
 }
 
 export enum ETank {

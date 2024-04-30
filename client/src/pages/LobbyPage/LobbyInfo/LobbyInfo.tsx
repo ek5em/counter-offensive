@@ -1,18 +1,19 @@
-import { FC, useContext, useState } from "react";
+import { FC, useState } from "react";
 import cn from "classnames";
+import { useGlobalContext } from "../../../hooks/useGlobalContext";
 import { useSetRoleHandler } from "../../../hooks/useSetRoleHandler";
-import { ServerContext } from "../../../App";
 import { withLayout } from "../../../components/LobbyLayout/Layout";
 import { EGamerRole } from "../../../modules/Server/interfaces";
 import { Button, Chat, EButtonAppearance, EChat } from "../../../components";
+import { UnitButton } from "../../../components/UI";
 import { automat, RPG, flag, general } from "./assets";
 
 import styles from "./LobbyInfo.module.scss";
-import { UnitButton } from "../../../components/UI";
 
 const LobbyInfo: FC = () => {
     const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
-    const server = useContext(ServerContext);
+    const { server } = useGlobalContext();
+
     const setRoleHandler = useSetRoleHandler();
 
     const lobby = server.STORE.getLobby();

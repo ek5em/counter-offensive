@@ -1,9 +1,9 @@
-import { useContext } from "react";
 import { EGamerRole } from "../modules/Server/interfaces";
-import { ServerContext } from "../App";
+import { useGlobalContext } from "./useGlobalContext";
 
 export const useSetRoleHandler = () => {
-    const server = useContext(ServerContext);
+    const { server } = useGlobalContext();
+
     return (role: EGamerRole, tank_id: number | null = null) => {
         server.setGamerRole(role, tank_id ? tank_id : null);
     };

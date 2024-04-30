@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
-import { MediatorContext } from "../../../App";
+import React, { useEffect, useState } from "react";
 import cn from "classnames";
+import { useGlobalContext } from "../../../hooks/useGlobalContext";
 
 import styles from "./Alert.module.scss";
 
@@ -23,7 +23,8 @@ export const Alert: React.FC = () => {
         id: "",
     });
 
-    const mediator = useContext(MediatorContext);
+    const { mediator } = useGlobalContext();
+
     const { WARNING } = mediator.getTriggerTypes();
 
     useEffect(() => {

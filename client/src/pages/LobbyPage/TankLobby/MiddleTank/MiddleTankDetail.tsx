@@ -1,24 +1,22 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC,  useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import cn from "classnames";
 import { useSetRoleHandler } from "../../../../hooks/useSetRoleHandler";
-import { MediatorContext, ServerContext } from "../../../../App";
+import { useGlobalContext } from "../../../../hooks/useGlobalContext";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
 import { EGamerRole, IMiddleTank } from "../../../../modules/Server/interfaces";
-
 import { closeIcon } from "../../../../assets/png";
 import { ReactComponent as MiddleTank } from "./middleTank.svg";
 
 import styles from "../Detail.module.scss";
 
 const TankDetail: FC = () => {
+    const { server, mediator } = useGlobalContext();
     const [tank, setTank] = useState<IMiddleTank>({
         Gunner: false,
         Mechanic: false,
         id: 0,
     });
-    const server = useContext(ServerContext);
-    const mediator = useContext(MediatorContext);
     const navigate = useNavigate();
     const params = useParams();
     const setRoleHandler = useSetRoleHandler();

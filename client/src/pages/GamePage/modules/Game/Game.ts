@@ -1,7 +1,6 @@
-import { objectConf, requestDelay, staticMap } from "../../../../config";
+import { requestDelay, staticMap } from "../../../../config";
 import { Mediator, Server } from "../../../../modules";
 import {
-    EHash,
     EMapObject,
     IBody,
     IBullet,
@@ -68,11 +67,6 @@ export default class Game {
                     bodies,
                     tanks,
                     map,
-                    hashBullets,
-                    hashBodies,
-                    hashGamers,
-                    hashMobs,
-                    hashMap,
                 } = res;
                 if (is_end && !isEnd) {
                     isEnd = true;

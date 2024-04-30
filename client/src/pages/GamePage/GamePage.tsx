@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import { Chat, EChat } from "../../components";
 import GameCanvas from "./components/GameCanvas/GameCanvas";
 import { GameOverlay } from "./components/GameOverlay/GameOverlay";
 import styles from "./GamePage.module.scss";
@@ -9,7 +8,7 @@ const GamePage: React.FC = () => {
 
     return (
         <div className={styles.game}>
-            <GameOverlay />
+            <GameOverlay inputRef={chatInputRef} />
             <GameCanvas inputRef={chatInputRef} />
         </div>
     );
