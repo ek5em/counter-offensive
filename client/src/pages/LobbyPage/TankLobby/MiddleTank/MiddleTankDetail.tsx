@@ -25,28 +25,28 @@ const TankDetail: FC = () => {
         const { GO_TO_TANK, LOBBY_UPDATE } = mediator.getEventTypes();
 
         mediator.subscribe(LOBBY_UPDATE, () => {
-            tankUpdate();
+            const newTank = server.STORE.getLobby().tanks.middleTank.find(
+                (tank) => tank.id === Number(params.id)
+            );
+            newTank && setTank(newTank);
         });
 
         mediator.subscribe(GO_TO_TANK, (newTank: { tankId: number }) => {
             if (newTank.tankId !== tank.id) {
-                tankUpdate(newTank.tankId);
+                const tanks = server.STORE.getLobby().tanks.middleTank;
+                setTank(
+                    tanks.find((tank) => tank.id === newTank.tankId) ?? {
+                        ...tank,
+                    }
+                );
             }
         });
 
-        tankUpdate();
+        const newTank = server.STORE.getLobby().tanks.middleTank.find(
+            (tank) => tank.id === Number(params.id)
+        );
+        newTank && setTank(newTank);
     }, []);
-
-    const tankUpdate = (id: number | null = null) => {
-        const currentId = id ? id : params.id;
-        const tanks = server.STORE.getLobby().tanks.middleTank;
-        if (currentId !== "myTank") {
-            const newTank = tanks.find((tank) => tank.id === Number(currentId));
-            if (newTank) {
-                return setTank(newTank);
-            }
-        }
-    };
 
     const goBack = () => {
         navigate("/middle_tanks");

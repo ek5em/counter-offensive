@@ -16,7 +16,6 @@ import styles from "./Header.module.scss";
 
 export const Header: FC = () => {
     const [user, setUser] = useState<IGamerInfo | null>(null);
-
     const { server, mediator } = useGlobalContext();
 
 

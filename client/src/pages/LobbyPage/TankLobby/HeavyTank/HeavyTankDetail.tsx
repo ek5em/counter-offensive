@@ -25,17 +25,28 @@ const HeavyTankDetail: FC = () => {
     useEffect(() => {
         const { GO_TO_TANK, LOBBY_UPDATE } = mediator.getEventTypes();
 
+        mediator.subscribe(LOBBY_UPDATE, () => {
+            const newTank = server.STORE.getLobby().tanks.heavyTank.find(
+                (tank) => tank.id === Number(params.id)
+            );
+            newTank && setTank(newTank);
+        });
+
         mediator.subscribe(GO_TO_TANK, (newTank: { tankId: number }) => {
             if (newTank.tankId !== tank.id) {
-                tankUpdate(newTank.tankId);
+                const tanks = server.STORE.getLobby().tanks.heavyTank;
+                setTank(
+                    tanks.find((tank) => tank.id === newTank.tankId) ?? {
+                        ...tank,
+                    }
+                );
             }
         });
 
-        mediator.subscribe(LOBBY_UPDATE, () => {
-            tankUpdate();
-        });
-
-        tankUpdate();
+        const newTank = server.STORE.getLobby().tanks.heavyTank.find(
+            (tank) => tank.id === Number(params.id)
+        );
+        newTank && setTank(newTank);
     }, []);
 
     const tankUpdate = (id: number | null = null) => {
