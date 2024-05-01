@@ -26,6 +26,10 @@ export const GameOverlay: FC<IGameOverlay> = ({ inputRef }) => {
         setIsChatOpen(!isChatOpen);
     };
 
+    const suicideHandler = () => {
+        server.suicide();
+    };
+
     return (
         <div className={styles.overlay}>
             <GameTime />
@@ -34,7 +38,7 @@ export const GameOverlay: FC<IGameOverlay> = ({ inputRef }) => {
                 <button
                     id="test_leave_game_button"
                     className={styles.leave}
-                    onClick={() => server.suicide()}
+                    onClick={suicideHandler}
                 >
                     Сбежать
                 </button>

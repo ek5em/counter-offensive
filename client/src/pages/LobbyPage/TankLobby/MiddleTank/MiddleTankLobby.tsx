@@ -10,7 +10,6 @@ import styles from "../Lobby.module.scss";
 
 const MiddleTankLobby: FC = () => {
     const { server, mediator } = useGlobalContext();
-
     const [tanks, setTanks] = useState<IMiddleTank[]>([]);
     const navigate = useNavigate();
 

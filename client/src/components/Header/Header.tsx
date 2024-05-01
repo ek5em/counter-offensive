@@ -54,7 +54,7 @@ export const Header: FC = () => {
                                 getExpPersents(
                                     user?.gamer_exp,
                                     user?.next_rank
-                                ) === 1,
+                                ) > 0.99,
                         })}
                         style={{
                             width: `${

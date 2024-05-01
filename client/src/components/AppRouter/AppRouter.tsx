@@ -56,7 +56,7 @@ export const AppRouter: FC = () => {
 
         mediator.subscribe(UPDATE_USER, (user: IGamerInfo) => {
             server.STORE.setUser(user);
-            user.is_alive && navigate("/game");
+            // user.is_alive && navigate("/game");
         });
 
         mediator.set(LOGIN, (data: IToken) => {

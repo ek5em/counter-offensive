@@ -40,7 +40,7 @@ export default class Game {
         this.server = server;
         this.mediator = mediator;
         this.roundEnd = cbs.roundEnd;
-        this.serverUnit = { personId: 1, x: 0, y: 0, angle: 0, speed: 1 };
+        this.serverUnit = { personId: 1, x: 0, y: 0, angle: 0, speed: 0 };
         this.scene = {
             bullets: [],
             mobs: [],

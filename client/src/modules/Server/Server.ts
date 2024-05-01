@@ -14,6 +14,7 @@ import {
     IMessage,
 } from "./interfaces";
 import { ESOCKET } from "../../config";
+import { timeStamp } from "console";
 
 export default class Server {
     mediator: Mediator;
@@ -178,18 +179,14 @@ export default class Server {
         });
     }
 
-    suicide(): Promise<true | null> {
-        return this.request("suicide", {
+    suicide() {
+        this.socket.emit(ESOCKET.SUICIDE, {
             token: this.STORE.getToken(),
         });
     }
 
-    unitMotion(
-        x: number | null,
-        y: number | null,
-        angle: number
-    ): Promise<true | null> {
-        return this.request("motion", {
+    unitMotion(x: number | null, y: number | null, angle: number) {
+        this.socket.emit(ESOCKET.MOTION, {
             token: this.STORE.getToken(),
             x,
             y,
@@ -197,8 +194,8 @@ export default class Server {
         });
     }
 
-    makeShot(x: number, y: number, angle: number): Promise<true | null> {
-        return this.request("fire", {
+    makeShot(x: number, y: number, angle: number) {
+        this.socket.emit(ESOCKET.FIRE, {
             token: this.STORE.getToken(),
             x,
             y,

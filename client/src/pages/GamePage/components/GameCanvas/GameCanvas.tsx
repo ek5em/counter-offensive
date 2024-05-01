@@ -757,8 +757,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     function render(FPS: number) {
         const renderTime = FPS ? 1000 / FPS : 0;
         const scene = game.getScene();
-        if (scene.map.length !== 0) {
-        }
         if (canvas) {
             canvas.clear();
             drawScene(scene);
