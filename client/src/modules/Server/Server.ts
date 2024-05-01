@@ -125,6 +125,7 @@ export default class Server {
     }
 
     tokenVerification() {
+
         this.socket.emit(ESOCKET.TOKEN_VERIFICATION, {
             token: this.STORE.getToken(),
         });

@@ -2,8 +2,8 @@ const BaseModule = require("../BaseModule/BaseModule.js")
 const { SOCKETS } = require("../../../config.js");
 
 class ChatManager extends BaseModule {
-    constructor(db, io, Mediator) {
-        super(db, io, Mediator);
+    constructor(db, io, mediator) {
+        super(db, io, mediator);
         if (!this.io) {
             return;
         }
@@ -16,8 +16,7 @@ class ChatManager extends BaseModule {
     }
 
     async sendMessage({ token, message }, socket) {
-        const { GET_USER } = this.Mediator.getTriggerTypes();
-        const user = (await this.Mediator.get(GET_USER, token))[0];
+        const user = await this.mediator.get(this.TRIGGERS.GET_USER, token);
 
         const pattern = /^[A-Za-zА-Яа-я0-9\s]{1,300}$/;
         if (pattern.test(message)) {
@@ -33,8 +32,7 @@ class ChatManager extends BaseModule {
     }
 
     async getMessage({ token }, socket) {
-        const { GET_USER } = this.Mediator.getTriggerTypes();
-        const user = (await this.Mediator.get(GET_USER, token))[0];
+        const user = await this.mediator.get(this.TRIGGERS.GET_USER, token);
 
         if (user && user.token) {
             socket.emit(SOCKETS.GET_MESSAGE, this.answer.good(await this.db.getMessages()));
