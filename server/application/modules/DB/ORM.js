@@ -7,9 +7,11 @@ class ORM {
         const promise = new Promise((resolve, reject) => {
             const cond = [];
             const values = [];
+            let keyNumber = 1;
             Object.keys(conditions).forEach(key => {
-                cond.push(`${key}=?`);
+                cond.push(`${key}=$${keyNumber}`);
                 values.push(conditions[key]);
+                keyNumber++;
             });
             const query = `SELECT ${fields} FROM ${table} WHERE ${cond.join(` ${operand} `)}`;
             this.db.query(query, values, (error, results) => {
@@ -20,7 +22,7 @@ class ORM {
                 }
             });
         })
-        const result = await promise;
+        const result = (await promise).rows;
         // return result ? result[0] : null;
         return result ? result : null;
     }
@@ -29,9 +31,11 @@ class ORM {
         const promise = new Promise((resolve, reject) => {
             const cond = [];
             const values = [];
+            let keyNumber = 1;
             Object.keys(conditions).forEach(key => {
-                cond.push(`${key}=?`);
+                cond.push(`${key}=$${keyNumber}`);
                 values.push(conditions[key]);
+                keyNumber++;
             });
 
             let where = ``;
@@ -58,7 +62,7 @@ class ORM {
                 }
             });
         })
-        const result = await promise;
+        const result = (await promise).rows;
         return result ? result : null;
     }
 
@@ -67,12 +71,15 @@ class ORM {
             const cond = [];
             const values = newData;
             const updateFields = [];
+            let keyNumber = 1;
             fields.split(",").forEach(field => {
-                updateFields.push(`${field}=?`);
+                updateFields.push(`${field}=$${keyNumber}`);
+                keyNumber++;
             })
             Object.keys(conditions).forEach(key => {
-                cond.push(`${key}=?`);
+                cond.push(`${key}=$${keyNumber}`);
                 values.push(conditions[key]);
+                keyNumber++;
             });
             
             const query = `UPDATE ${table} SET ${updateFields.join(`, `)} WHERE ${cond.join(`${operand}`)}`;
@@ -91,8 +98,8 @@ class ORM {
         const promise = new Promise((resolve, reject) => {
     
             let values = [];
-            for(let i=0; i<newData.length; i++){
-                values.push("?")
+            for(let i=1; i<=newData.length; i++){
+                values.push(`$${i}`)
             }
 
             const query = `INSERT INTO ${table} (${fields}) VALUES (${values.join(', ')})`;
@@ -110,10 +117,11 @@ class ORM {
         const promise = new Promise((resolve, reject) => {
             const cond = [];
             const values = [];
-       
+            let keyNumber = 1;
             Object.keys(conditions).forEach(key => {
-                cond.push(`${key}=?`);
+                cond.push(`${key}=$${keyNumber}`);
                 values.push(conditions[key]);
+                keyNumber++;
             });
 
             const query = `DELETE FROM ${table} WHERE ${cond.join(` ${operand} `)}`;

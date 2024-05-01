@@ -28,13 +28,14 @@ class UserManager {
     async login(login, hash, rnd) {
         const token = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
         const user = await this.db.getUserByLogin(login);
-        if(user[0] && user[0].login){
+        if(user[0]){
             const hashS = this.crypto.createHash('sha256').update(user[0].password+rnd).digest('hex'); // Хэш штрих. Строка сгенерированая с помощью хранящейсяв базе хэш-суммы
             if(hash == hashS){
                 const rank = await this.db.getRankById(user[0].id);
                 await this.db.updateToken(user[0].id, token);
                 console.log(rank);
                 console.log(user);
+                console.log(rank[0]);
                 return {
                     'id': user[0].id,
                     'token': token,

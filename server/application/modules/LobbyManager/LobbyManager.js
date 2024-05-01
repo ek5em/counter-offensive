@@ -250,7 +250,8 @@ class LobbyManager{
     
 
     async getLobby(userId, oldHash) {
-        let hash = await this.db.getGame();       
+        let hash = await this.db.getGame();  
+        //console.log(hash);     
         if (hash[0].hashLobby !== oldHash) {
             await this.db.deleteEmptyTank();
             await this.checkRoleAvailability(userId);

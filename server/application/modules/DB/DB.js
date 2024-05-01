@@ -1,29 +1,29 @@
 const ORM = require('./ORM');
-// const Pool = require('pg');
-const mysql = require("mysql");
+const {Pool} = require('pg');
+//const mysql = require("mysql");
 
 class DB {
     constructor() {
-        // this.pool = new Pool({
-        //     user: "postgres",
-        //     host: '127.0.0.1',
-        //     database: 'counter_offensive',
-        //     password: '030379890',
-        //     port: '5432',
-        // });
-        
-        this.connection = mysql.createConnection({
-            host: "localhost",
-            user: "root",
-            database: "counter_offensive",
-            password: null
+        this.pool = new Pool({
+            user: "postgres",
+            host: 'localhost',
+            database: 'counter_offensive',
+            password: '0000',
+            port: '5432',
         });
-        this.orm = new ORM(this.connection);
+        
+        // this.connection = mysql.createConnection({
+        //     host: "localhost",
+        //     user: "root",
+        //     database: "counter_offensive",
+        //     password: null
+        // });
+        this.orm = new ORM(this.pool);
     }
 
     async queryHandler(query, data) {
         const promise = new Promise((resolve, reject) => {
-            this.connection.query(query, data, (error, results) => {
+            this.pool.query(query, data, (error, results) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -49,7 +49,7 @@ class DB {
     }
 
     async updateToken(userId, token) {
-        let query = "UPDATE users SET tokenLastUse = NOW(), token = ? WHERE id=?";
+        let query = "UPDATE users SET \"tokenLastUse\" = NOW(), token = $1 WHERE id=$2";
         await this.queryHandler(query, [token, userId]);
     }
 
@@ -58,28 +58,28 @@ class DB {
     }
 
     async deleteToken(userId) {
-        let query = "UPDATE users SET tokenLastUse = NOW(), token = NULL WHERE id = ?";
+        let query = "UPDATE users SET \"tokenLastUse\" = NOW(), token = NULL WHERE id = $1";
         await this.queryHandler(query, [userId]);
     }
 
     async addUser(login, nickname, hash, token) {
-        let query = "INSERT INTO users (login, nickname, password, token, tokenLastUse, timeCreate) VALUES(?, ?, ?, ?, NOW(), NOW())";
+        let query = "INSERT INTO users (login, nickname, password, token, \"tokenLastUse\", \"timeCreate\") VALUES($1, $2, $3, $4, NOW(), NOW())";
         await this.queryHandler(query, [login, nickname, hash, token]); 
-    }dwwwwww
+    }
 
     async addGamer(user_id){
         this.orm.insert('gamers', "user_id, experience, status", [user_id, 0, 'lobby'])
     }
- 
+
     async getRankById(userId) {
         let query = `SELECT u.id AS user_id, r.id AS level, r.name AS rank_name, g.experience AS gamer_exp, next_r.experience - g.experience AS next_rang
         FROM gamers g
         JOIN users u ON u.id=g.user_id
         JOIN ranks r ON r.experience<=g.experience
         JOIN ranks next_r ON next_r.id = r.id + 1
-        WHERE u.id = ?
+        WHERE u.id = $1
         ORDER BY r.id DESC LIMIT 1;`;
-        return await this.queryHandler(query, [userId]);
+        return (await this.queryHandler(query, [userId])).rows;
     }
 
     async getGamerById(user_id) {
@@ -92,51 +92,51 @@ class DB {
 
     /* Чат */
     async addMessage(userId, message) {
-        let query = "INSERT INTO messages (userId, text, sendTime) VALUES(?, ?, NOW())";
+        let query = "INSERT INTO messages (\"userId\", text, \"sendTime\") VALUES($1, $2, NOW())";
         await this.queryHandler(query, [userId, message]); 
     }
 
     async getMessages(){
-        let query = `SELECT u.id AS userId, u.nickname AS nickname, m.text AS text, r.id AS level, r.name AS rank_name, m.sendTime AS sendTime
+        let query = `SELECT u.id AS userId, u.nickname AS nickname, m.text AS text, r.id AS level, r.name AS rank_name, m.\"sendTime\" AS sendTime
         FROM messages AS m 
-        INNER JOIN users AS u ON m.userId=u.id
+        INNER JOIN users AS u ON m.\"userId\"=u.id
         JOIN ranks AS r ON r.id=(SELECT MAX(r.id) as level FROM gamers AS g JOIN ranks as r ON r.experience<=g.experience WHERE g.user_id=u.id)
-        ORDER BY m.sendTime DESC
+        ORDER BY m.\"sendTime\" DESC
         LIMIT 30`;
-        return await this.queryHandler(query, []);
+        return (await this.queryHandler(query, [])).rows;
     }
 
     /* Получение и изменения для сцены */
     async updateTimestamp(timestamp) {
-        let query = "UPDATE game SET timestamp=? WHERE id=1";
+        let query = "UPDATE game SET timestamp=$1 WHERE id=1";
         return await this.queryHandler(query, [timestamp]);
     }
 
     async getGame() {
-        let query = "SELECT *, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) as timer FROM game WHERE id=1";
-        return await this.queryHandler(query, [], true);
+        let query = "SELECT *, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) as timer FROM game WHERE id=1";
+        return (await this.queryHandler(query, [], true)).rows;
     }
 
     async getTime() {
-        let query = "SELECT timestamp, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) as timer, timeout, banner_timeout, pBanner_timestamp, mBanner_timestamp FROM game WHERE id=1";
-        return await this.queryHandler(query, [], true);
+        let query = "SELECT timestamp, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) as timer, timeout, banner_timeout, \"pBanner_timestamp\", \"mBanner_timestamp\" FROM game WHERE id=1";
+        return (await this.queryHandler(query, [], true)).rows;
     }
 
     async getGamerAndPersonByUserId(userId) {
-        let query = `SELECT g.reload_timestamp, g.person_id, p.reloadSpeed,
-        ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) AS timer
+        let query = `SELECT g.reload_timestamp, g.person_id, p.\"reloadSpeed\",
+        ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) AS timer
         FROM gamers g
-        JOIN persons p ON g.person_id = p.id WHERE user_id=?`;
-        return await this.queryHandler(query, userId);
+        JOIN persons p ON g.person_id = p.id WHERE user_id=$1`;
+        return (await this.queryHandler(query, [userId])).rows;
     }
 
     async updateGamerTimestamp(userId) {
-        let query = "UPDATE gamers SET reload_timestamp=ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) WHERE user_id=?";
+        let query = "UPDATE gamers SET reload_timestamp=ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) WHERE user_id=$1";
         return await this.queryHandler(query, [userId]);
     }
 
     async updateTankTimestamp(userId) {
-        let query = "UPDATE tanks SET reload_timestamp=ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) WHERE gunner_id=?";
+        let query = "UPDATE tanks SET reload_timestamp=ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) WHERE gunner_id=$1";
         return await this.queryHandler(query, [userId]);
     }
 
@@ -158,7 +158,7 @@ class DB {
 
     async getFootGamers(){
         let query = "SELECT * FROM gamers WHERE status='alive' AND person_id IN (2, 8, 9)";
-        return await this.queryHandler(query, []);//All
+        return (await this.queryHandler(query, [])).rows;//All
     }
 
     getTanks(){
@@ -183,58 +183,58 @@ class DB {
 
     /* Обновление хэша*/
     async updateChatHash(hash) {
-        let query = "UPDATE game SET chatHash=? WHERE id=1";
+        let query = "UPDATE game SET \"chatHash\"=$1 WHERE id=1";
         await this.queryHandler(query, [hash]);
     }
 
     async updateLobbyHash(hash){
-        let query = "UPDATE game SET hashLobby=? WHERE id=1";
+        let query = "UPDATE game SET \"hashLobby\"=$1 WHERE id=1";
         await this.queryHandler(query, [hash]);
     }
 
     async updateGamersHash(hash){
-        let query = "UPDATE game SET hashGamers=? WHERE id=1";
+        let query = "UPDATE game SET \"hashGamers\"=$1 WHERE id=1";
         await this.queryHandler(query, [hash]);
     }
 
     async updateMobsHash(hash){
-        let query = "UPDATE game SET hashMobs=? WHERE id=1";
+        let query = "UPDATE game SET \"hashMobs\"=$1 WHERE id=1";
         await this.queryHandler(query, [hash]);
     }
 
     async updateMapHash(hash){
-        let query = "UPDATE game SET hashMap=? WHERE id=1";
+        let query = "UPDATE game SET \"hashMap\"=$1 WHERE id=1";
         await this.queryHandler(query, [hash]);
     }
 
     async updateTanksHash(hash){
-        let query = "UPDATE game SET hashTanks=? WHERE id=1";
+        let query = "UPDATE game SET \"hashTanks\"=$1 WHERE id=1";
         await this.queryHandler(query, [hash]);
     }
 
     async updateBulletsHash(hash){
-        let query = "UPDATE game SET hashBullets=? WHERE id=1";
+        let query = "UPDATE game SET \"hashBullets\"=$1 WHERE id=1";
         await this.queryHandler(query, [hash]);
     }
 
     async updateBodiesHash(hash){
-        let query = "UPDATE game SET hashBodies=? WHERE id=1";
+        let query = "UPDATE game SET \"hashBodies\"=$1 WHERE id=1";
         await this.queryHandler(query, [hash]);
     }
 
     /* Убийство */
     async killGamerInHeavyTank(mechId, gunnerId, commId) {
-        let query = "UPDATE `gamers` SET status='dead', person_id=-1 WHERE id IN (?, ?, ?)";
+        let query = "UPDATE `gamers` SET status='dead', person_id=-1 WHERE id IN ($1, $2, $3)";
         await this.queryHandler(query,[mechId, gunnerId, commId]);
     }
 
     async killGamerInMiddleTank(mechId, gunnerId) {
-        let query = "UPDATE `gamers` SET status='dead', person_id=-1 WHERE id IN (?, ?)";
+        let query = "UPDATE `gamers` SET status='dead', person_id=-1 WHERE id IN ($1, $2)";
         await this.queryHandler(query,[mechId, gunnerId]);
     }
 
     async endUserGame(userId) {
-        let query = "DELETE FROM tanks WHERE commander_id=? OR gunner_id = ? OR driver_id =?";
+        let query = "DELETE FROM tanks WHERE commander_id=$1 OR gunner_id = $2 OR driver_id =$3";
         await this.queryHandler(query, [userId, userId, userId]);
     }
 
@@ -289,7 +289,7 @@ class DB {
     async killGamersById(gamersId){
         let gamersIdString = gamersId.join(" "); 
         
-        let query = "UPDATE `gamers` SET status='dead', person_id=-1 WHERE id IN (?)";
+        let query = "UPDATE `gamers` SET status='dead', person_id=-1 WHERE id IN ($1)";
         await this.queryHandler(query,[gamersIdString]);
     }
 
@@ -302,12 +302,12 @@ class DB {
     }
 
     async killTank(tankId){
-        let query = "DELETE FROM `tanks` WHERE id=?";
+        let query = "DELETE FROM `tanks` WHERE id=$1";
         await this.queryHandler(query,[tankId]);
     }
 
     async killMob(mobId){
-        let query = "DELETE FROM `mobs` WHERE id=?";
+        let query = "DELETE FROM `mobs` WHERE id=$1";
         await this.queryHandler(query,[mobId]);
     }
 
@@ -355,7 +355,7 @@ class DB {
     }
 
     async deleteBullet(id){
-        let query = "DELETE FROM bullets WHERE id = ?";
+        let query = "DELETE FROM bullets WHERE id = $1";
         await this.queryHandler(query, [id]);
     }
 
@@ -392,7 +392,7 @@ class DB {
     /* Мобы */
     async addMobs(role, x, y, hp) {
         // console.log(role, x, y, hp);
-        let query = "INSERT INTO mobs (person_id, hp, x, y, angle, reload_timestamp) VALUES (?, ?, ?, ?, 0, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000));";
+        let query = "INSERT INTO mobs (person_id, hp, x, y, angle, reload_timestamp) VALUES ($1, $2, $3, $4, 0, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000));";
         await this.queryHandler(query, [role, hp, x, y]);
     }
 
@@ -409,7 +409,7 @@ class DB {
     }
 
     async setMobPath(mobId, path){
-        let query = "UPDATE mobs SET path=?, path_update=ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) WHERE id=?";
+        let query = "UPDATE mobs SET path=$1, path_update=ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) WHERE id=$2";
         await this.queryHandler(query, [path, mobId]);
     }
 
@@ -418,36 +418,37 @@ class DB {
     }
 
     async updateMobTimestamp(mobId){
-        let query = "UPDATE mobs SET reload_timestamp=ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) WHERE id=?";
+        let query = "UPDATE mobs SET reload_timestamp=ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) WHERE id=$1";
         await this.queryHandler(query, [mobId]);
     }
 
     async getMobs() {
         let query = `SELECT m.id AS id, m.hp AS hp, m.path_update AS path_update, m.reload_timestamp AS timestamp,
          m.person_id AS personId, m.x AS x, m.y AS y, m.angle AS angle,
-        p.reloadSpeed AS reloadSpeed, p.rotateSpeed AS rotateSpeed, p.movementSpeed AS movementSpeed 
+         p.\"reloadSpeed\" AS reloadSpeed, p.\"rotateSpeed\" AS rotateSpeed, p.\"movementSpeed\" AS movementSpeed
         FROM mobs m JOIN persons p ON m.person_id=p.id;`;
-        return await this.queryHandler(query, []);
+        return (await this.queryHandler(query, [])).rows;
     }
 
     /* Лобби */
     async createNewTankInLobby(userId, field, tankType) {
-        let query = `INSERT INTO tank_lobby (type, ${field}) VALUES (?, ?);`;
+        let query = `INSERT INTO tank_lobby (type, ${field}) VALUES ($1, $2);`;
         await this.queryHandler(query, [tankType, userId]);
     }
 
     async setGamerInTankLobby(userId, field, tankId) {
-        let query = `UPDATE tank_lobby SET ${field}=? WHERE id=?;`;
+        let query = `UPDATE tank_lobby SET ${field}=$1 WHERE id=$2;`;
         await this.queryHandler(query, [userId, tankId]);
     }
 
     async deleteGamerInTankLobby(userId) {
-        const query = `UPDATE tank_lobby
-        SET driver_id = IF(driver_id = ?, NULL, driver_id),
-        gunner_id = IF(gunner_id = ?, NULL, gunner_id),
-        commander_id = IF(commander_id = ?, NULL, commander_id)
-        WHERE driver_id = ? OR gunner_id = ? OR commander_id = ?;`;
-        await this.queryHandler(query, [userId, userId, userId, userId, userId, userId]);
+        /*const query = `UPDATE tank_lobby
+        SET driver_id = IF(driver_id = $1, NULL, driver_id),
+        gunner_id = IF(gunner_id = $2, NULL, gunner_id),
+        commander_id = IF(commander_id = $3, NULL, commander_id)
+        WHERE driver_id = $4 OR gunner_id = $5 OR commander_id = $6;`;
+        await this.queryHandler(query, [userId, userId, userId, userId, userId, userId]);*/
+        return 0;
     }
 
     async setGamerRole(user_id, role, hp) {
@@ -465,7 +466,7 @@ class DB {
         CASE WHEN gunner_id IS NOT NULL THEN 'true' ELSE 'false' END AS Gunner,
         CASE WHEN commander_id IS NOT NULL THEN 'true' ELSE 'false' END AS Commander
         FROM tank_lobby WHERE type=0;`;
-        return await this.queryHandler(query, []);
+        return (await this.queryHandler(query, [])).rows;
     }
 
     async getMiddleTank(){
@@ -473,18 +474,18 @@ class DB {
         CASE WHEN driver_id IS NOT NULL THEN 'true' ELSE 'false' END AS Mechanic,
         CASE WHEN gunner_id IS NOT NULL THEN 'true' ELSE 'false' END AS Gunner
         FROM tank_lobby WHERE type=1;`;
-        return await this.queryHandler(query, []);
+        return (await this.queryHandler(query, [])).rows;
     }
 
     async getLobby(){
         let query = "SELECT user_id, person_id, experience FROM gamers WHERE person_id IN (1, 2, 3, 4, 5, 6, 7, 8, 9);";
-        return await this.queryHandler(query, []);
+        return (await this.queryHandler(query, [])).rows;
     }
 
     async getTankByUserId(userId) {
         let query = `SELECT id, x, y, angle, hp, tower_angle, commander_angle, commander_id, driver_id, gunner_id FROM tanks
-        WHERE commander_id=? OR gunner_id = ? OR driver_id =?`;
-        return await this.queryHandler(query, [userId, userId, userId], true);
+        WHERE commander_id=$1 OR gunner_id = $2 OR driver_id =$3`;
+        return (await this.queryHandler(query, [userId, userId, userId], true)).rows;
     }
 
     async getTankByGunnerId(gunner_id) {
@@ -492,7 +493,7 @@ class DB {
     }
 
     async setStartGameTimestamp(){
-        let query = "UPDATE game SET startGameTimestamp=ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) WHERE id=1";
+        let query = "UPDATE game SET \"startGameTimestamp\"=ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) WHERE id=1";
         await this.queryHandler(query, []);
     }
 
@@ -502,21 +503,21 @@ class DB {
     
     async checkLiveGamer(){
         let query = "SELECT CASE WHEN EXISTS (SELECT 1 FROM gamers WHERE status='alive') THEN TRUE ELSE FALSE END AS status_exists;";
-        return await this.queryHandler(query,[]);
+        return (await this.queryHandler(query,[])).rows;
     }
 
     async deleteRole(personId) {
-        let query = "UPDATE gamers SET person_id=-1, status = 'lobby' WHERE person_id = ?";
+        let query = "UPDATE gamers SET person_id=-1, status = 'lobby' WHERE person_id = $1";
         await this.queryHandler(query, [personId]);
     }
 
     async addHeavyTank(driverId, gunnerId, commanderId, hp){
-        let query = "INSERT INTO tanks (type, driver_id, gunner_id, commander_id, hp, x, y, reload_timestamp) VALUES (1, ?, ?, ?, ?, 5, 5, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000));";
+        let query = "INSERT INTO tanks (type, driver_id, gunner_id, commander_id, hp, x, y, reload_timestamp) VALUES (1, $1, $2, $3, $4, 5, 5, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000));";
         await this.queryHandler(query, [driverId, gunnerId, commanderId, hp]);
     }
 
     async addMiddleTank(driverId, gunnerId, hp){
-        let query = "INSERT INTO tanks (type, driver_id, gunner_id, hp, x, y, reload_timestamp) VALUES (0, ?, ?, ?, 5, 5, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000));";
+        let query = "INSERT INTO tanks (type, driver_id, gunner_id, hp, x, y, reload_timestamp) VALUES (0, $1, $2, $3, 5, 5, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000));";
         await this.queryHandler(query, [driverId, gunnerId, hp]);
     }
 
@@ -532,7 +533,7 @@ class DB {
         let query = `SELECT p.id AS person_id, p.name AS name, p.level as level, r.experience AS exp 
         FROM persons p
         JOIN ranks r ON p.level = r.id`;
-        return await this.queryHandler(query, []);//All
+        return (await this.queryHandler(query, [])).rows;//All
     }
 
     async getPersonParamsById(id) {
@@ -544,13 +545,13 @@ class DB {
     }
 
     async deleteTank(tankId){
-        let query = "DELETE FROM tank_lobby WHERE id = ?";
+        let query = "DELETE FROM tank_lobby WHERE id = $1";
         await this.queryHandler(query, [tankId]);
     }
 
     async getGamers() {
         let query = "SELECT person_id, x, y, angle  FROM gamers WHERE person_id IN (1, 2, 8, 9) AND status='alive'";
-        return await this.queryHandler(query, []);//All
+        return (await this.queryHandler(query, [])).rows;//All
     }
 
     getGamerStatus(id) {
@@ -562,12 +563,12 @@ class DB {
     }
 
     async tankExit(userId) {
-        let query = "DELETE FROM tank_lobby WHERE user_id = ?";
+        let query = "DELETE FROM tank_lobby WHERE user_id = $1";
         await this.queryHandler(query, [userId]);
     }
 
     async endTankGame(tankId){
-        let query = "DELETE FROM tanks WHERE id = ?";
+        let query = "DELETE FROM tanks WHERE id = $1";
         await this.queryHandler(query, [tankId]);
     }
 
@@ -577,11 +578,11 @@ class DB {
     }
 
     async setMobBodies(x, y, angle, type){
-        this.orm.insert('bodies', 'x, y, angle, type, isMob', [x, y, angle, type, true])
+        this.orm.insert('bodies', 'x, y, angle, type, \"isMob\"', [x, y, angle, type, true])
     }
 
     async getBodies(){
-        return this.orm.all('bodies', {}, 'x, y, angle, type, isMob');
+        return this.orm.all('bodies', {}, 'x, y, angle, type, \"isMob\"');
     }
 
     async setBodies(bodies){
@@ -597,38 +598,38 @@ class DB {
     
         let casesString = cases.join(", ");
     
-        let query = `INSERT INTO bodies (x, y, angle, type, isMob) VALUES ${casesString}`;
+        let query = `INSERT INTO bodies (x, y, angle, type, \"isMob\") VALUES ${casesString}`;
         await this.queryHandler(query, []);
     }
 
     /*Знаменосец*/
     async getBannerman(){
-        let query = `SELECT ga.x AS x, ga.y AS y, g.mobBase_x AS mobBaseX, g.mobBase_y AS mobBaseY,
+        let query = `SELECT ga.x AS x, ga.y AS y, g.\"mobBase_x\" AS mobBaseX, g.\"mobBase_y\" AS mobBaseY,
         g.base_radius AS baseRadius
         FROM game g JOIN gamers ga ON ga.person_id=2`;
-        return await this.queryHandler(query, []);
+        return (await this.queryHandler(query, [])).rows;
     }
 
     async getMobBannerman(){
-        let query = `SELECT m.x AS x, m.y AS y, g.mobBase_x AS mobBaseX, g.mobBase_y AS mobeBaseY,
+        let query = `SELECT m.x AS x, m.y AS y, g.\"mobBase_x\" AS mobBaseX, g.\"mobBase_y\" AS mobeBaseY,
         g.playersBase_x AS playerBaseX, g.playersBase_y AS playersBaseY, g.base_radius AS baseRadius
         FROM game g JOIN mobs m ON m.person_id=2`;
-        return await this.queryHandler(query, []);
+        return (await this.queryHandler(query, [])).rows;
     }
 
     async getBannermanTime() {
         let query = "SELECT banner_timestamp, NOW()+ 0 as nowTime, banner_timeout FROM game WHERE id=1";
-        return await this.queryHandler(query, []);
+        return (await this.queryHandler(query, [])).rows;
     }
 
     async updatePlayerBannermanTimestamp(timestamp) {
         
-        let query = "UPDATE game SET pBanner_timestamp=? WHERE id=1";
+        let query = "UPDATE game SET pBanner_timestamp=$1 WHERE id=1";
         return await this.queryHandler(query, [timestamp]);
     }
 
     async updateMobBannermanTimestamp(timestamp) {
-        let query = "UPDATE game SET mBanner_timestamp=? WHERE id=1";
+        let query = "UPDATE game SET mBanner_timestamp=$1 WHERE id=1";
         return await this.queryHandler(query, [timestamp]);
     }
 
@@ -638,22 +639,22 @@ class DB {
 
     /* Объекты */
     async getObjects() {
-        let query = "SELECT type, x, y, sizeX, sizeY, angle FROM objects WHERE status in ('a', 'i')";
-        return await this.queryHandler(query, []);
+        let query = "SELECT type, x, y, \"sizeX\", \"sizeY\", angle FROM objects WHERE status in ('a', 'i')";
+        return (await this.queryHandler(query, [])).rows;
     }
 
     async getAllObjects() {
-        let query = "SELECT id, hp, x, y, sizeX, sizeY, status FROM objects WHERE status in('a', 'i')";
-        return await this.queryHandler(query, []);
+        let query = "SELECT id, hp, x, y, \"sizeX\", \"sizeY\", status FROM objects WHERE status in('a', 'i')";
+        return (await this.queryHandler(query, [])).rows;
     }
 
     async deleteObject(objectId) {
-        let query = "UPDATE objects SET hp = 0, status='d' WHERE id = ?";
+        let query = "UPDATE objects SET hp = 0, status='d' WHERE id = $1";
         await this.queryHandler(query, [objectId]);
     }
 
     async updateObjectHp(id, newHp) {
-        let query = "UPDATE objects SET hp = ? WHERE id = ?";
+        let query = "UPDATE objects SET hp = $1 WHERE id = $2";
         await this.queryHandler(query, [newHp, id]);
     }
 
@@ -715,17 +716,17 @@ class DB {
     }
 
     async updateOneExp(exp, id){
-        let query = "UPDATE gamers SET experience = experience + ? WHERE id=?";
+        let query = "UPDATE gamers SET experience = experience + $1 WHERE id=$2";
         await this.queryHandler(query, [exp, userId]);
     }
 
     async addBannermanExp(exp) {
-        let query = "UPDATE gamers SET experience = experience + ? WHERE person_id=2";
+        let query = "UPDATE gamers SET experience = experience + $1 WHERE person_id=2";
         await this.queryHandler(query, [exp]);
     }
 
     async addWinnerExp(exp) {
-        let query = "UPDATE gamers SET experience = experience + ? WHERE status='a'";
+        let query = "UPDATE gamers SET experience = experience + $1 WHERE status='a'";
         await this.queryHandler(query, [exp]);
     }
 }

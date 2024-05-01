@@ -693,6 +693,7 @@ async playerBannermanInZone() {
     async fire(user_id, x, y, angle) {
         let gamer = await this.db.getGamerAndPersonByUserId(user_id);
         gamer = gamer[0];
+        console.log(gamer);
         if(!gamer) return true;
         if([3, 7].includes(gamer.person_id)) {
             await this.tankFire(user_id, gamer, x, y, angle);
