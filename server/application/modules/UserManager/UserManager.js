@@ -1,14 +1,11 @@
 const BaseModule = require('../BaseModule/BaseModule');
+const User = require('./User');
 const { SOCKETS } = require("../../../config.js");
 
 class UserManager extends BaseModule {
-    constructor(db, io, Mediator) {
-        super(db, io, Mediator);
-        const { GET_USER } = Mediator.getTriggerTypes();
-
-        this.Mediator.set(GET_USER, async (token) => {
-            return await this.db.getUserByToken(token);
-        });
+    constructor(db, io, mediator) {
+        super(db, io, mediator);
+        this.users = {};
 
         if (!this.io) {
             return;
@@ -18,76 +15,104 @@ class UserManager extends BaseModule {
             socket.on(SOCKETS.REGISTRATION, (data) => this.registration(data, socket));
             socket.on(SOCKETS.LOGIN, (data) => this.login(data, socket));
             socket.on(SOCKETS.LOGOUT, (data) => this.logout(data, socket));
-            socket.on(SOCKETS.UPDATE_PASSWORD, (data) => this.updatePassword(data, socket));
             socket.on(SOCKETS.TOKEN_VERIFICATION, (data) => this.tokenVerification(data, socket)); 
-            socket.on('disconnect', () => console.log('disconnect', socket.id));
+            socket.on('disconnect', () => console.log('disconnect'));
+            // socket.on('disconnect', () => this.logout(this.getUserBySocketId(socket.id).token));
         });
 
-
+        this.mediator.set(this.TRIGGERS.GET_USER, (token) => this._getUserByToken(token));
+        this.mediator.set(this.TRIGGERS.ALL_USERS, () => this.users);
+    
     }
 
-    async registration({login, nickname, hash}, socket) {
-        let pattern = /^[A-Za-zА-Яа-я0-9]{6,15}$/; //Выражение для логина
-        let pattern1 = /^[A-Za-zА-Яа-я0-9]{3,16}$/; //Выражение для никнейма
-        if (pattern.test(login) && pattern1.test(nickname)) {
-            const checkUser = await this.db.getUserByLogin(login);
-            if (checkUser.length !== 0) socket.emit(SOCKETS.REGISTRATION, this.answer.bad(460));
-            const token = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
-            await this.db.addUser(login, nickname, hash, token);
-            const user = (await this.db.getUserByToken(token))[0];
-            await this.db.addGamer(user.id);
-            socket.emit(SOCKETS.REGISTRATION, this.answer.good({token: token}));      
-            return ;
+    _getUserByToken(token) {
+        if (token) {
+            return Object.values(this.users).find(user => user.token === token);
         }
-        socket.emit(SOCKETS.ERROR, this.answer.bad(413));
-        
+        return null;
     }
 
-    async login({login, hash, rnd}, socket) {
-        const token = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
-        const user = (await this.db.getUserByLogin(login))[0];
-        if (user && user.login) {
-            const hashS = this.crypto.createHash('sha256').update(user.password + rnd).digest('hex'); // Хэш штрих. Строка сгенерированая с помощью хранящейсяв базе хэш-суммы
-            if (hash == hashS) {
-                await this.db.updateToken(user.id, token);
-                socket.emit(SOCKETS.LOGIN, this.answer.good({ token: token }));
-                return ; 
+    getUserBySocketId(socketId) {
+        if (socketId) {
+            return Object.values(this.users).find(user => user.socketId === socketId);
+        }
+        return null;
+    }
+
+    async registration(data = {}, socket) {
+        const {login, nickname, hash} = data;
+        if (login && nickname && hash) {
+            const user = new User({
+                db: this.db,
+                crypto: this.crypto,
+                uuid: this.uuid,
+                socketId: socket.id
+            });
+            if (await user.registration(login, nickname, hash)) {
+                this.users[user.id] = user;
+                socket.emit(SOCKETS.LOGIN, this.answer.good({ ...user.get() }));
+                return;
             }
-            socket.emit(SOCKETS.ERROR, this.answer.bad(403));
+            return;
+        }
+        socket.emit(SOCKETS.ERROR, this.answer.bad(461));
+    }
+
+    async login(data = {}, socket) {
+        const { login, hash, rnd } = data;
+        if (login && hash && rnd) {
+            const user = new User({
+                db: this.db,
+                crypto: this.crypto,
+                uuid: this.uuid,
+                socketId: socket.id
+            });
+            if (await user.login(login, hash, rnd)) {
+                this.users[user.id] = user;
+                socket.emit(SOCKETS.LOGIN, this.answer.good({ ...user.get() }));
+                return;
+            }
+            return;
         }
         socket.emit(SOCKETS.ERROR, this.answer.bad(461));
     }
 
 
-    async logout({token}, socket) {
-        const user = (await this.db.getUserByToken(token))[0];
-        if (user && user.token) {
-            await this.db.deleteToken(user.id);
-            socket.emit(SOCKETS.LOGOUT, this.answer.good(true));
-            return ;
+    async logout(data = {}, socket) {
+        const { token } = data;
+        const user = this._getUserByToken(token);
+        if (user) {
+            if (await user.logout(token)) {
+                delete this.users[user.id];
+                socket.emit(SOCKETS.LOGOUT, this.answer.good(true));
+                return;
+            }
+            socket.emit(SOCKETS.ERROR, this.answer.bad(413));
+            return;
         }
-        else socket.emit(SOCKETS.ERROR, this.answer.bad(413));
-        await this.db.deleteToken(user.id);
-        socket.emit(SOCKETS.LOGOUT, this.answer.good(true));
-    }
-
-
-    async updatePassword({token, hash}, socket) {
-        const user = await this.db.getUserByToken(token);
-        await this.db.updateToken(user.id, token);
-        await this.db.updatePassword(user.id, hash);
-        socket.emit(SOCKETS.UPDATE_PASSWORD, this.answer.good(true));
+        socket.emit(SOCKETS.ERROR, this.answer.bad(413));
+        return;
     }
     
-    
-
-    async tokenVerification({token}, socket) {
-        const user = (await this.db.getUserByToken(token))[0];
-        if (user && user.token) {
-            socket.emit(SOCKETS.TOKEN_VERIFICATION, this.answer.good(true));
-            return ;
+    // не приходит токен
+    async tokenVerification(data = {}, socket) {
+        const { token } = data;
+        if(token) {
+            const user = new User({
+                db: this.db,
+                crypto: this.crypto,
+                uuid: this.uuid,
+                socketId: socket.id
+            });
+            if (await user.tokenVerification(token)) {
+                this.users[user.id] = user;
+                socket.emit(SOCKETS.TOKEN_VERIFICATION, this.answer.good(true));
+                return;
+            }
+            socket.emit(SOCKETS.ERROR, this.answer.bad(401));
+            return;
         }
-        socket.emit(SOCKETS.ERROR, this.answer.bad(401));
+        socket.emit(SOCKETS.ERROR, this.answer.bad(461));
     }
 }
 

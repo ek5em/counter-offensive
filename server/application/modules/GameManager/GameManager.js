@@ -1,16 +1,16 @@
-const { log } = require('console');
 const BaseModule = require('../BaseModule/BaseModule');
+const { SOCKETS } = require("../../../config.js");
 
-class GameManager{
-    constructor(db){
-        // super(s);
-        this.db = db;
-        this.crypto = require('crypto');
-        this.uuid = require('uuid');
+class GameManager extends BaseModule {
+    constructor(db, io, Mediator) {
+        super(db, io, Mediator);
+
         const easystarjs = require('easystarjs');
         this.easystar = new easystarjs.js();
         const GameMath = require('./GameMath');
-        
+
+        this.tanks = {};
+
         this.gameMath = new GameMath();
         this.hashFlagGamers; // Флаг изменения состояния игроков 
         this.hashFlagBullets; // Флаг изменения состояния пуль
@@ -35,6 +35,8 @@ class GameManager{
         this.updateExpArr = [];
         this.map;
         this.gameMath;
+
+        this.mediator.set(this.TRIGGERS.GAME_TANKS, () => this.tanks);
     }
 
     async tankFire(user_id, gamer, x, y, angle){

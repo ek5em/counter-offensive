@@ -141,7 +141,7 @@ class DB {
         ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) AS timer
         FROM gamers g
         JOIN persons p ON g.person_id = p.id WHERE user_id=?`;
-        return await this.queryHandler(query, userId);
+        return await this.queryHandler(query, [userId]);
     }
 
 
@@ -550,6 +550,11 @@ class DB {
         await this.queryHandler(query, []);
     }
     
+    async getRanks() {
+        let query = "SELECT * FROM ranks";
+        return await this.queryHandler(query, []);
+    }
+
     async getHeavyTank(){
         let query = `SELECT id,
         CASE WHEN driver_id IS NOT NULL THEN 'true' ELSE 'false' END AS Mechanic,
@@ -595,6 +600,11 @@ class DB {
     async getPerson(personId) {
         let query = "SELECT * FROM gamers WHERE person_id=?";
         return await this.queryHandler(query,[personId]);
+    }
+
+    async getAllPersons() {
+        let query = "SELECT * FROM persons";
+        return await this.queryHandler(query,[]);
     }
     
     async checkLiveGamer(){
