@@ -113,6 +113,7 @@ export interface IMapObject extends IPoint {
     r: number;
 }
 
+
 export interface IScene {
     tanks: ITank[] | null;
     gamers: IGamer[] | null;
@@ -121,11 +122,6 @@ export interface IScene {
     bodies: IBody[] | null;
     map: IMapObject[] | null;
     mobBase: IPoint & { radius: number };
-    hashMap: string;
-    hashBodies: string;
-    hashGamers: string;
-    hashMobs: string;
-    hashBullets: string;
     gamer: IUserUnit | null;
     is_dead: boolean;
     is_end: boolean;

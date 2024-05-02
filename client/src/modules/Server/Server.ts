@@ -14,7 +14,6 @@ import {
     IMessage,
 } from "./interfaces";
 import { ESOCKET } from "../../config";
-import { timeStamp } from "console";
 
 export default class Server {
     mediator: Mediator;
@@ -29,8 +28,13 @@ export default class Server {
 
         this.socket = io(HOST);
 
-        const { NEW_MESSAGE, LOGIN, SEND_MESSAGE_STATUS, LOGOUT } =
-            mediator.getTriggerTypes();
+        const {
+            NEW_MESSAGE,
+            LOGIN,
+            SEND_MESSAGE_STATUS,
+            LOGOUT,
+            UPDATE_SCENE,
+        } = mediator.getTriggerTypes();
 
         const { SERVER_ERROR, GO_TO_TANK, UPDATE_USER, LOBBY_UPDATE } =
             this.mediator.getEventTypes();
@@ -81,32 +85,10 @@ export default class Server {
             this.STORE.setLobby(answer.data);
             mediator.call(LOBBY_UPDATE, answer.data);
         });
-    }
 
-    async request<T>(method: string, params: any): Promise<T | null> {
-        try {
-            const str = Object.keys(params)
-                .map(
-                    (key) => `${key}=${params[key] === 0 ? 0.01 : params[key]}`
-                )
-                .join("&");
-            const res = await fetch(
-                `${this.HOST}/server/public/?method=${method}&${str}`
-            );
-            const answer = await res.json();
-
-            if (answer.result === "ok") {
-                return answer.data as T;
-            }
-            /*  this.mediator.call(SERVER_ERROR, answer.error); */
-            return null;
-        } catch (e) {
-            /* this.mediator.call(SERVER_ERROR, {
-                code: 9000,
-                text: "Вообще всё плохо!",
-            }); */
-            return null;
-        }
+        this.socket.on(ESOCKET.GET_SCENE, (answer: IAnswer<IScene>) => {
+            mediator.get(UPDATE_SCENE, answer.data);
+        });
     }
 
     // АВТОРИЗАЦИЯ
@@ -173,8 +155,8 @@ export default class Server {
 
     // ИГРА
 
-    getScene(): Promise<IScene | null> {
-        return this.request("getScene", {
+    getScene() {
+        this.socket.emit(ESOCKET.GET_SCENE, {
             token: this.STORE.getToken(),
         });
     }

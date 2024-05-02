@@ -7,9 +7,12 @@ import {
     IGamer,
     IMapObject,
     IMob,
+    IScene,
     ITank,
     IUserUnit,
 } from "../../../../modules/Server/interfaces";
+import { getUnit } from "../../components/GameCanvas/getUnit";
+import { BaseUnit } from "./Units";
 
 export interface IGameScene {
     tanks: ITank[];
@@ -29,11 +32,12 @@ interface IGame {
 }
 
 export default class Game {
+    user: IUserUnit | null;
+    unit: BaseUnit;
     serverUnit: IUserUnit | null;
     server: Server;
     mediator: Mediator;
     scene: IGameScene;
-    interval: NodeJS.Timer;
     roundEnd: () => void;
 
     constructor({ server, mediator, cbs }: IGame) {
@@ -49,13 +53,13 @@ export default class Game {
             bodies: [],
             map: [],
         };
-        const { THROW_TO_LOBBY, UPDATE_SCENE, UPDATE_TIME } =
+        const { THROW_TO_LOBBY, UPDATE_SCENE, MOVE_UNIT, UPDATE_TIME } =
             mediator.getTriggerTypes();
         let isDead = false,
             isEnd = false;
-        this.interval = setInterval(async () => {
+        /*  this.interval = setInterval(async () => {
             const res = await server.getScene();
-            if (res) {
+             if (res) {
                 const {
                     gametime,
                     is_dead,
@@ -226,9 +230,68 @@ export default class Game {
                 }
             }
         }, requestDelay.game);
+ */
+
+        this.user = server.STORE.getUser()?.is_alive ?? null;
+        this.unit = getUnit(this.user);
+
+        this.mediator.set(UPDATE_SCENE, (scene: IScene) => {
+            const {
+                bodies,
+                bullets,
+                gamer,
+                gamers,
+                gametime,
+                is_dead,
+                is_end,
+                map,
+                mobBase,
+                mobs,
+                tanks,
+            } = scene;
+
+            if (bodies) {
+                this.scene.bodies = bodies;
+            }
+
+            if (bullets) {
+                this.scene.bullets = bullets;
+            }
+
+            if (gamers) {
+                this.scene.gamers = gamers;
+            }
+
+            if (mobs) {
+                this.scene.mobs = mobs;
+            }
+
+            if (tanks) {
+                this.scene.tanks = tanks;
+            }
+
+            if (gamer) {
+                this.serverUnit = gamer;
+            }
+        });
+
+        this.mediator.set(MOVE_UNIT, () => {
+            this.server.unitMotion(this.unit.x, this.unit.y, this.unit.y);
+        });
+
+        this.server.unitMotion(this.unit.x, this.unit.y, this.unit.y);
+        this.server.getScene();
     }
 
     getScene() {
         return this.scene;
+    }
+
+    getUnit() {
+        return this.unit;
+    }
+
+    getUser() {
+        return this.user;
     }
 }

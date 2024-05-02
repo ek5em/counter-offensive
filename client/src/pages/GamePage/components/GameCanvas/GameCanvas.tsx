@@ -47,10 +47,9 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
 
     const canvasId = "canvas";
 
-    const user = server.STORE.getUser()?.is_alive;
-    const unit = getUnit(user);
-
     const updateUnitInterval = setInterval(() => {
+        const unit = game.getUnit();
+        const user = game.getUser();
         const { x, y, angle } = unit;
         if (user) {
             const userUnit = user.personId;
@@ -127,7 +126,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         return () => {
             canvas = null;
             tracer = null;
-            clearInterval(game.interval);
             clearInterval(updateUnitInterval);
         };
     });
@@ -258,6 +256,8 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const makeShot = () => {
+        const user = game.getUser();
+        const unit = game.getUnit();
         const { x, y, angle, weaponLength } = unit;
         if (user) {
             const userUnit = user.personId;
@@ -641,6 +641,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const showEnemyBase = (base: IMapObject) => {
+        const unit = game.getUnit();
         const { left, bottom, width, height } = WIN;
         const vectorToBase = {
             x: base.x - unit.x,
@@ -678,6 +679,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const drawScene = (scene: IGameScene) => {
+        const unit = game.getUnit();
         const { bodies, bullets, gamers, mobs, map, tanks } = scene;
         drawObjects(map);
         drawBodies(bodies);
@@ -693,7 +695,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const updateWIN = () => {
-        const { x, y } = unit;
+        const { x, y } = game.getUnit();
         const { left, right, down, up } = visualBorders;
         WIN.left = x - halfW;
         WIN.bottom = y - halfH;
@@ -719,6 +721,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const updateUnit = (time: number) => {
+        const unit = game.getUnit();
         if (game.serverUnit) {
             if (canvas) {
                 const { x, y } = unit;
