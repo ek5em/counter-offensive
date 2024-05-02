@@ -35,7 +35,9 @@ class ChatManager extends BaseModule {
         const user = await this.mediator.get(this.TRIGGERS.GET_USER, token);
 
         if (user && user.token) {
-            socket.emit(SOCKETS.GET_MESSAGE, this.answer.good(await this.db.getMessages()));
+            const result = await this.db.getMessages();
+            console.log(result);
+            socket.emit(SOCKETS.GET_MESSAGE, this.answer.good(result));
             return;
         }
         socket.emit(SOCKETS.ERROR, this.answer.bad(401));   

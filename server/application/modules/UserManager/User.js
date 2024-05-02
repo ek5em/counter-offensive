@@ -45,14 +45,14 @@ class User {
         let pattern1 = /^[A-Za-zА-Яа-я0-9]{3,16}$/; //Выражение для никнейма
         if (pattern.test(login) && pattern1.test(nickname)) {
             const checkUser = await this.db.getUserByLogin(login);
-            if (checkUser.length !== 0) {
+            if (checkUser) {
                 return false;
             }
             const token = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
             await this.db.addUser(login, nickname, hash, token);
-            const user = (await this.db.getUserByToken(token))[0];
+            const user = await this.db.getUserByToken(token);
             await this.db.addGamer(user.id);
-            const gamer = (await this.db.getGamerById(user.id))[0];
+            const gamer = await this.db.getGamerById(user.id);
             this._includeUserData(user, token);
             this._includeGamerData(gamer);
             return true;
@@ -62,12 +62,12 @@ class User {
 
     async login(login, hash, rnd) {
         const token = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
-        const user = (await this.db.getUserByLogin(login))[0];
+        const user = await this.db.getUserByLogin(login);
         if (user && user.login) {
             const hashS = this.crypto.createHash('sha256').update(user.password + rnd).digest('hex'); // Хэш штрих. Строка сгенерированая с помощью хранящейсяв базе хэш-суммы
             if (hash == hashS) {
                 await this.db.updateToken(user.id, token);
-                const gamer = (await this.db.getGamerById(user.id))[0];
+                const gamer = await this.db.getGamerById(user.id);
                 this._includeUserData(user, token);
                 this._includeGamerData(gamer);
                 return true;
@@ -85,9 +85,9 @@ class User {
     }
 
     async tokenVerification(token) {
-        const user = (await this.db.getUserByToken(token))[0];
+        const user = await this.db.getUserByToken(token);
         if (token === user.token) {
-            const gamer = (await this.db.getGamerById(user.id))[0];
+            const gamer = await this.db.getGamerById(user.id);
             this._includeGamerData(gamer);
             this._includeUserData(user, user.token);
             return true;
