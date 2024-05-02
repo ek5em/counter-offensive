@@ -1,10 +1,8 @@
-import { useContext } from "react";
 import { privateRoutes, publicRoutes } from "../router";
-import { ServerContext } from "../App";
+import { useGlobalContext } from "./useGlobalContext";
 
 export const useGetRouter = () => {
-    const server = useContext(ServerContext);
-
+    const { server } = useGlobalContext();
     return () => {
         return server.STORE.getToken() ? privateRoutes : publicRoutes;
     };

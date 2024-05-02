@@ -1,6 +1,5 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC,  useEffect, useState } from "react";
 import cn from "classnames";
-import { MediatorContext, ServerContext } from "../../App";
 import {
     getRankImg,
     getRankName,
@@ -8,6 +7,7 @@ import {
     getExpPersents,
 } from "../../helpers";
 import { IGamerInfo } from "../../modules/Server/interfaces";
+import { useGlobalContext } from "../../hooks/useGlobalContext";
 import { Logo } from "../UI";
 import { ELogo } from "../UI/Logo/Logo";
 import DossierImage from "./dossierImage.png";
@@ -16,9 +16,8 @@ import styles from "./Header.module.scss";
 
 export const Header: FC = () => {
     const [user, setUser] = useState<IGamerInfo | null>(null);
+    const { server, mediator } = useGlobalContext();
 
-    const server = useContext(ServerContext);
-    const mediator = useContext(MediatorContext);
 
     useEffect(() => {
         const user = server.STORE.getUser();
@@ -54,7 +53,7 @@ export const Header: FC = () => {
                                 getExpPersents(
                                     user?.gamer_exp,
                                     user?.next_rank
-                                ) === 1,
+                                ) > 0.99,
                         })}
                         style={{
                             width: `${

@@ -1,5 +1,4 @@
 import {
-    useContext,
     forwardRef,
     useEffect,
     useRef,
@@ -8,13 +7,13 @@ import {
     DetailedHTMLProps,
 } from "react";
 import cn from "classnames";
-import { MediatorContext, ServerContext } from "../../App";
+import { useGlobalContext } from "../../hooks/useGlobalContext";
 import { IMessage } from "../../modules/Server/interfaces";
+import { getRankImg } from "../../helpers";
 import { sendMessage, chatIcon } from "./assets";
+import { closeIcon } from "../../assets/png";
 
 import styles from "./Chat.module.scss";
-import { getRankImg } from "../../helpers";
-import { closeIcon } from "../../assets/png";
 
 export enum EChat {
     lobby = "lobby",
@@ -30,8 +29,8 @@ interface IChatProps
 
 export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
     ({ chatType, isOpen, setIsOpen }, ref) => {
-        const server = useContext(ServerContext);
-        const mediator = useContext(MediatorContext);
+        const { server, mediator } = useGlobalContext();
+
 
         const [messages, setMessages] = useState<IMessage[]>([]);
         const [inputText, setInputText] = useState<string>("");
@@ -57,7 +56,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
 
         useEffect(() => {
             scrollToBottom();
-        });
+        }, [isOpen]);
 
         const scrollToBottom = () => {
             messagesEndRef.current &&

@@ -1,14 +1,17 @@
 @import "../../../../styles/root.scss";
 @import "../../../../styles/mixins.scss";
 
+$blockWidth: 90px;
+
 .time {
     position: absolute;
     user-select: none;
     left: 50%;
     top: 5px;
-    transform: translate(-50%);
 
     span {
+        display: block;
+        width: $blockWidth;
         @include text(28px, "Pangolin");
         @include border(1px, 0);
         text-align: center;

@@ -1,6 +1,6 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { Link } from "react-router-dom";
-import { MediatorContext, ServerContext } from "../../../App";
+import { useGlobalContext } from "../../../hooks/useGlobalContext";
 import { IUserData } from "../userData.interface";
 import {
     Button,
@@ -19,8 +19,7 @@ const RegistrationPage: FC = () => {
         password: "",
         nickName: "",
     });
-    const server = useContext(ServerContext);
-    const mediator = useContext(MediatorContext);
+    const { server, mediator } = useGlobalContext();
 
     const { WARNING } = mediator.getTriggerTypes();
 

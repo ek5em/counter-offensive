@@ -1,10 +1,10 @@
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { MediatorContext } from "../App";
 import { IError } from "../modules/Server/interfaces";
+import { useGlobalContext } from "./useGlobalContext";
 
 export const useErrorHandler = () => {
-    const mediator = useContext(MediatorContext);
+    const {  mediator } = useGlobalContext();
+
     const navigate = useNavigate();
     const { SERVER_ERROR } = mediator.getEventTypes();
     const { WARNING, AUTH_ERROR, ROLE_ERROR } = mediator.getTriggerTypes();

@@ -1,11 +1,11 @@
-import { FC, useContext, useEffect, useState } from "react";
-import { MediatorContext } from "../../../../App";
+import { FC, useEffect, useState } from "react";
+import { useGlobalContext } from "../../../../hooks/useGlobalContext";
 import { timeConvert } from "../../../../helpers";
 
 import styles from "./GameTime.module.scss";
 
 const GameTime: FC = () => {
-    const mediator = useContext(MediatorContext);
+    const { mediator } = useGlobalContext();
     const { UPDATE_TIME } = mediator.getTriggerTypes();
     const [time, setTime] = useState<number>(0);
 

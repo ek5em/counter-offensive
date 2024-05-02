@@ -16,7 +16,7 @@ export const getRankImg = (rank: ERank | null = null) => {
             return fourthRank;
         }
         default: {
-            return "";
+            return firstRank;
         }
     }
 };

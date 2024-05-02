@@ -1,6 +1,6 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import cn from "classnames";
-import { MediatorContext } from "../../App";
+import { useGlobalContext } from "../../hooks/useGlobalContext";
 
 import styles from "./Modal.module.scss";
 
@@ -15,7 +15,8 @@ export const Modal: FC = () => {
         id: "",
     });
 
-    const mediator = useContext(MediatorContext);
+    const {  mediator } = useGlobalContext();
+
     const { ROLE_ERROR } = mediator.getTriggerTypes();
 
     useEffect(() => {

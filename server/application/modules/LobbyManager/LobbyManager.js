@@ -105,12 +105,13 @@ class LobbyManager extends BaseModule {
     addTank(tank, tankId) {
         const gameTanks = this.mediator.get(this.TRIGGERS.GAME_TANKS);
         const gameTank = new Tank({ db: this.db });
-        if (tank.type === 1) {
+        if (tank.type) {
             gameTank.addTank(tank.type,  tank.driverId, tank.gunnerId)
+            delete this.middleTanks[tankId];
         } else {
             gameTank.addTank(tank.type,  tank.driverId, tank.gunnerId, tank.commanderId)
+            delete this.heavyTanks[tankId];
         }
-        delete this.tanks[tankId];
         gameTanks[tank.id] = gameTank;
     }
 
@@ -122,7 +123,7 @@ class LobbyManager extends BaseModule {
             }
         }
 
-        for (const [id, tank] of Object.entries(this.heavyTanks)) {
+        for (const [id, tank] of Object.entries(this.middleTanks)) {
             if (!tank.driverId && !tank.gunnerId) {
                 delete this.middleTanks[id]
             }
@@ -130,7 +131,9 @@ class LobbyManager extends BaseModule {
     }
 
     checkTank(tankId) {
-        const tank = this.tanks[tankId];
+        const tanks = { ...this.heavyTanks, ...this.middleTanks };
+
+        const tank = tanks[tankId];
         if (
             (tank.type && tank.gunnerId && tank.driverId) ||
             (!tank.type &&
@@ -182,8 +185,11 @@ class LobbyManager extends BaseModule {
             return 236;
         }
 
+        const tanks = { ...this.heavyTanks, ...this.middleTanks };
+
         // Проверка наличия танкайди
-        if (!tankId || (tankId && !this.tanks[tankId])){
+        if (!tankId){
+            console.log('dasdsadasd');
             const tank = new TankLobby({
                 db: this.db, 
                 crypto: this.crypto,
@@ -200,7 +206,7 @@ class LobbyManager extends BaseModule {
             return true;
         }
 
-        const tank = this.tanks[tankId];
+        const tank = tanks[tankId];
         let is_free = false;
         switch (roleId) {
             case 3:
@@ -311,7 +317,7 @@ class LobbyManager extends BaseModule {
                     // Нужно сделать так что бы всем танкам отправлялось сообщение если танк заполнился
                     socket.emit(
                         SOCKETS.SET_GAMER_ROLE,
-                        this.answer.good({ tankId: tank.id, tankType: tank.type })
+                        this.answer.good({ tankId: Number(tank.id), tankType: tank.type })
                     );
                     this.updateLobbyToAll();
                 }
@@ -328,7 +334,14 @@ class LobbyManager extends BaseModule {
 
     getTankByUserId(userId){
         const tanks = { ...this.heavyTanks, ...this.middleTanks };
-        return Object.values(tanks).find(tank => tank.driverId === userId || tank.gunnerId === userId || tank.commanderId === userId);
+        for (const [id, tank] of Object.entries(tanks)) {
+            if(tank.driverId === userId || tank.gunnerId === userId || tank.commanderId === userId) {
+                return {
+                    ...tank,
+                    id
+                }
+            }
+        }
     }
 
     getGamer(user) {
@@ -363,23 +376,23 @@ class LobbyManager extends BaseModule {
     }
 
     getTanks() {
-        let heavyTank = [];
-        let middleTank = [];
+        const heavyTank = [];
+        const middleTank = [];
     
-        for (let id in this.heavyTanks) {
-            let tank = this.heavyTanks[id];
+        for (const id in this.heavyTanks) {
+            const tank = this.heavyTanks[id];
             heavyTank.push({
-                id,
+                id: Number(id),
                 Mechanic: !!tank.driverId,
                 Gunner: !!tank.gunnerId,
                 Commander: !!tank.commanderId,
             });
         }
     
-        for (let id in this.middleTanks) {
-            let tank = this.middleTanks[id];
+        for (const id in this.middleTanks) {
+            const tank = this.middleTanks[id];
             middleTank.push({
-                id,
+                id: Number(id),
                 Mechanic: !!tank.driverId,
                 Gunner: !!tank.gunnerId,
             });

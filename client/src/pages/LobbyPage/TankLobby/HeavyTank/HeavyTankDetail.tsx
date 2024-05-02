@@ -1,25 +1,23 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import cn from "classnames";
+import { useGlobalContext } from "../../../../hooks/useGlobalContext";
 import { useSetRoleHandler } from "../../../../hooks/useSetRoleHandler";
-import { MediatorContext, ServerContext } from "../../../../App";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
 import { EGamerRole, IHeavyTank } from "../../../../modules/Server/interfaces";
-
 import { ReactComponent as HeavyTank } from "./heavyTank.svg";
-
-import styles from "../Detail.module.scss";
 import { closeIcon } from "../../../../assets/png";
 
+import styles from "../Detail.module.scss";
+
 const HeavyTankDetail: FC = () => {
+    const { server, mediator } = useGlobalContext();
     const [tank, setTank] = useState<IHeavyTank>({
         Commander: false,
         Gunner: false,
         Mechanic: false,
         id: 0,
     });
-    const server = useContext(ServerContext);
-    const mediator = useContext(MediatorContext);
     const navigate = useNavigate();
     const params = useParams();
     const setRoleHandler = useSetRoleHandler();
@@ -27,17 +25,28 @@ const HeavyTankDetail: FC = () => {
     useEffect(() => {
         const { GO_TO_TANK, LOBBY_UPDATE } = mediator.getEventTypes();
 
+        mediator.subscribe(LOBBY_UPDATE, () => {
+            const newTank = server.STORE.getLobby().tanks.heavyTank.find(
+                (tank) => tank.id === Number(params.id)
+            );
+            newTank && setTank(newTank);
+        });
+
         mediator.subscribe(GO_TO_TANK, (newTank: { tankId: number }) => {
             if (newTank.tankId !== tank.id) {
-                tankUpdate(newTank.tankId);
+                const tanks = server.STORE.getLobby().tanks.heavyTank;
+                setTank(
+                    tanks.find((tank) => tank.id === newTank.tankId) ?? {
+                        ...tank,
+                    }
+                );
             }
         });
 
-        mediator.subscribe(LOBBY_UPDATE, () => {
-            tankUpdate();
-        });
-
-        tankUpdate();
+        const newTank = server.STORE.getLobby().tanks.heavyTank.find(
+            (tank) => tank.id === Number(params.id)
+        );
+        newTank && setTank(newTank);
     }, []);
 
     const tankUpdate = (id: number | null = null) => {

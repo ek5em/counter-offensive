@@ -28,8 +28,13 @@ export default class Server {
 
         this.socket = io(HOST);
 
-        const { NEW_MESSAGE, LOGIN, SEND_MESSAGE_STATUS, LOGOUT } =
-            mediator.getTriggerTypes();
+        const {
+            NEW_MESSAGE,
+            LOGIN,
+            SEND_MESSAGE_STATUS,
+            LOGOUT,
+            UPDATE_SCENE,
+        } = mediator.getTriggerTypes();
 
         const { SERVER_ERROR, GO_TO_TANK, UPDATE_USER, LOBBY_UPDATE } =
             this.mediator.getEventTypes();
@@ -80,32 +85,10 @@ export default class Server {
             this.STORE.setLobby(answer.data);
             mediator.call(LOBBY_UPDATE, answer.data);
         });
-    }
 
-    async request<T>(method: string, params: any): Promise<T | null> {
-        try {
-            const str = Object.keys(params)
-                .map(
-                    (key) => `${key}=${params[key] === 0 ? 0.01 : params[key]}`
-                )
-                .join("&");
-            const res = await fetch(
-                `${this.HOST}/server/public/?method=${method}&${str}`
-            );
-            const answer = await res.json();
-
-            if (answer.result === "ok") {
-                return answer.data as T;
-            }
-            /*  this.mediator.call(SERVER_ERROR, answer.error); */
-            return null;
-        } catch (e) {
-            /* this.mediator.call(SERVER_ERROR, {
-                code: 9000,
-                text: "Вообще всё плохо!",
-            }); */
-            return null;
-        }
+        this.socket.on(ESOCKET.GET_SCENE, (answer: IAnswer<IScene>) => {
+            mediator.get(UPDATE_SCENE, answer.data);
+        });
     }
 
     // АВТОРИЗАЦИЯ
@@ -124,7 +107,6 @@ export default class Server {
     }
 
     tokenVerification() {
-
         this.socket.emit(ESOCKET.TOKEN_VERIFICATION, {
             token: this.STORE.getToken(),
         });
@@ -173,24 +155,20 @@ export default class Server {
 
     // ИГРА
 
-    getScene(): Promise<IScene | null> {
-        return this.request("getScene", {
+    getScene() {
+        this.socket.emit(ESOCKET.GET_SCENE, {
             token: this.STORE.getToken(),
         });
     }
 
-    suicide(): Promise<true | null> {
-        return this.request("suicide", {
+    suicide() {
+        this.socket.emit(ESOCKET.SUICIDE, {
             token: this.STORE.getToken(),
         });
     }
 
-    unitMotion(
-        x: number | null,
-        y: number | null,
-        angle: number
-    ): Promise<true | null> {
-        return this.request("motion", {
+    unitMotion(x: number | null, y: number | null, angle: number) {
+        this.socket.emit(ESOCKET.MOTION, {
             token: this.STORE.getToken(),
             x,
             y,
@@ -198,8 +176,8 @@ export default class Server {
         });
     }
 
-    makeShot(x: number, y: number, angle: number): Promise<true | null> {
-        return this.request("fire", {
+    makeShot(x: number, y: number, angle: number) {
+        this.socket.emit(ESOCKET.FIRE, {
             token: this.STORE.getToken(),
             x,
             y,

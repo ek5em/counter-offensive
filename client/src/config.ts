@@ -31,6 +31,7 @@ export const MEDIATOR = {
         UPDATE_TIME: "UPDATE_TIME",
         NEW_MESSAGE: "NEW_MESSAGE",
         SEND_MESSAGE_STATUS: "SEND_MESSAGE_STATUS",
+        MOVE_UNIT: "MOVE_UNIT",
     },
 };
 

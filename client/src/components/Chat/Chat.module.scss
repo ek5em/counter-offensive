@@ -100,11 +100,10 @@ $messageFontSize: 25px;
 }
 
 .form {
-    @include border(2px, 10px);
+    @include border(1px, 10px);
     display: flex;
     align-items: center;
     position: relative;
-    scale: 1.01;
 }
 
 .input_chat {
@@ -113,7 +112,7 @@ $messageFontSize: 25px;
     border: none;
     outline: none;
     padding: 0 10px;
-    font-size: 19px;
+    font-size: 25px;
 }
 
 .send {
@@ -122,9 +121,4 @@ $messageFontSize: 25px;
     border: none;
     background: none;
     padding: 0;
-
-    img {
-        max-width: 55px;
-        scale: 1.12;
-    }
 }

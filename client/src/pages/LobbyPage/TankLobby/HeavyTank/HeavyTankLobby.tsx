@@ -1,7 +1,7 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import cn from "classnames";
-import { MediatorContext, ServerContext } from "../../../../App";
+import { useGlobalContext } from "../../../../hooks/useGlobalContext";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
 import { Button, EButtonAppearance } from "../../../../components";
 import { IHeavyTank } from "../../../../modules/Server/interfaces";
@@ -9,9 +9,8 @@ import { IHeavyTank } from "../../../../modules/Server/interfaces";
 import styles from "../Lobby.module.scss";
 
 const HeavyTankLobby: FC = () => {
+    const { server, mediator } = useGlobalContext();
     const [tanks, setTanks] = useState<IHeavyTank[]>([]);
-    const server = useContext(ServerContext);
-    const mediator = useContext(MediatorContext);
     const navigate = useNavigate();
 
     useEffect(() => {

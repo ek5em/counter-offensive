@@ -57,14 +57,13 @@ export interface IToken {
 export interface IGamerInfo {
     gamer_exp: number;
     id: number;
-    is_alive: boolean;
+    is_alive: null | IUserUnit;
     level: number;
     login: string;
     next_rank: number;
     nickname: string;
     rank_name: ERank;
     token: string;
-    unit: IUserUnit;
 }
 
 interface IPoint {
@@ -114,6 +113,7 @@ export interface IMapObject extends IPoint {
     r: number;
 }
 
+
 export interface IScene {
     tanks: ITank[] | null;
     gamers: IGamer[] | null;
@@ -122,11 +122,6 @@ export interface IScene {
     bodies: IBody[] | null;
     map: IMapObject[] | null;
     mobBase: IPoint & { radius: number };
-    hashMap: string;
-    hashBodies: string;
-    hashGamers: string;
-    hashMobs: string;
-    hashBullets: string;
     gamer: IUserUnit | null;
     is_dead: boolean;
     is_end: boolean;
@@ -150,16 +145,6 @@ export enum ERank {
     Sergeant = "Sergeant",
     Officer = "Officer",
     General = "General",
-}
-
-export enum EHash {
-    lobby = "lobby",
-    bullets = "bullets",
-    gamers = "gamers",
-    mobs = "mobs",
-    chat = "chat",
-    map = "map",
-    bodies = "bodies",
 }
 
 export enum ETank {

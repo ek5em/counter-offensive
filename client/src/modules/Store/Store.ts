@@ -56,7 +56,8 @@ export default class Store {
     setToken(token: string | null) {
         this.token = token;
         if (token) {
-            document.cookie = `token=${token}; path=/;`;
+            const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 дней
+            document.cookie = `token=${token}; expires=${expirationDate.toUTCString()}; path=/;`;
         } else {
             document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         }

@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import {
     Route,
     RouteProps,
@@ -6,7 +6,7 @@ import {
     useLocation,
     useNavigate,
 } from "react-router-dom";
-import { MediatorContext, ServerContext } from "../../App";
+import { useGlobalContext } from "../../hooks/useGlobalContext";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
 import { useGetRouter } from "../../hooks/useGetRouter";
 import { ETank, IGamerInfo, IToken } from "../../modules/Server/interfaces";
@@ -14,8 +14,7 @@ import { ETank, IGamerInfo, IToken } from "../../modules/Server/interfaces";
 import styles from "./AppRouter.module.scss";
 
 export const AppRouter: FC = () => {
-    const server = useContext(ServerContext);
-    const mediator = useContext(MediatorContext);
+    const { server, mediator } = useGlobalContext();
     const getRouter = useGetRouter();
     const [routes, setRoutes] = useState<RouteProps[]>(getRouter());
     const navigate = useNavigate();
@@ -56,7 +55,8 @@ export const AppRouter: FC = () => {
         );
 
         mediator.subscribe(UPDATE_USER, (user: IGamerInfo) => {
-            console.log(user);
+            server.STORE.setUser(user);
+            // user.is_alive && navigate("/game");
         });
 
         mediator.set(LOGIN, (data: IToken) => {
