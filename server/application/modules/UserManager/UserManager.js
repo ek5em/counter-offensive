@@ -15,9 +15,9 @@ class UserManager extends BaseModule {
             socket.on(SOCKETS.REGISTRATION, (data) => this.registration(data, socket));
             socket.on(SOCKETS.LOGIN, (data) => this.login(data, socket));
             socket.on(SOCKETS.LOGOUT, (data) => this.logout(data, socket));
-            socket.on(SOCKETS.TOKEN_VERIFICATION, (data) => this.tokenVerification(data, socket)); 
-            socket.on('disconnect', () => console.log('disconnect'));
-            // socket.on('disconnect', () => this.logout(this.getUserBySocketId(socket.id).token));
+            socket.on(SOCKETS.TOKEN_VERIFICATION, (data) => this.tokenVerification(data, socket));
+            // Надо обработать дисконект
+            socket.on("disconnect", () => console.log("disconnect", socket.id));
         });
 
         this.mediator.set(this.TRIGGERS.GET_USER, (token) => this._getUserByToken(token));

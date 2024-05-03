@@ -121,12 +121,12 @@ class DB {
 
     async getGame() {
         let query = "SELECT *, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) as timer FROM game WHERE id=1";
-        return (await this.queryHandler(query, [], true)).rows;
+        return (await this.queryHandler(query, [], true));
     }
 
     async getTime() {
         let query = "SELECT timestamp, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) as timer, timeout, banner_timeout, \"pBanner_timestamp\", \"mBanner_timestamp\" FROM game WHERE id=1";
-        return (await this.queryHandler(query, [], true)).rows;
+        return (await this.queryHandler(query, [], true));
     }
 
     async getGamerAndPersonByUserId(userId) {
@@ -134,7 +134,7 @@ class DB {
         ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) AS timer
         FROM gamers g
         JOIN persons p ON g.person_id = p.id WHERE user_id=$1`;
-        return (await this.queryHandler(query, [[userId]])).rows;
+        return (await this.queryHandler(query, [[userId]]));
     }
 
     async updateGamerTimestamp(userId) {
@@ -433,7 +433,7 @@ class DB {
          m.person_id AS personId, m.x AS x, m.y AS y, m.angle AS angle,
          p.\"reloadSpeed\" AS reloadSpeed, p.\"rotateSpeed\" AS rotateSpeed, p.\"movementSpeed\" AS movementSpeed
         FROM mobs m JOIN persons p ON m.person_id=p.id;`;
-        return (await this.queryHandler(query, [])).rows;
+        return (await this.queryHandler(query, []));
     }
 
     /* Лобби */

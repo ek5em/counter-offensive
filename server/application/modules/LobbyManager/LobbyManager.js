@@ -33,6 +33,7 @@ class LobbyManager extends BaseModule {
             );
             socket.on(SOCKETS.GET_LOBBY, (data) => this.getLobby(data, socket));
             socket.on(SOCKETS.SUICIDE, (data) => this.suicide(data, socket));
+            // Надо обработать дисконект
             socket.on("disconnect", () => console.log("disconnect", socket.id));
         });
     }
@@ -118,7 +119,6 @@ class LobbyManager extends BaseModule {
     deleteEmptyTank() {
         for (const [id, tank] of Object.entries(this.heavyTanks)) {
             if (!tank.driverId && !tank.gunnerId && !tank.commanderId) {
-                console.log(this.heavyTanks[id])
                 delete this.heavyTanks[id]
             }
         }
@@ -173,7 +173,6 @@ class LobbyManager extends BaseModule {
     }
 
     setTankRoleHandler(user, roleId, tankId) {
-        console.log(tankId)
         const gamerRank = this.getRankByExperience(user.experience);
         const minPersonLevel = this.roles[roleId];
         // Проверка доступности роли
@@ -189,7 +188,6 @@ class LobbyManager extends BaseModule {
 
         // Проверка наличия танкайди
         if (!tankId){
-            console.log('dasdsadasd');
             const tank = new TankLobby({
                 db: this.db, 
                 crypto: this.crypto,
