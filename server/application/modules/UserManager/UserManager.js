@@ -11,40 +11,37 @@ class UserManager {
         const token = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
         await this.db.addUser(login, nickname, password, token); 
         const user = await this.db.getUserByToken(token);
-        await this.db.addGamer(user[0].id);
-        const rank = await this.db.getRankById(user[0].id);
+        await this.db.addGamer(user.id);
+        const rank = await this.db.getRankById(user.id);
         return {
-            id: user[0].id,
+            id: user.id,
             token: token,
             login: login,
             nickname: nickname,
-            rank_name: rank[0].rank_name,
-            gamer_exp: rank[0].gamer_exp,
-            next_rang: rank[0].next_rang,
-            level: rank[0].level
+            rank_name: rank.rank_name,
+            gamer_exp: rank.gamer_exp,
+            next_rang: rank.next_rang,
+            level: rank.level
         };
     }
 
     async login(login, hash, rnd) {
         const token = this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex');
         const user = await this.db.getUserByLogin(login);
-        if(user[0]){
-            const hashS = this.crypto.createHash('sha256').update(user[0].password+rnd).digest('hex'); // Хэш штрих. Строка сгенерированая с помощью хранящейсяв базе хэш-суммы
+        if(user){
+            const hashS = this.crypto.createHash('sha256').update(user.password+rnd).digest('hex'); // Хэш штрих. Строка сгенерированая с помощью хранящейсяв базе хэш-суммы
             if(hash == hashS){
-                const rank = await this.db.getRankById(user[0].id);
-                await this.db.updateToken(user[0].id, token);
-                console.log(user);
-                console.log(user[0]);
-
+                const rank = await this.db.getRankById(user.id);
+                await this.db.updateToken(user.id, token);
                 return {
-                    'id': user[0].id,
+                    'id': user.id,
                     'token': token,
                     'login': login,
-                    'nickname': user[0].nickname,
-                    'rank_name': rank[0].rank_name,
-                    'gamer_exp': rank[0].gamer_exp,
-                    'next_rang': rank[0].next_rang,
-                    'level': rank[0].level
+                    'nickname': user.nickname,
+                    'rank_name': rank.rank_name,
+                    'gamer_exp': rank.gamer_exp,
+                    'next_rang': rank.next_rang,
+                    'level': rank.level
                 };
             }
             return 403;

@@ -47,7 +47,6 @@ class LobbyManager{
 
     async addTank(tank) {
         await this.db.deleteTank(tank.id);
-        console.log(tank);
         if(tank.type === 1) await this.db.addMiddleTank(tank.driver_id, tank.gunner_id, 250);
         else await this.db.addHeavyTank(tank.driver_id, tank.gunner_id, tank.commander_id, 400);
     }
@@ -56,7 +55,7 @@ class LobbyManager{
 
     async checkTank(tankId) {
         let tank = await this.db.getTankInLobbyById(tankId);
-        tank = tank[0]; 
+        tank = tank; 
         if ((tank.type === 1 && tank.gunner_id && tank.driver_id) ||
         (tank.type === 0 && tank.gunner_id && tank.driver_id && tank.commander_id)){
             this.addTank(tank); 
@@ -80,11 +79,10 @@ class LobbyManager{
         let minPersonLevel = await this.db.getMinPersonLevelById(roleId);
         
         // Проверка доступности роли
-        if(gamerRank[0].level < minPersonLevel[0].level)
+        if(gamerRank.level < minPersonLevel.level)
             return 234;
 
         let tank = [];
-        console.log(tankId);
         
         // Проверка наличия танкайди
         if(tankId && typeof tankId !== 'number') tank = await this.db.getTankInLobbyById(tankId);
@@ -101,14 +99,14 @@ class LobbyManager{
         switch(roleId) {
             case 3:
             case 7:
-                is_free = !tank[0].gunner_id;
+                is_free = !tank.gunner_id;
                 break;
             case 4:
             case 6:
-                is_free = !tank[0].driver_id;
+                is_free = !tank.driver_id;
                 break;
             case 5:
-                is_free = !tank[0].commander_id;
+                is_free = !tank.commander_id;
                 break;
         }
         if (!is_free) 
@@ -131,7 +129,7 @@ class LobbyManager{
         let nowPerson = await this.db.getPerson(roleId);
 
         // Проверка доступности роли
-        if(nowPerson[0] !== undefined)
+        if(nowPerson !== undefined)
             return 237;
 
         // Подготовка к установке роли
@@ -150,10 +148,10 @@ class LobbyManager{
         let minPersonLevel = await this.db.getMinPersonLevelById(roleId);
 
         // Проверка доступности роли
-        if(gamerRank[0].level < minPersonLevel[0].level)
+        if(gamerRank.level < minPersonLevel.level)
             return 234;
 
-        if(nowPerson.length !== 0 && gamerRank[0].gamer_exp < nowPerson[0].experience)
+        if(nowPerson.length !== 0 && gamerRank.gamer_exp < nowPerson.experience)
             return 235;
 
         // Подготовка к установке роли
@@ -185,7 +183,6 @@ class LobbyManager{
             return await this.setFootRoleHandler(userId, role);
         }
         if([3, 4, 5, 6, 7].includes(role)){
-            console.log(role)
             return await this.setTankRoleHandler(userId, role, tankId);
         }
         return 463;
@@ -194,29 +191,29 @@ class LobbyManager{
 
     async getGamer(userId) {
         let gamer = await this.db.getGamerById(userId);
-        if(gamer[0].person_id != -1){
-            let person = await this.db.getPersonParamsById(gamer[0].person_id);
-            if([3, 4, 5, 6, 7].includes(gamer[0].person_id)){
+        if(gamer.person_id != -1){
+            let person = await this.db.getPersonParamsById(gamer.person_id);
+            if([3, 4, 5, 6, 7].includes(gamer.person_id)){
                 let tank = await this.db.getTankByUserId(userId);
-                if(tank[0]){
+                if(tank){
                     return {
-                        "personId": gamer[0].person_id, 
-                        "x": tank[0].x, 
-                        "y": tank[0].y,
-                        "angle": tank[0].angle, 
-                        "towerAngle": tank[0].tower_angle,
-                        "speed": person[0].movementSpeed,
-                        "commanderAngle": tank[0].commander_angle
+                        "personId": gamer.person_id, 
+                        "x": tank.x, 
+                        "y": tank.y,
+                        "angle": tank.angle, 
+                        "towerAngle": tank.tower_angle,
+                        "speed": person.movementSpeed,
+                        "commanderAngle": tank.commander_angle
                     };
                 }
                 else return false;
             }
             return {
-                "personId": gamer[0].person_id, 
-                "x": gamer[0].x,
-                "y": gamer[0].y, 
-                "speed": person[0].movementSpeed,   
-                "angle": gamer[0].angle
+                "personId": gamer.person_id, 
+                "x": gamer.x,
+                "y": gamer.y, 
+                "speed": person.movementSpeed,   
+                "angle": gamer.angle
             };
         }
         else return false;
@@ -251,20 +248,19 @@ class LobbyManager{
 
     async getLobby(userId, oldHash) {
         let hash = await this.db.getGame();  
-        //console.log(hash);     
-        if (hash[0].hashLobby !== oldHash) {
+        if (hash.hashLobby !== oldHash) {
             await this.db.deleteEmptyTank();
             await this.checkRoleAvailability(userId);
             let tanks = await this.getTanks();
             let rank = await this.db.getRankById(userId);
             this.lobbyState.userInfo = {
-                rank_name: rank[0].rank_name,
-                gamer_exp: rank[0].gamer_exp,
-                next_rang: rank[0].next_rang
+                rank_name: rank.rank_name,
+                gamer_exp: rank.gamer_exp,
+                next_rang: rank.next_rang
             };
             this.lobbyState.tanks = tanks;
             this.lobbyState.is_alive = await this.getGamer(userId);
-            return {lobby: this.lobbyState, lobbyHash: hash[0].hashLobby};
+            return {lobby: this.lobbyState, lobbyHash: hash.hashLobby};
         }
         return true;
     }
@@ -281,22 +277,22 @@ class LobbyManager{
     async suicide(userId) {
         let gamer = await this.db.getGamerById(userId);
         let tank = await this.db.getTankByUserId(userId);
-        if(tank[0]){
-            switch(gamer[0].person_id){
+        if(tank){
+            switch(gamer.person_id){
                 case 3:
-                    this.suicideAndEndTanks(tank[0].commander_id, userId, tank[0].driver_id, tank[0].id);
+                    this.suicideAndEndTanks(tank.commander_id, userId, tank.driver_id, tank.id);
                     break;
                 case 4:
-                    this.suicideAndEndTanks(tank[0].commander_id, tank[0].gunner_id, userId, tank[0].id);
+                    this.suicideAndEndTanks(tank.commander_id, tank.gunner_id, userId, tank.id);
                     break;
                 case 5:
-                    this.suicideAndEndTanks(tank[0].driver_id, tank[0].gunner_id, userId, tank[0].id);
+                    this.suicideAndEndTanks(tank.driver_id, tank.gunner_id, userId, tank.id);
                     break;
                 case 6:
-                    this.suicideAndEndTanks(tank[0].gunner_id, userId, null, tank[0].id);
+                    this.suicideAndEndTanks(tank.gunner_id, userId, null, tank.id);
                     break;
                 case 7:
-                    this.suicideAndEndTanks(tank[0].driver_id, userId, null, tank[0].id);
+                    this.suicideAndEndTanks(tank.driver_id, userId, null, tank.id);
                     break;
             }
         }

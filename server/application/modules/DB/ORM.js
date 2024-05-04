@@ -24,7 +24,7 @@ class ORM {
         })
         const result = (await promise).rows;
         // return result ? result[0] : null;
-        return result ? result : null;
+        return result ? result[0] : null;
     }
 
     async all(table, conditions = {}, fields = '*', operand = 'AND', sorting = '', limit = '') {
@@ -63,7 +63,7 @@ class ORM {
             });
         })
         const result = (await promise).rows;
-        return result ? result : null;
+        return result ? result[0] : null;
     }
 
     async update(table, conditions = {}, fields = '*', newData = [], operand = 'AND') {  
@@ -85,7 +85,6 @@ class ORM {
             const query = `UPDATE ${table} SET ${updateFields.join(`, `)} WHERE ${cond.join(`${operand}`)}`;
             this.db.query(query, values, (error, results) => {
                 if (error) {
-                    console.log("error")
                     reject(error);
                 } else {
                     resolve(results);

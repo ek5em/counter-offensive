@@ -15,9 +15,9 @@ class ChatManager {
 
     async getMessages(oldHash) {
         const hash = await this.db.getGame();
-        if (hash[0].chatHash !== oldHash) {
+        if (hash.chatHash !== oldHash) {
             const messages = await this.db.getMessages();
-            return {"messages": messages, "chatHash": hash[0].chatHash};
+            return {"messages": messages, "chatHash": hash.chatHash};
         }
         return true;
     }

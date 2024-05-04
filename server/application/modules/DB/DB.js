@@ -32,7 +32,7 @@ class DB {
             });
         })
         let result = await promise;
-        return result.rows;
+        return (result.rows)[0];
     }
     
  /* Юзер */
@@ -79,7 +79,7 @@ class DB {
         JOIN ranks next_r ON next_r.id = r.id + 1
         WHERE u.id = $1
         ORDER BY r.id DESC LIMIT 1;`;
-        return (await this.queryHandler(query, [userId])).rows;
+        return await this.queryHandler(query, [userId]);
     }
 
     async getGamerById(user_id) {
@@ -103,7 +103,7 @@ class DB {
         JOIN ranks AS r ON r.id=(SELECT MAX(r.id) as level FROM gamers AS g JOIN ranks as r ON r.experience<=g.experience WHERE g.user_id=u.id)
         ORDER BY m.\"sendTime\" DESC
         LIMIT 30`;
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     /* Получение и изменения для сцены */
@@ -114,12 +114,12 @@ class DB {
 
     async getGame() {
         let query = "SELECT *, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) as timer FROM game WHERE id=1";
-        return (await this.queryHandler(query, [], true)).rows;
+        return await this.queryHandler(query, [], true);
     }
 
     async getTime() {
         let query = "SELECT timestamp, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) as timer, timeout, banner_timeout, \"pBanner_timestamp\", \"mBanner_timestamp\" FROM game WHERE id=1";
-        return (await this.queryHandler(query, [], true)).rows;
+        return await this.queryHandler(query, [], true);
     }
 
     async getGamerAndPersonByUserId(userId) {
@@ -127,7 +127,7 @@ class DB {
         ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000) AS timer
         FROM gamers g
         JOIN persons p ON g.person_id = p.id WHERE user_id=$1`;
-        return (await this.queryHandler(query, [userId])).rows;
+        return await this.queryHandler(query, [userId]);
     }
 
     async updateGamerTimestamp(userId) {
@@ -158,7 +158,7 @@ class DB {
 
     async getFootGamers(){
         let query = "SELECT * FROM gamers WHERE status='alive' AND person_id IN (2, 8, 9)";
-        return (await this.queryHandler(query, [])).rows;//All
+        return await this.queryHandler(query, []);//All
     }
 
     getTanks(){
@@ -391,7 +391,6 @@ class DB {
 
     /* Мобы */
     async addMobs(role, x, y, hp) {
-        // console.log(role, x, y, hp);
         let query = "INSERT INTO mobs (person_id, hp, x, y, angle, reload_timestamp) VALUES ($1, $2, $3, $4, 0, ROUND(EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000));";
         await this.queryHandler(query, [role, hp, x, y]);
     }
@@ -405,7 +404,7 @@ class DB {
     }
 
     getMobPath(id){
-        return (this.orm.get('mobs', {id}, 'path')).rows;
+        return this.orm.get('mobs', {id}, 'path');
     }
 
     async setMobPath(mobId, path){
@@ -427,7 +426,7 @@ class DB {
          m.person_id AS personId, m.x AS x, m.y AS y, m.angle AS angle,
          p.\"reloadSpeed\" AS reloadSpeed, p.\"rotateSpeed\" AS rotateSpeed, p.\"movementSpeed\" AS movementSpeed
         FROM mobs m JOIN persons p ON m.person_id=p.id;`;
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     /* Лобби */
@@ -466,7 +465,7 @@ class DB {
         CASE WHEN gunner_id IS NOT NULL THEN 'true' ELSE 'false' END AS Gunner,
         CASE WHEN commander_id IS NOT NULL THEN 'true' ELSE 'false' END AS Commander
         FROM tank_lobby WHERE type=0;`;
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     async getMiddleTank(){
@@ -474,18 +473,18 @@ class DB {
         CASE WHEN driver_id IS NOT NULL THEN 'true' ELSE 'false' END AS Mechanic,
         CASE WHEN gunner_id IS NOT NULL THEN 'true' ELSE 'false' END AS Gunner
         FROM tank_lobby WHERE type=1;`;
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     async getLobby(){
         let query = "SELECT user_id, person_id, experience FROM gamers WHERE person_id IN (1, 2, 3, 4, 5, 6, 7, 8, 9);";
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     async getTankByUserId(userId) {
         let query = `SELECT id, x, y, angle, hp, tower_angle, commander_angle, commander_id, driver_id, gunner_id FROM tanks
         WHERE commander_id=$1 OR gunner_id = $2 OR driver_id =$3`;
-        return (await this.queryHandler(query, [userId, userId, userId], true)).rows;
+        return await this.queryHandler(query, [userId, userId, userId], true);
     }
 
     async getTankByGunnerId(gunner_id) {
@@ -503,7 +502,7 @@ class DB {
     
     async checkLiveGamer(){
         let query = "SELECT CASE WHEN EXISTS (SELECT 1 FROM gamers WHERE status='alive') THEN TRUE ELSE FALSE END AS status_exists;";
-        return (await this.queryHandler(query,[])).rows;
+        return await this.queryHandler(query,[]);
     }
 
     async deleteRole(personId) {
@@ -533,7 +532,7 @@ class DB {
         let query = `SELECT p.id AS person_id, p.name AS name, p.level as level, r.experience AS exp 
         FROM persons p
         JOIN ranks r ON p.level = r.id`;
-        return (await this.queryHandler(query, [])).rows;//All
+        return await this.queryHandler(query, []);//All
     }
 
     async getPersonParamsById(id) {
@@ -551,7 +550,7 @@ class DB {
 
     async getGamers() {
         let query = "SELECT person_id, x, y, angle  FROM gamers WHERE person_id IN (1, 2, 8, 9) AND status='alive'";
-        return (await this.queryHandler(query, [])).rows;//All
+        return await this.queryHandler(query, []);//All
     }
 
     getGamerStatus(id) {
@@ -607,19 +606,19 @@ class DB {
         let query = `SELECT ga.x AS x, ga.y AS y, g.\"mobBase_x\" AS mobBaseX, g.\"mobBase_y\" AS mobBaseY,
         g.base_radius AS baseRadius
         FROM game g JOIN gamers ga ON ga.person_id=2`;
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     async getMobBannerman(){
         let query = `SELECT m.x AS x, m.y AS y, g.\"mobBase_x\" AS mobBaseX, g.\"mobBase_y\" AS mobeBaseY,
         g.playersBase_x AS playerBaseX, g.playersBase_y AS playersBaseY, g.base_radius AS baseRadius
         FROM game g JOIN mobs m ON m.person_id=2`;
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     async getBannermanTime() {
         let query = "SELECT banner_timestamp, NOW()+ 0 as nowTime, banner_timeout FROM game WHERE id=1";
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     async updatePlayerBannermanTimestamp(timestamp) {
@@ -640,12 +639,12 @@ class DB {
     /* Объекты */
     async getObjects() {
         let query = "SELECT type, x, y, \"sizeX\", \"sizeY\", angle FROM objects WHERE status in ('a', 'i')";
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     async getAllObjects() {
         let query = "SELECT id, hp, x, y, \"sizeX\", \"sizeY\", status FROM objects WHERE status in('a', 'i')";
-        return (await this.queryHandler(query, [])).rows;
+        return await this.queryHandler(query, []);
     }
 
     async deleteObject(objectId) {

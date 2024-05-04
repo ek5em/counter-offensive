@@ -39,7 +39,7 @@ class GameManager{
 
     async tankFire(user_id, gamer, x, y, angle){
         let tank = await this.db.getTankByGunnerId(user_id);
-        if(tank[0] && (gamer.timer - tank[0].reload_timestamp)>(gamer.reloadSpeed * 1000)){
+        if(tank && (gamer.timer - tank.reload_timestamp)>(gamer.reloadSpeed * 1000)){
             let dx = Math.cos(angle);
             let dy = Math.sin(angle);
             await this.db.addBullet(user_id, x+dx, y+dy, dx, dy, 1);
@@ -198,7 +198,6 @@ class GameManager{
                     // Моб ищет путь до своей цели
                     this.easystar.findPath(Math.ceil(mob.x), Math.ceil(mob.y), Math.ceil(targetGamer.x), Math.ceil(targetGamer.y), async (mobPath) => {
                         if(mobPath){
-                            console.log(JSON.stringify(path));
                             await this.db.setMobPath(mob.id, JSON.stringify(path));
                         } 
                     });
@@ -404,7 +403,6 @@ class GameManager{
 
 async playerBannermanInZone() {
     let bannerman = await this.db.getBannerman();
-    bannerman = bannerman[0];
     if (!bannerman){
         if (this.game.pBanner_timestamp != 0){
             await this.db.updatePlayerBannermanTimestamp(0);
@@ -589,36 +587,35 @@ async playerBannermanInZone() {
         let gamer = await this.db.getGamerById(userId);
         let result = {};
         this.game = await this.db.getGame();
-        this.game = this.game[0];
     
-        if(["dead", "lobby"].includes(gamer[0].status)){
+        if(["dead", "lobby"].includes(gamer.status)){
             result.is_dead = true;
         }
     
-        if(gamer[0].status == "w"){
+        if(gamer.status == "w"){
             result.is_end = 'true';
         } else await this.update();
     
         result.gametime = this.game.timer - this.game.startGameTimestamp;
     
-        if([1, 2, 8, 9].includes(gamer[0].person_id)){
+        if([1, 2, 8, 9].includes(gamer.person_id)){
             result.gamer = {
-                'person_id': gamer[0].person_id,
-                'x': gamer[0].x,
-                'y': gamer[0].y,
-                'angle': gamer[0].angle,
-                'hp': gamer[0].hp
+                'person_id': gamer.person_id,
+                'x': gamer.x,
+                'y': gamer.y,
+                'angle': gamer.angle,
+                'hp': gamer.hp
             };
         } else{
             let tank = await this.db.getTankByUserId(userId);
-            if(tank[0] && [3, 4, 5, 6, 7].includes(gamer[0].person_id)){
+            if(tank && [3, 4, 5, 6, 7].includes(gamer.person_id)){
                 result.gamer = {
-                    'person_id': gamer[0].person_id,
-                    'x': tank[0].x,
-                    'y': tank[0].y,
-                    'angle': tank[0].angle,
-                    'tower_angle': tank[0].tower_angle,
-                    'hp': tank[0].hp
+                    'person_id': gamer.person_id,
+                    'x': tank.x,
+                    'y': tank.y,
+                    'angle': tank.angle,
+                    'tower_angle': tank.tower_angle,
+                    'hp': tank.hp
                 };
             } else result.gamer = null;
         }
@@ -660,27 +657,27 @@ async playerBannermanInZone() {
     async motion(userId, x, y, angle) {
         let gamer = await this.db.getGamerById(userId);
     
-        if(!gamer[0]) return true;
+        if(!gamer) return true;
         
-        if([3, 7].includes(gamer[0].person_id)){
+        if([3, 7].includes(gamer.person_id)){
             if (typeof angle === 'number') {
                 await this.db.updateTowerRotate(userId, angle);
                 await this.db.updateGamersHash(this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex'));
             } else return 422;
         }
-        else if([4, 6].includes(gamer[0].person_id)){
+        else if([4, 6].includes(gamer.person_id)){
             if (typeof x === 'number' && typeof y === 'number' && typeof angle === 'number') {
                 await this.db.updateTankMotion(userId, x, y, angle);
                 await this.db.updateGamersHash(this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex'));
             } else return 422;
         }
-        else if(gamer[0].person_id == 5){
+        else if(gamer.person_id == 5){
             if (typeof angle === 'number') {
                 await this.db.updateCommanderRotate(userId, angle);
                 await this.db.updateGamersHash(this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex'));
             } else return 422;
         }
-        else if([1, 2, 8, 9].includes(gamer[0].person_id)) {
+        else if([1, 2, 8, 9].includes(gamer.person_id)) {
             if (typeof x === 'number' && typeof y === 'number' && typeof angle === 'number') {
                 await this.db.updateMotion(userId, x, y, angle);
                 await this.db.updateGamersHash(this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex'));
@@ -692,8 +689,6 @@ async playerBannermanInZone() {
 
     async fire(user_id, x, y, angle) {
         let gamer = await this.db.getGamerAndPersonByUserId(user_id);
-        gamer = gamer[0];
-        console.log(gamer);
         if(!gamer) return true;
         if([3, 7].includes(gamer.person_id)) {
             await this.tankFire(user_id, gamer, x, y, angle);
