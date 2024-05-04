@@ -198,7 +198,7 @@ class GameManager{
                     // Моб ищет путь до своей цели
                     this.easystar.findPath(Math.ceil(mob.x), Math.ceil(mob.y), Math.ceil(targetGamer.x), Math.ceil(targetGamer.y), async (mobPath) => {
                         if(mobPath){
-                            path = mobPath;
+                            console.log(JSON.stringify(path));
                             await this.db.setMobPath(mob.id, JSON.stringify(path));
                         } 
                     });

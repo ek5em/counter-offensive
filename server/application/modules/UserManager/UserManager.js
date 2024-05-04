@@ -33,9 +33,9 @@ class UserManager {
             if(hash == hashS){
                 const rank = await this.db.getRankById(user[0].id);
                 await this.db.updateToken(user[0].id, token);
-                console.log(rank);
                 console.log(user);
-                console.log(rank[0]);
+                console.log(user[0]);
+
                 return {
                     'id': user[0].id,
                     'token': token,

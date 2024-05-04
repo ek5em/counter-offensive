@@ -32,7 +32,7 @@ class DB {
             });
         })
         let result = await promise;
-        return result;
+        return result.rows;
     }
     
  /* Юзер */
@@ -405,7 +405,7 @@ class DB {
     }
 
     getMobPath(id){
-        return this.orm.get('mobs', {id}, 'path');
+        return (this.orm.get('mobs', {id}, 'path')).rows;
     }
 
     async setMobPath(mobId, path){
