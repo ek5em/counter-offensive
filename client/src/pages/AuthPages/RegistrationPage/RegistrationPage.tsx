@@ -21,7 +21,7 @@ const RegistrationPage: FC = () => {
     });
     const { server, mediator } = useGlobalContext();
 
-    const { WARNING } = mediator.getTriggerTypes();
+    const { WARNING } = mediator.getEventTypes();
 
     const isPasswordValid = (pass: string) => {
         const passLength = pass.length;

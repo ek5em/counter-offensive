@@ -28,15 +28,21 @@ export const AppRouter: FC = () => {
     }, []);
 
     useEffect(() => {
-        const { LOGIN, LOGOUT, AUTH_ERROR, THROW_TO_GAME } =
-            mediator.getTriggerTypes();
-
-        const { GO_TO_TANK, UPDATE_USER, END_GAME } = mediator.getEventTypes();
+        const {
+            GO_TO_TANK,
+            UPDATE_USER,
+            END_GAME,
+            LOGIN,
+            LOGOUT,
+            AUTH_ERROR,
+            THROW_TO_GAME,
+        } = mediator.getEventTypes();
 
         mediator.subscribe(END_GAME, () => {
+            const redirectFromGameDelay = 3000;
             setTimeout(() => {
                 navigate("/");
-            }, 3000);
+            }, redirectFromGameDelay);
         });
 
         mediator.subscribe(
@@ -59,25 +65,24 @@ export const AppRouter: FC = () => {
             // user.is_alive && navigate("/game");
         });
 
-        mediator.set(LOGIN, (data: IToken) => {
+        mediator.subscribe(LOGIN, (data: IToken) => {
             server.STORE.setToken(data.token);
             setRoutes(getRouter());
             server.getUser();
-            navigate(location.pathname);
         });
 
-        mediator.set(LOGOUT, () => {
+        mediator.subscribe(LOGOUT, () => {
             server.STORE.setToken(null);
             setRoutes(getRouter());
             navigate("/");
         });
 
-        mediator.set(THROW_TO_GAME, () => {
+        mediator.subscribe(THROW_TO_GAME, () => {
             navigate("/game");
         });
 
-        mediator.set(AUTH_ERROR, () => {
-            mediator.get(LOGOUT);
+        mediator.subscribe(AUTH_ERROR, () => {
+            mediator.call(LOGOUT, true);
         });
     }, []);
 

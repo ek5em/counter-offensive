@@ -4,7 +4,6 @@ import {
     WINConf,
     entitiesConfig,
     objectConf,
-    requestDelay,
     walls,
 } from "../../../../config";
 import { TCircle, TPoint } from "../../types";
@@ -24,19 +23,10 @@ import {
 import { useGlobalContext } from "../../../../hooks/useGlobalContext";
 import useCanvas from "../../hooks/useCanvas";
 import useSprites, { SpriteFrame } from "../../hooks/useSprites";
-import { getUnit } from "./getUnit";
 import { Canvas, Collision, Game, TraceMask, General } from "../../modules";
-import { IGameScene } from "../../modules/Game/Game";
+import { EKeys, IGameScene } from "../../modules/Game/Game";
 
 import styles from "./GameCanvas.module.scss";
-
-export interface IPressedKeys {
-    Up: boolean;
-    Down: boolean;
-    Right: boolean;
-    Left: boolean;
-    Space: boolean;
-}
 
 interface GameCanvasProps {
     inputRef: React.MutableRefObject<HTMLInputElement | null>;
@@ -44,40 +34,7 @@ interface GameCanvasProps {
 
 const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const { server, mediator } = useGlobalContext();
-
     const canvasId = "canvas";
-
-    const updateUnitInterval = setInterval(() => {
-        const unit = game.getUnit();
-        const user = game.getUser();
-        const { x, y, angle } = unit;
-        if (user) {
-            const userUnit = user.personId;
-            if (
-                userUnit !== EGamerRole.middleTankGunner &&
-                userUnit !== EGamerRole.heavyTankGunner &&
-                userUnit !== EGamerRole.heavyTankCommander
-            ) {
-                server.unitMotion(x, y, angle);
-            } else {
-                server.unitMotion(null, null, angle);
-                if (game.serverUnit) {
-                    unit.x = game.serverUnit.x;
-                    unit.y = game.serverUnit.y;
-                }
-            }
-
-            if (
-                keyPressed.Space &&
-                (userUnit === EGamerRole.infantry ||
-                    userUnit === EGamerRole.infantryRPG ||
-                    userUnit === EGamerRole.middleTankGunner ||
-                    userUnit === EGamerRole.heavyTankGunner)
-            ) {
-                makeShot();
-            }
-        }
-    }, requestDelay.gamerUpdate);
 
     const height = window.innerHeight;
     const width = window.innerWidth;
@@ -115,6 +72,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
                 mouseUp: mouseUpHandler,
             },
         });
+
         tracer = new TraceMask({
             WIN,
             canvas,
@@ -126,7 +84,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         return () => {
             canvas = null;
             tracer = null;
-            clearInterval(updateUnitInterval);
         };
     });
 
@@ -178,20 +135,9 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const game = new Game({
         server,
         mediator,
-        cbs: {
-            roundEnd,
-        },
     });
 
     const collision = new Collision(game.getScene());
-
-    const keyPressed: IPressedKeys = {
-        Down: false,
-        Up: false,
-        Right: false,
-        Left: false,
-        Space: false,
-    };
 
     const mousePos: TPoint = {
         x: 0,
@@ -203,20 +149,20 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const keyDownHandler = (e: KeyboardEvent) => {
         if (inputRef.current !== document.activeElement) {
             if (e.code === "ArrowUp" || e.code === "KeyW") {
-                keyPressed.Up = true;
+                game.keyDown(EKeys.Up);
             }
             if (e.code === "ArrowDown" || e.code === "KeyS") {
-                keyPressed.Down = true;
+                game.keyDown(EKeys.Down);
             }
             if (e.code === "ArrowRight" || e.code === "KeyD") {
-                keyPressed.Right = true;
+                game.keyDown(EKeys.Right);
             }
             if (e.code === "ArrowLeft" || e.code === "KeyA") {
-                keyPressed.Left = true;
+                game.keyDown(EKeys.Left);
             }
             if (e.code === "Space") {
-                makeShot();
-                keyPressed.Space = true;
+                game.unitShot();
+                game.keyDown(EKeys.Space);
             }
         }
     };
@@ -224,19 +170,19 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const keyUpHandler = (e: KeyboardEvent) => {
         if (inputRef.current !== document.activeElement) {
             if (e.code === "ArrowUp" || e.code === "KeyW") {
-                keyPressed.Up = false;
+                game.keyUp(EKeys.Up);
             }
             if (e.code === "ArrowDown" || e.code === "KeyS") {
-                keyPressed.Down = false;
+                game.keyUp(EKeys.Down);
             }
             if (e.code === "ArrowRight" || e.code === "KeyD") {
-                keyPressed.Right = false;
+                game.keyUp(EKeys.Right);
             }
             if (e.code === "ArrowLeft" || e.code === "KeyA") {
-                keyPressed.Left = false;
+                game.keyUp(EKeys.Left);
             }
             if (e.code === "Space") {
-                keyPressed.Space = false;
+                game.keyUp(EKeys.Space);
             }
         }
     };
@@ -247,33 +193,12 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const mouseUpHandler = () => {
-        keyPressed.Space = false;
+        game.keyPressed.Space = false;
     };
 
     const mouseDownHandler = () => {
-        makeShot();
-        keyPressed.Space = true;
-    };
-
-    const makeShot = () => {
-        const user = game.getUser();
-        const unit = game.getUnit();
-        const { x, y, angle, weaponLength } = unit;
-        if (user) {
-            const userUnit = user.personId;
-            if (
-                userUnit !== EGamerRole.heavyTankCommander &&
-                userUnit !== EGamerRole.heavyTankMeh &&
-                userUnit !== EGamerRole.middleTankMeh &&
-                userUnit !== EGamerRole.bannerman
-            ) {
-                server.makeShot(
-                    x + Math.cos(angle) * weaponLength,
-                    y + Math.sin(angle) * weaponLength,
-                    angle
-                );
-            }
-        }
+        game.unitShot();
+        game.keyDown(EKeys.Space);
     };
 
     /* БЛОК ПРО РИСОВАНИЕ */
@@ -727,7 +652,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
                 const { x, y } = unit;
                 const { down, left, right, up } = visualBorders;
                 if (unit instanceof General) {
-                    unit.move(keyPressed, time);
+                    unit.move(game.keyPressed, time);
                     if (x < left) {
                         unit.x = left;
                     }
@@ -741,7 +666,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
                         unit.y = up;
                     }
                 } else {
-                    unit.move(keyPressed, time);
+                    unit.move(game.keyPressed, time);
                     collision.checkAllBlocksUnit(unit);
                     unit.rotate(
                         Math.atan2(
@@ -754,8 +679,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
             }
         }
     };
-
-    function roundEnd() {}
 
     function render(FPS: number) {
         const renderTime = FPS ? 1000 / FPS : 0;

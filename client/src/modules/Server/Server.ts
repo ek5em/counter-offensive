@@ -29,34 +29,35 @@ export default class Server {
         this.socket = io(HOST);
 
         const {
+            SERVER_ERROR,
+            GO_TO_TANK,
+            UPDATE_USER,
+            LOBBY_UPDATE,
             NEW_MESSAGE,
             LOGIN,
             SEND_MESSAGE_STATUS,
             LOGOUT,
             UPDATE_SCENE,
-        } = mediator.getTriggerTypes();
-
-        const { SERVER_ERROR, GO_TO_TANK, UPDATE_USER, LOBBY_UPDATE } =
-            this.mediator.getEventTypes();
+        } = this.mediator.getEventTypes();
 
         this.socket.on(ESOCKET.ERROR, (answer: IError) => {
             mediator.call(SERVER_ERROR, answer.error);
         });
 
         this.socket.on(ESOCKET.GET_MESSAGE, (answer: IAnswer<IMessage[]>) => {
-            mediator.get(NEW_MESSAGE, answer.data);
+            mediator.call(NEW_MESSAGE, answer.data);
         });
 
         this.socket.on(ESOCKET.SEND_MESSAGE, (answer: IAnswer<true>) => {
-            mediator.get(SEND_MESSAGE_STATUS, answer.data);
+            mediator.call(SEND_MESSAGE_STATUS, answer.data);
         });
 
         this.socket.on(ESOCKET.REGISTRATION, (answer: IAnswer<IToken>) => {
-            mediator.get(LOGIN, answer.data);
+            mediator.call(LOGIN, answer.data);
         });
 
         this.socket.on(ESOCKET.LOGIN, (answer: IAnswer<IToken>) => {
-            mediator.get(LOGIN, answer.data);
+            mediator.call(LOGIN, answer.data);
         });
 
         this.socket.on(ESOCKET.GET_USER_INFO, (answer: IAnswer<IGamerInfo>) => {
@@ -65,11 +66,11 @@ export default class Server {
         });
 
         this.socket.on(ESOCKET.LOGOUT, () => {
-            mediator.get(LOGOUT);
+            mediator.call(LOGOUT, true);
         });
 
         this.socket.on(ESOCKET.TOKEN_VERIFICATION, () => {
-            mediator.get(LOGIN, { token: this.STORE.getToken() });
+            mediator.call(LOGIN, { token: this.STORE.getToken() });
         });
 
         this.socket.on(
@@ -87,7 +88,7 @@ export default class Server {
         });
 
         this.socket.on(ESOCKET.GET_SCENE, (answer: IAnswer<IScene>) => {
-            mediator.get(UPDATE_SCENE, answer.data);
+            mediator.call(UPDATE_SCENE, answer.data);
         });
     }
 
@@ -108,7 +109,7 @@ export default class Server {
 
     tokenVerification() {
         this.socket.emit(ESOCKET.TOKEN_VERIFICATION, {
-            token: this.STORE.getToken(),
+            token: this.STORE.getCookie().token,
         });
     }
 

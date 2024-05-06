@@ -20,11 +20,11 @@ const LoginPage: React.FC = () => {
     });
     const { server, mediator } = useGlobalContext();
 
-    const { WARNING } = mediator.getTriggerTypes();
+    const { WARNING } = mediator.getEventTypes();
 
     const isValid = (login: string, password: string) => {
         if (!login || !password) {
-            mediator.get(WARNING, {
+            mediator.call(WARNING, {
                 message: "Заполните все поля",
                 style: "warning",
                 id: "test_warning_auth_emptyFields",

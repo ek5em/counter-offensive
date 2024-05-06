@@ -90,7 +90,6 @@ class Collision {
     }
 
     checkAllBlocksUnit(unit: TUnit): void {
-        const eps = 0.1;
         this.scene.map.forEach((obj) => {
             const { x, y, sizeX, sizeY, type, angle } = obj;
             switch (type) {

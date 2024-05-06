@@ -1,3 +1,4 @@
+import Mediator from "../Mediator/Mediator";
 import { IGamerInfo, ILobby } from "../Server/interfaces";
 
 export default class Store {
@@ -8,9 +9,9 @@ export default class Store {
 
     constructor() {
         this.user = null;
-        this.token = this.getCookie().token;
         this.lobby = null;
         this.unit = null;
+        this.token = this.getCookie().token;
     }
 
     setUser(user: IGamerInfo) {
@@ -56,7 +57,9 @@ export default class Store {
     setToken(token: string | null) {
         this.token = token;
         if (token) {
-            const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 дней
+            const expirationDate = new Date(
+                Date.now() + 30 * 24 * 60 * 60 * 1000
+            ); // 30 дней
             document.cookie = `token=${token}; expires=${expirationDate.toUTCString()}; path=/;`;
         } else {
             document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;

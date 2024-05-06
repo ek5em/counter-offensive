@@ -17,9 +17,6 @@ export const MEDIATOR = {
         UPDATE_USER: "UPDATE_USER",
         LOBBY_UPDATE: "LOBBY_UPDATE",
         END_GAME: "END_GAME",
-    },
-
-    TRIGGERS: {
         WARNING: "WARNING",
         LOGIN: "LOGIN",
         LOGOUT: "LOGOUT",
@@ -33,6 +30,8 @@ export const MEDIATOR = {
         SEND_MESSAGE_STATUS: "SEND_MESSAGE_STATUS",
         MOVE_UNIT: "MOVE_UNIT",
     },
+
+    TRIGGERS: {},
 };
 
 export enum ESOCKET {

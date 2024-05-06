@@ -6,11 +6,11 @@ import styles from "./GameTime.module.scss";
 
 const GameTime: FC = () => {
     const { mediator } = useGlobalContext();
-    const { UPDATE_TIME } = mediator.getTriggerTypes();
+    const { UPDATE_TIME } = mediator.getEventTypes();
     const [time, setTime] = useState<number>(0);
 
     useEffect(() => {
-        mediator.set(UPDATE_TIME, (time: number) => {
+        mediator.subscribe(UPDATE_TIME, (time: number) => {
             setTime(time);
         });
 

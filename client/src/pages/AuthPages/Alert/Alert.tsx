@@ -25,12 +25,12 @@ export const Alert: React.FC = () => {
 
     const { mediator } = useGlobalContext();
 
-    const { WARNING } = mediator.getTriggerTypes();
+    const { WARNING } = mediator.getEventTypes();
 
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
 
-        mediator.set(WARNING, (warning: IAlert) => {
+        mediator.subscribe(WARNING, (warning: IAlert) => {
             setAlert({ ...warning, style: warning.style ?? EAlert.error });
 
             clearTimeout(timeoutId);

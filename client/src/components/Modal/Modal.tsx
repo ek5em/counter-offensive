@@ -9,27 +9,29 @@ interface MoodalError {
     message: string;
 }
 
+const clearDelay = 4000;
+
 export const Modal: FC = () => {
     const [message, setMessage] = useState<MoodalError>({
         message: "",
         id: "",
     });
 
-    const {  mediator } = useGlobalContext();
+    const { mediator } = useGlobalContext();
 
-    const { ROLE_ERROR } = mediator.getTriggerTypes();
+    const { ROLE_ERROR } = mediator.getEventTypes();
 
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
 
-        mediator.set(ROLE_ERROR, (newMessaage: MoodalError) => {
+        mediator.subscribe(ROLE_ERROR, (newMessaage: MoodalError) => {
             setMessage(newMessaage);
 
             clearTimeout(timeoutId);
 
             timeoutId = setTimeout(() => {
                 clearMessage();
-            }, 4000);
+            }, clearDelay);
         });
 
         return () => {

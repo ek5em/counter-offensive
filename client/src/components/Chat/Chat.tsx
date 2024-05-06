@@ -31,20 +31,19 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
     ({ chatType, isOpen, setIsOpen }, ref) => {
         const { server, mediator } = useGlobalContext();
 
-
         const [messages, setMessages] = useState<IMessage[]>([]);
         const [inputText, setInputText] = useState<string>("");
 
         const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
-        const { NEW_MESSAGE, SEND_MESSAGE_STATUS } = mediator.getTriggerTypes();
+        const { NEW_MESSAGE, SEND_MESSAGE_STATUS } = mediator.getEventTypes();
 
         useEffect(() => {
-            mediator.set(NEW_MESSAGE, (newMessages: IMessage[]) => {
+            mediator.subscribe(NEW_MESSAGE, (newMessages: IMessage[]) => {
                 setMessages(newMessages.reverse());
             });
 
-            mediator.set(SEND_MESSAGE_STATUS, (status: true | null) => {
+            mediator.subscribe(SEND_MESSAGE_STATUS, (status: true | null) => {
                 if (status) {
                     setInputText("");
                     scrollToBottom();
