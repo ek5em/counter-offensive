@@ -1,6 +1,6 @@
 type TAnyFunction = (data: any | undefined) => void;
 
-type TEVENTS = {
+export type TEVENTS = {
     [key: string]: string;
 };
 

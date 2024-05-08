@@ -113,7 +113,6 @@ export interface IMapObject extends IPoint {
     r: number;
 }
 
-
 export interface IScene {
     tanks: ITank[] | null;
     gamers: IGamer[] | null;

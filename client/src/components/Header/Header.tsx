@@ -1,4 +1,4 @@
-import { FC,  useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import cn from "classnames";
 import {
     getRankImg,
@@ -18,7 +18,6 @@ export const Header: FC = () => {
     const [user, setUser] = useState<IGamerInfo | null>(null);
     const { server, mediator } = useGlobalContext();
 
-
     useEffect(() => {
         const user = server.STORE.getUser();
         user && setUser(user);
@@ -26,8 +25,8 @@ export const Header: FC = () => {
 
     useEffect(() => {
         const { UPDATE_USER } = mediator.getEventTypes();
-        mediator.subscribe(UPDATE_USER, (user: IGamerInfo) => {
-            setUser(user);
+        mediator.subscribe(UPDATE_USER, () => {
+            setUser(server.STORE.getUser());
         });
     }, []);
 
