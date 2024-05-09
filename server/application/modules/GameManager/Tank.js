@@ -13,6 +13,7 @@ class Tank {
         this.gunnerId;
         this.driverId;
         this.commanderId;
+        this.towerAngle;
     }
 
     addTank(type, gunnerId, driverId, commanderId = null) {
