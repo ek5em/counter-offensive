@@ -91,13 +91,12 @@ class GameManager extends BaseModule {
         }
 
         
-        this.map = [];
+        this.map.dynamic = [];
 
 
         // Алгоритм не хочет работать с прямоугольной картой. Проблем с таким способом создания квадратной не возникает
         this.map = Array(151).fill([Array(151).fill(0)]);
-        this.map = Array.from({ length: 151 }, () => Array.from({ length: 151 }, () => 0));
-        const grid = Array.from({ length: 151 }, () => Array.from({ length: 151 }, () => 0));
+        const grid = Array(151).fill([Array(151).fill(0)]);
         this.objects.forEach(object => {
             for (let i = object.x; i < object.x + object.sizeX + 1; i++) {
                 for (let j = object.y; j < object.y + object.sizeY + 1; j++) {
