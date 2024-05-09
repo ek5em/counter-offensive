@@ -31,7 +31,11 @@ export const MEDIATOR = {
         MOVE_UNIT: "MOVE_UNIT",
     },
 
-    TRIGGERS: {},
+    TRIGGERS: {
+        LOBBY: "LOBBY",
+        TOKEN: "TOKEN",
+        USER: "USER",
+    },
 };
 
 export enum ESOCKET {

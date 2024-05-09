@@ -2,8 +2,9 @@ import { privateRoutes, publicRoutes } from "../router";
 import { useGlobalContext } from "./useGlobalContext";
 
 export const useGetRouter = () => {
-    const { server } = useGlobalContext();
+    const { mediator } = useGlobalContext();
+    const { TOKEN } = mediator.getTriggerTypes();
     return () => {
-        return server.STORE.getToken() ? privateRoutes : publicRoutes;
+        return mediator.get(TOKEN) ? privateRoutes : publicRoutes;
     };
 };

@@ -1,4 +1,4 @@
-import Mediator from "../Mediator/Mediator";
+import Mediator, { TEVENTS } from "../Mediator/Mediator";
 import { IGamerInfo, ILobby } from "../Server/interfaces";
 
 export default class Store {
@@ -6,16 +6,27 @@ export default class Store {
     user: IGamerInfo | null;
     lobby: ILobby | null;
     unit: null;
+    mediator: Mediator;
+    events: TEVENTS;
 
-    constructor() {
+    constructor(mediator: Mediator) {
         this.user = null;
         this.lobby = null;
         this.unit = null;
         this.token = this.getCookie().token;
+        this.mediator = mediator;
+        this.events = mediator.getEventTypes();
+
+        const { LOBBY, TOKEN, USER } = mediator.getTriggerTypes();
+
+        mediator.set(LOBBY, () => this.getLobby());
+        mediator.set(TOKEN, () => this.getToken());
+        mediator.set(USER, () => this.getUser());
     }
 
     setUser(user: IGamerInfo) {
         this.user = user;
+        this.mediator.call(this.events.UPDATE_USER, this.user);
     }
 
     getUser() {
@@ -61,8 +72,10 @@ export default class Store {
                 Date.now() + 30 * 24 * 60 * 60 * 1000
             ); // 30 дней
             document.cookie = `token=${token}; expires=${expirationDate.toUTCString()}; path=/;`;
+            this.mediator.call(this.events.LOGIN, this.token);
         } else {
             document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            this.mediator.call(this.events.LOGOUT, this.token);
         }
     }
 }

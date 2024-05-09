@@ -9,7 +9,7 @@ import {
 import { useGlobalContext } from "../../hooks/useGlobalContext";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
 import { useGetRouter } from "../../hooks/useGetRouter";
-import { ETank, IGamerInfo, IToken } from "../../modules/Server/interfaces";
+import { ETank, IToken } from "../../modules/Server/interfaces";
 
 import styles from "./AppRouter.module.scss";
 
@@ -64,16 +64,13 @@ export const AppRouter: FC = () => {
             // user.is_alive && navigate("/game");
         });
 
-        mediator.subscribe(LOGIN, (data: IToken) => {
-            server.STORE.setToken(data.token);
+        mediator.subscribe(LOGIN, () => {
             setRoutes(getRouter());
             server.getUser();
         });
 
         mediator.subscribe(LOGOUT, () => {
-            server.STORE.setToken(null);
             setRoutes(getRouter());
-            navigate("/");
         });
 
         mediator.subscribe(THROW_TO_GAME, () => {

@@ -3,7 +3,6 @@ import {
     ERank,
     IGamerInfo,
     ILobby,
-    IMessage,
     IUserUnit,
 } from "./interfaces";
 
@@ -27,7 +26,7 @@ export const MOCK: IMock = {
             is_alive: null,
             level: 10,
             login: "123",
-            next_rank: 65421,
+            next_rank: 11040,
             nickname: "Гришка",
             password: "123",
             rank_name: ERank.General,
@@ -39,7 +38,7 @@ export const MOCK: IMock = {
             is_alive: null,
             level: 10,
             login: "321",
-            next_rank: 65421,
+            next_rank: 11040,
             nickname: "Петька заводной",
             password: "321",
             rank_name: ERank.General,

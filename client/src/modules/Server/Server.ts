@@ -24,12 +24,14 @@ export default class Server {
     socket: Socket | null;
     useMock: boolean;
     events: TEVENTS;
+    triggers: TEVENTS;
 
     constructor(HOST: string, mediator: Mediator) {
         this.HOST = HOST;
         this.mediator = mediator;
-        this.STORE = new Store();
+        this.STORE = new Store(mediator);
         this.events = mediator.getEventTypes();
+        this.triggers = mediator.getTriggerTypes();
         this.useMock = Boolean(
             new URLSearchParams(window.location.search).get("useMock")
         );
@@ -52,18 +54,17 @@ export default class Server {
             });
 
             this.socket.on(ESOCKET.REGISTRATION, (answer: IAnswer<IToken>) => {
-                mediator.call(this.events.LOGIN, answer.data);
+                this.STORE.setToken(answer.data.token);
             });
 
             this.socket.on(ESOCKET.LOGIN, (answer: IAnswer<IToken>) => {
-                mediator.call(this.events.LOGIN, answer.data);
+                this.STORE.setToken(answer.data.token);
             });
 
             this.socket.on(
                 ESOCKET.GET_USER_INFO,
                 (answer: IAnswer<IGamerInfo>) => {
                     this.STORE.setUser(answer.data);
-                    mediator.call(this.events.UPDATE_USER, true);
                 }
             );
 
@@ -73,7 +74,7 @@ export default class Server {
 
             this.socket.on(ESOCKET.TOKEN_VERIFICATION, () => {
                 mediator.call(this.events.LOGIN, {
-                    token: this.STORE.getToken(),
+                    token: this.mediator.get(this.triggers.TOKEN),
                 });
             });
 
@@ -88,7 +89,6 @@ export default class Server {
 
             this.socket.on(ESOCKET.GET_LOBBY, (answer: IAnswer<ILobby>) => {
                 this.STORE.setLobby(answer.data);
-                mediator.call(this.events.LOBBY_UPDATE, true);
             });
 
             this.socket.on(ESOCKET.GET_SCENE, (answer: IAnswer<IScene>) => {
@@ -294,7 +294,7 @@ export default class Server {
             }
         } else {
             this.socket?.emit(ESOCKET.SET_GAMER_ROLE, {
-                token: this.STORE.getToken(),
+                token: this.mediator.get(this.triggers.token),
                 role,
                 tankId,
             });
@@ -307,7 +307,7 @@ export default class Server {
             this.mediator.call(this.events.LOBBY_UPDATE, true);
         } else {
             this.socket?.emit(ESOCKET.GET_LOBBY, {
-                token: this.STORE.getToken(),
+                token: this.mediator.get(this.triggers.TOKEN),
             });
         }
     }
@@ -318,7 +318,7 @@ export default class Server {
         if (this.useMock) {
         } else {
             this.socket?.emit(ESOCKET.GET_SCENE, {
-                token: this.STORE.getToken(),
+                token: this.mediator.get(this.triggers.TOKEN),
             });
         }
     }
@@ -327,7 +327,7 @@ export default class Server {
         if (this.useMock) {
         } else {
             this.socket?.emit(ESOCKET.SUICIDE, {
-                token: this.STORE.getToken(),
+                token: this.mediator.get(this.triggers.TOKEN),
             });
         }
     }
@@ -336,7 +336,7 @@ export default class Server {
         if (this.useMock) {
         } else {
             this.socket?.emit(ESOCKET.MOTION, {
-                token: this.STORE.getToken(),
+                token: this.mediator.get(this.triggers.TOKEN),
                 x,
                 y,
                 angle,
@@ -348,7 +348,7 @@ export default class Server {
         if (this.useMock) {
         } else {
             this.socket?.emit(ESOCKET.FIRE, {
-                token: this.STORE.getToken(),
+                token: this.mediator.get(this.triggers.TOKEN),
                 x,
                 y,
                 angle,

@@ -1,14 +1,14 @@
 import { FC } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button, EButtonAppearance } from "../../components";
 import { IError } from "../../modules/Server/interfaces";
 
 import styles from "./ErrorPage.module.scss";
 
 const ErrorPage: FC = () => {
-    const navigate = useNavigate();
     const { state }: { state: { error: IError } | null } = useLocation();
     const error = state?.error ?? { code: 404, text: "Страница не найдена" };
+    console.log(state, error);
 
     return (
         <div className={styles.wrapper}>
