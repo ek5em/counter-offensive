@@ -99,7 +99,7 @@ class DB {
         JOIN ranks AS r ON r.id=(SELECT MAX(r.id) as level FROM gamers AS g JOIN ranks as r ON r.experience<=g.experience WHERE g.user_id=u.id)
         ORDER BY m.sendTime DESC
         LIMIT 30`;
-        return await this.queryHandler(query, []);
+        return await this.queryHandlerAll(query, []);
     }
 
     async getGame() {
@@ -109,23 +109,23 @@ class DB {
     
     async getRanks() {
         let query = "SELECT * FROM ranks";
-        return await this.queryHandler(query, []);
+        return await this.queryHandlerAll(query, []);
     }
 
     async getPersons() {
         let query = "SELECT * FROM persons";
-        return await this.queryHandler(query,[]);
+        return await this.queryHandlerAll(query,[]);
     }
 
     /* Объекты */
     async getStaticObjects() {
         let query = "SELECT type, x, y, sizeX, sizeY, angle FROM objects WHERE status in ('s')";
-        return await this.queryHandler(query, []);
+        return await this.queryHandlerAll(query, []);
     }
 
     async getDynamicObjects() {
         let query = "SELECT id, hp, x, y, sizeX, sizeY, status FROM objects WHERE status in('a', 'i')";
-        return await this.queryHandler(query, []);
+        return await this.queryHandlerAll(query, []);
     }
 }
 module.exports = DB;

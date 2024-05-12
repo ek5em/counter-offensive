@@ -1,10 +1,12 @@
 class Mob {
-    constructor({id, x, y, type}) {
+    constructor({x, y, type}) {
         this.type = type;
         this.hp = 8;
-        this.x = 5;
-        this.y = 5;
+        this.x = x;
+        this.y = y;
         this.angle = 0;
+        this.path = [];
+        this.pathUpdate = Date.now()
         this.reloadTimestamp = Date.now();
     }
 
@@ -18,7 +20,30 @@ class Mob {
     }
 
     fire() {
-        this.reloadTimestamp = Date.now();
+        if(Date.now() - this.reloadTimestamp > 100) {
+            return true;
+        }
+        return false;
+    }
+
+    updateReloadtimestamp() {
+        this.reloadTimestamp = Date.now()
+    }
+
+    setPath(path) {
+        this.path = path;
+    }
+
+    checkDead() {
+        if(this.hp < 0) {
+            // Написать код смерти.
+            return true;
+        }
+        return false;
+    }
+
+    damage(damage) {
+        this.hp -= damage;
     }
 
 }

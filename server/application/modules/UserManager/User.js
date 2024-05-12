@@ -113,6 +113,29 @@ class User {
         this.status = 'a';
     }
 
+    fire() {
+        if(Date.now() - this.reloadTimestamp > 100) {
+            return true;
+        }
+        return false;
+    }
+
+    updateReloadtimestamp() {
+        this.reloadTimestamp = Date.now()
+    }
+
+    checkDead() {
+        if(this.hp < 0) {
+            // Написать код смерти.
+            return true;
+        }
+        return false;
+    }
+
+    damage(damage) {
+        this.hp -= damage;
+    }
+
 }
 
 module.exports = User;

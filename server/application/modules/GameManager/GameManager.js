@@ -1,40 +1,22 @@
 const BaseModule = require('../BaseModule/BaseModule');
 const Mob = require("./Mob.js");
+const Bullet = require("./Bullet.js");
+const GameMath = require('./GameMath');
+const easystarjs = require('easystarjs');
+
 const { SOCKETS, tankRoles, footRoles } = require("../../../config.js");
 
 class GameManager extends BaseModule {
     constructor(db, io, Mediator) {
         super(db, io, Mediator);
 
-        const easystarjs = require('easystarjs');
         this.easystar = new easystarjs.js();
-        const GameMath = require('./GameMath');
+        this.gameMath = new GameMath();
 
         this.tanks = {};
+        // id
         this.mobId = 0;
-        // this.gameMath = new GameMath();
-        // this.hashFlagGamers; // Флаг изменения состояния игроков 
-        // this.hashFlagBullets; // Флаг изменения состояния пуль
-        // this.hashFlagBodies; // Флаг изменения состояния тел
-        // this.hashFlagMobs; // Флаг изменения состояния мобов
-        // this.hashFlagMap; // Флаг изменения состояния карты
-        // this.recreateFlagMap; // Флаг пересоздани   
-        // this.mobs;
-        // this.gamers;
-        // this.tanks;
-        // this.game;
-        // this.bullets;
-        // this.winer;
-        // this.checkEnd;
-        // this.lowerGamersHpArr = [];
-        // this.lowerMobsHpArr = [];
-        // this.lowerTanksHpArr = [];
-        // this.lowerObjectsHpArr = [];
-        // this.deleteBulletsArr = [];
-        // this.moveBulletsArr = [];
-        // this.updateExpArr = [];
-        // this.gameMath;
-
+        this.objectId = 0;
         // 
         this.map;
         this.bullets = {};
@@ -55,28 +37,62 @@ class GameManager extends BaseModule {
         setInterval(this.updateScene(), 1000);
     }
 
-    async tankFire(user, x, y, angle) {
-        let tank = await this.db.getTankByGunnerId(user.id);
-        if (tank && (user.timer - tank.reloadTimestamp) > (user.reloadSpeed * 1000)) {
-            const dx = Math.cos(angle);
-            const dy = Math.sin(angle);
-            const bullet = new Bullet(); addBullet(user_id, x + dx, y + dy, dx, dy, 1); 
-            this.bullets[this.bulletsId] = bullet;
-            this.bulletId +=1;
-            tank.updateTimestamp(user_id);
+
+
+    getTankByGunnerId(gunnerId) {
+        for (const tank of Object.values(this.tanks)) {
+            if(tank.gunnerId === gunnerId) {
+                return tank;
+            }
         }
     }
 
+    getGamers() {
+        const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
+        const gamers = [];
+        for (const [id, user] of Object.entries(users)) {
+            if(user.roleId) {
+                gamers.push({id: id, user: user});
+            }
+        }
+        return gamers;
+    }
+
     // Выстрел 
-    infantryFire(user, x, y, angle, bulletType) {
-        if (user && (Date.now() - user.reload_timestamp) > (user.reloadSpeed * 1000)) {
+    tankFire(user, x, y, angle) {
+        let tank = this.getTankByGunnerId(user.id);
+        if (tank.fire()) {
             const dx = Math.cos(angle);
             const dy = Math.sin(angle);
-            const bullet = new Bullet(); //this.db.addBullet(user_id, x + 0.3 * dx, y + 0.3 * dy, dx, dy, bulletType);
+            const bullet = new Bullet(user.id, x + dx, y + dy, dx, dy, 1);
             this.bullets[this.bulletsId] = bullet;
-            
-            user.updateTimestamp();
+            this.bulletId +=1;
+            tank.updateTimestamp();
         }
+    }
+
+    infantryFire(user, x, y, angle, bulletType) {
+        if (user.fire()) {
+            const dx = Math.cos(angle);
+            const dy = Math.sin(angle);
+            const bullet = new Bullet(user.id, x + 0.3 * dx, y + 0.3 * dy, dx, dy, bulletType);
+            this.bullets[this.bulletsId] = bullet;
+            this.bulletId +=1;
+            user.updateReloadTimestamp();
+        }
+    }
+
+    mobFire(mob, x, y, angle, personId) {
+        if(mob.fire()) {
+            let dx = Math.cos(angle);
+            let dy = Math.sin(angle);
+            let bulletType = personId === 9 ? 1 : 0;
+            const bullet = new Bullet(null, x + dx, y + dy, dx, dy, bulletType);
+            this.bullets[this.bulletsId] = bullet;
+            this.bulletId +=1;
+            mob.updateReloadTimestamp();
+        }
+        
     }
 
     /*Map*/
@@ -154,16 +170,18 @@ class GameManager extends BaseModule {
             for (let i = mobsCounter; i < params[8]; i++) {
                 let point = this.generatePointWithoutObject(params[4], params[5], params[6], params[7]);
                 
-                const mob = new Mob(this.mobId,  point[0], point[1], Math.floor(Math.random() * (9 - 8 + 1)) + 8);
+                const mob = new Mob(point[0], point[1], Math.floor(Math.random() * (9 - 8 + 1)) + 8);
+                this.mobs[this.mobId] = mob;
+                this.mobId++;
             }
         }
     }
 
 
     addMobs() {
-        const user = this.mediator.get(this.TRIGGERS.ALL_USERS);
+        const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
         let mobsCount = Object.keys(this.mobs).length;
-        let gamerCount = 3 * Object.keys(this.users).length + 4 * Object.keys(this.tanks).length;
+        let gamerCount = 3 * Object.keys(users).length + 4 * Object.keys(this.tanks).length;
 
         // Максимальное количество мобов
         let allMobsCount = gamerCount + 32
@@ -188,18 +206,14 @@ class GameManager extends BaseModule {
 
 
 
-    mobFire(x, y, angle, personId) {
-        let dx = Math.cos(angle);
-        let dy = Math.sin(angle);
-        let bulletType = personId === 9 ? 1 : 0;
-        this.addBullet(-1, x + dx, y + dy, dx, dy, bulletType);
-        this.hashFlagBullets = true;
-    }
+    
 
     findTargetGamer(mob) {
-        let targetDistance = 1000;
+        const users = this.mediator.get(this.TRIGGERS.ALL_USERS).values();
+        const allGamers = users.concat(this.tanks.values());
+
+        const targetDistance = 1000;
         let target;
-        let allGamers = this.gamers.concat(this.tanks);
 
         allGamers.forEach(gamer => {
             // Дистанция до игрока
@@ -208,26 +222,27 @@ class GameManager extends BaseModule {
                 target = { distance: distance, x: gamer.x, y: gamer.y }
             }
         })
-        if (target) return target;
+        if (target) {
+            return target;
+        } else {
+            return false;
+        }
     }
 
 
     async mobAction(mob, angle) {
-        if (this.game.timer - mob.timestamp > mob.reloadSpeed * 1000) {
             this.mobFire(mob.x, mob.y, angle, mob.personId);
-            await this.rotateMob(angle, mob);
-            await this.updateMobTimestamp(mob);
-        }
+            mob.rotate(angle);
     }
 
     async moveMobs() {
-        if (this.gamers.length === 0 && this.tanks.length === 0)
+        if (this.getGamers().length === 0 && Objectvalues(this.tanks).length === 0)
             return 0
 
-        for (let mob of this.mobs) {
+        for (const [id, mob] of Object.entries(this.mobs)) {
             let path = [];
             // Проверка необходимости обновления пути моба
-            if ((this.game.timer - mob.path_update > 1000) || mob.path == []) {
+            if ((Date.now() - mob.pathUpdate > 1000) || mob.path == []) {
 
                 // Поиск целевого игрока
                 let targetGamer = this.findTargetGamer(mob);
@@ -246,46 +261,37 @@ class GameManager extends BaseModule {
                     this.easystar.findPath(Math.ceil(mob.x), Math.ceil(mob.y), Math.ceil(targetGamer.x), Math.ceil(targetGamer.y), async (mobPath) => {
                         if (mobPath) {
                             path = mobPath;
-                            await this.db.setMobPath(mob.id, JSON.stringify(path));
+                            mob.setPath(path);
                         }
                     });
                     this.easystar.calculate();
-
-                }
-                // Моб находится далеко от цели
-                else continue;
-            }
-            // Действие пути у моба еще активно
-            else {
-                path = await this.db.getMobPath(mob.id);
-                // Проверка наличия пути 
-                if (path) {
-                    if (path && path.length > 0) {
-                        let targetCoord = path[path.length - 1];
-                        let angle = this.gameMath.calculateAngle(targetCoord.x, targetCoord.y, mob.x, mob.y);
-                        await this.mobAction(mob, angle);
-
-                    } else continue;
-
+                } else { // Моб находится далеко от цели
+                    continue;
+                } 
+            } else { // Действие пути у моба еще активно
+                if (mob.path.length && mob.path.length > 0) {
+                    const targetCoord = path[path.length - 1];
+                    const angle = this.gameMath.calculateAngle(targetCoord.x, targetCoord.y, mob.x, mob.y);
+                    await this.mobAction(mob, angle);
                 } else continue;
             }
+
+
             if (path[1]) {
                 // Дистанция пройденная за один рендер
                 let distance = mob.movementSpeed * (this.game.timeout / 1000);
                 distance = distance > 1 ? 1 : distance;
-                let distanceToNextCell = this.gameMath.calculateDistance(mob.x, path[1].x, mob.y, path[1].y);
-                let newDistance = distance - distanceToNextCell;
+                const distanceToNextCell = this.gameMath.calculateDistance(mob.x, path[1].x, mob.y, path[1].y);
+                const newDistance = distance - distanceToNextCell;
                 let newCoords;
+             
                 if (newDistance > 0) {
                     newCoords = this.gameMath.calculateShiftPoint(path[1].x, path[1].y, path[2].x, path[2].y, newDistance);
-                }
-                else {
+                } else {
                     newCoords = this.gameMath.calculateShiftPoint(mob.x, mob.y, path[1].x, path[1].y, distance);
                 }
 
-                await this.db.moveMob(newCoords[0], newCoords[1], mob.id);
-                this.hashFlagMobs = true;
-
+                mob.move(newCoords[0], newCoords[1]);
             }
         }
     }
@@ -294,89 +300,86 @@ class GameManager extends BaseModule {
 /* Пули */t
 
     moveBullets() {
-        if (!this.bullets) {
+        if (!this.bullets.length) {
             return;
         }
-        for (let bullet of this.bullets) {
-            this.moveBullet(bullet.id, bullet.x2, bullet.y2, bullet.dx, bullet.dy);
+        for (const [id, bullet] of Object.entries(this.bullets)) {
+            this.moveBullet(id, bullet);
         }
-        this.hashFlagBullets = true;
     }
 
 
-    async moveBullet(id, x, y, dx, dy) {
-        if (x >= 150 || x <= 0 || y >= 120 || y <= 0) {
-            this.deleteBulletsArr.push(id);
+    async moveBullet(id, bullet) {
+        if (bullet.x >= 150 || bullet.x <= 0 || bullet.y >= 120 || bullet.y <= 0) {
+            delete this.bullets[id]
         } else {
-            let x2 = x + dx;
-            let y2 = y + dy;
-            this.moveBulletsArr.push({ id: id, x1: x, y1: y, x2: x2, y2: y2 });
+            bullet.move();
         }
     }
 
 
     async shootRegs() {
-        if (!this.bullets) {
+        if (!this.bullets.length) {
             return 0;
         }
-        for (let bullet of this.bullets) {
+        for (const [bulletId, bullet] of Object.entries(this.bullets)) {
             let currentHp = 0;
-            let damage = bullet.type == 0 ? 2 : 50; // Determine damage based on bullet type
+            let damage = bullet.type == 0 ? 2 : 50; 
             let shootFlag = false;
-            for (let gamer of this.gamers) {
-                if (bullet.user_id != gamer.id && gamer.hp > 0) {
-                    let range = this.gameMath.shootReg(gamer.x, gamer.y, bullet.x1, bullet.y1, bullet.x2, bullet.y2, 0.2);
+            for (const [gamerId, gamer] of this.getGamers()) {
+                if (bullet.userId != gamer.id && gamer.hp > 0) {
+                    let range = this.gameMath.shootReg(gamer.x, gamer.y, bullet.x, bullet.y, bullet.x + bullet.dx, bullet.y + bullet.dy, 0.2);
                     if (range) {
-                        currentHp = gamer.hp - damage;
-                        this.lowerGamersHpArr.push({ id: gamer.id, hp: currentHp });
-                        this.deleteBulletsArr.push(bullet.id);
-                        shootFlag = true;
-                        if (currentHp <= 0 && bullet.user_id != -1) {
-                            this.updateExpArr.push({ id: bullet.user_id, exp: -5 });
+                        gamer.damage(damage);
+                        if(gamer.checkDead()){
+                            const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
+                            delete users[gamerId];
+                            bullet.kill();
                         }
+                        delete this.bullets[bulletId];
                         break;
                     }
                 }
             }
             if (!shootFlag) {
-                for (let tank of this.tanks) {
-                    let range = this.gameMath.shootReg(tank.x, tank.y, bullet.x1, bullet.y1, bullet.x2, bullet.y2, 0.5);
+                for (const [tankId, tank] of Object.entries(this.tanks)) {
+                    let range = this.gameMath.shootReg(tank.x, tank.y, bullet.x, bullet.y, bullet.x + bullet.dx, bullet.y + bullet.dy, 0.5);
                     if (range) {
-                        currentHp = tank.hp - damage;
-                        this.lowerTanksHpArr.push({ id: tank.id, hp: currentHp });
-                        this.deleteBulletsArr.push(bullet.id);
-                        shootFlag = true;
-                        if (currentHp <= 0 && bullet.user_id != -1) {
-                            this.updateExpArr.push({ id: bullet.user_id, exp: -5 });
+                        tank.damage(damage);
+                        if(gamer.checkDead()){
+                            delete this.tanks[tankId];
+                            bullet.kill();
                         }
+                        delete this.bullets[bulletId];
                         break;
                     }
                 }
             }
 
             if (!shootFlag) {
-                for (let mob of this.mobs) {
-                    let range = this.gameMath.shootReg(mob.x, mob.y, bullet.x1, bullet.y1, bullet.x2, bullet.y2, 0.2);
+                for (const [mobId, mob] of  Object.entries(this.mobs)) {
+                    let range = this.gameMath.shootReg(mob.x, mob.y, bullet.x, bullet.y, bullet.x + bullet.dx, bullet.y + bullet.dy, 0.2);
                     if (range) {
-                        mob.hp -= damage;
-                        this.lowerMobsHpArr.push({ id: mob.id, hp: currentHp });
-                        this.deleteBulletsArr.push(bullet.id);
-                        shootFlag = true;
-                        if (currentHp <= 0 && bullet.user_id != -1) {
-                            this.updateExpArr.push({ id: bullet.userId, exp: 10 });
+                        mob.damage(damage);
+                        if(mob.checkDead()){
+                            delete this.mobs[mobId];
+                            bullet.kill();
                         }
+                        delete this.bullets[bulletId];
                         break;
                     }
                 }
             }
             if (!shootFlag) {
-                for (const object of this.map.dynamic) {
-                    if ((bullet.x2 >= object.x && bullet.x2 <= object.x + object.sizeX) && (bullet.y2 >= object.y && bullet.y2 <= object.y + object.sizeY)) {
+                for (const [objectId, object] of Object.entries(this.objects.dynamic)) {
+                    if ((bullet.x + bullet.dx >= object.x && bullet.x + bullet.dx <= object.x + object.sizeX) && (bullet.y + bullet.dy >= object.y && bullet.y + bullet.dy <= object.y + object.sizeY)) {
                         if (object.status != 'i') {
-                            this.lowerObjectsHpArr.push({ id: object.id, hp: object.hp - damage });
+                            object.damage(damage);
+                            if(object.checkDead()) {
+                                delete this.objects.dynamic[objectId];
+                            }
                         }
-                        this.deleteBulletsArr.push(bullet.id);
-                        shootFlag = true;
+                        delete this.bullets[bulletId];
                         break;
                     }
                 }
@@ -384,164 +387,53 @@ class GameManager extends BaseModule {
         }
     }
 
-
-    /* Удаление мертвецов */
-
-    async checkDead() {
-        let deleteGamers = [];
-        let deleteMobs = [];
-        let deleteObjects = [];
-        let bodies = [];
-        for (let gamer of this.gamers) {
-            if (gamer.hp <= 0) {
-                deleteGamers.push(gamer.id);
-                bodies.push({ x: gamer.x, y: gamer.y, angle: gamer.angle, type: 0, isMob: 0 });
-            }
-        }
-        for (let mob of this.mobs) {
-            if (mob.hp <= 0) {
-                deleteMobs.push(mob.id);
-                bodies.push({ x: mob.x, y: mob.y, angle: mob.angle, type: 0, isMob: 1 });
-            }
-        }
-        for (let tank of this.tanks) {
-            if (tank.hp <= 0) {
-                this.db.killTank(tank.id);
-                if (tank.commander_id) {
-                    this.db.killGamerInHeavyTank(tank.driver_id, tank.gunner_id, tank.commander_id);
-                    bodies.push({ x: tank.x, y: tank.y, angle: tank.angle, type: 1, isMob: 0 });
-                    bodies.push({ x: tank.x, y: tank.y, angle: tank.tower_angle, type: 3, isMob: 0 });
-                }
-                else {
-                    this.db.killGamerInMiddleTank(tank.driver_id, tank.gunner_id);
-                    bodies.push({ x: tank.x, y: tank.y, angle: tank.angle, type: 1, isMob: 0 });
-                    bodies.push({ x: tank.x, y: tank.y, angle: tank.tower_angle, type: 4, isMob: 0 });
-                }
-                this.hashFlagGamers = true;
-            }
-        }
-        for (let object of this.objects) {
-            if (object.hp <= 0) {
-                deleteObjects.push(object.id);
-            }
-        }
-
-        if (deleteGamers.length) {
-            deleteGamers.length === 1 ? await this.db.killGamer(deleteGamers[0]) : await this.db.killGamersById(deleteGamers);
-            this.hashFlagGamers = true;
-        }
-        if (deleteObjects.length) {
-            deleteObjects.length === 1 ? await this.db.killObject(deleteObjects[0]) : await this.db.killObjectsById(deleteObjects);
-            this.recreateFlagMap = true
-            this.hashFlagMap = true;
-        }
-        if (deleteMobs.length) {
-            deleteMobs.length === 1 ? await this.db.killMob(deleteMobs[0]) : await this.db.deleteMobsById(deleteMobs);
-            this.hashFlagMobs = true;
-        }
-        if (bodies.length) {
-            await this.db.setBodies(bodies);
-            this.hashFlagBodies = true;
-        }
-    }
+    // /* Конец игры */
+    // async playerBannermanInZone() {
+    //     let bannerman = await this.db.getBannerman();
+    //     bannerman = bannerman[0];
+    //     if (!bannerman) {
+    //         if (this.game.pBanner_timestamp != 0) {
+    //             await this.db.updatePlayerBannermanTimestamp(0);
+    //             this.game.pBanner_timestamp = 0;
+    //         }
+    //         return false;
+    //     }
+    //     let dist = this.gameMath.calculateDistance(bannerman.x, bannerman.mobBaseX, bannerman.y, bannerman.mobBaseY);
+    //     if (dist <= bannerman.baseRadius) {
+    //         if (this.game.pBanner_timestamp == 0) {
+    //             await this.db.updatePlayerBannermanTimestamp(this.game.timer);
+    //             this.game.pBanner_timestamp = this.game.timer;
+    //         }
+    //         return true;
+    //     }
+    //     if (this.game.pBanner_timestamp != 0) {
+    //         await this.db.updatePlayerBannermanTimestamp(0);
+    //         this.game.pBanner_timestamp = 0;
+    //     }
+    //     return false;
+    // }
 
 
-    /* Конец игры */
-
-    async playerBannermanInZone() {
-        let bannerman = await this.db.getBannerman();
-        bannerman = bannerman[0];
-        if (!bannerman) {
-            if (this.game.pBanner_timestamp != 0) {
-                await this.db.updatePlayerBannermanTimestamp(0);
-                this.game.pBanner_timestamp = 0;
-            }
-            return false;
-        }
-        let dist = this.gameMath.calculateDistance(bannerman.x, bannerman.mobBaseX, bannerman.y, bannerman.mobBaseY);
-        if (dist <= bannerman.baseRadius) {
-            if (this.game.pBanner_timestamp == 0) {
-                await this.db.updatePlayerBannermanTimestamp(this.game.timer);
-                this.game.pBanner_timestamp = this.game.timer;
-            }
-            return true;
-        }
-        if (this.game.pBanner_timestamp != 0) {
-            await this.db.updatePlayerBannermanTimestamp(0);
-            this.game.pBanner_timestamp = 0;
-        }
-        return false;
-    }
+    // async endGame() {
+    //     let player = await this.playerBannermanInZone();
+    //     if (player) {
+    //         if (this.game.timer - this.game.pBanner_timestamp >= this.game.banner_timeout) {
+    //             await this.db.deleteBodies();
+    //             await this.db.deleteBullets();
+    //             await this.db.addBannermanExp(400);
+    //             await this.db.addWinnerExp(200);
+    //             await this.db.deleteTanks();
+    //             await this.db.deleteMobs();
+    //             await this.db.setWinners();
+    //             await this.db.updateObjectsHp();
+    //         }
+    //     }
+    // }
 
 
-    async endGame() {
-        let player = await this.playerBannermanInZone();
-        if (player) {
-            if (this.game.timer - this.game.pBanner_timestamp >= this.game.banner_timeout) {
-                await this.db.deleteBodies();
-                await this.db.deleteBullets();
-                await this.db.addBannermanExp(400);
-                await this.db.addWinnerExp(200);
-                await this.db.deleteTanks();
-                await this.db.deleteMobs();
-                await this.db.setWinners();
-                await this.db.updateObjectsHp();
-            }
-        }
-    }
-
-    /*  Обновление данных */
-    async lowerGamersHp() {
-        if (this.lowerGamersHpArr.length > 0) await this.db.damageGamers(this.lowerGamersHpArr);
-        this.lowerGamersHpArr = [];
-    }
-
-    async lowerObjectsHp() {
-        if (this.lowerObjectsHpArr.length > 0) {
-            await this.db.damageObjects(this.lowerObjectsHpArr);
-            this.objects = await this.db.getAllObjects();
-            this.recreateFlagMap = true;
-            this.lowerObjectsHpArr = [];
-        }
-
-    }
-
-    async lowerTanksHp() {
-        if (this.lowerTanksHpArr.length > 0) {
-            await this.db.damageTanks(this.lowerTanksHpArr);
-            this.lowerTanksHpArr = [];
-        }
-    }
-
-    async lowerMobsHp() {
-        if (this.lowerMobsHpArr.length > 0) {
-            await this.db.damageMobs(this.lowerMobsHpArr);
-            this.lowerMobsHpArr = [];
-        }
-    }
-
-    async updateBullets() {
-        if (this.moveBulletsArr.length > 0) await this.db.moveBullets(this.moveBulletsArr);
-        this.moveBulletsArr = [];
-    }
-
-    async deleteBullets() {
-        if (this.deleteBulletsArr.length > 0) {
-            this.deleteBulletsArr.length === 1 ? await this.db.deleteBullet(this.deleteBulletsArr[0]) : await this.db.deleteBulletsById(this.deleteBulletsArr);
-            this.deleteBulletsArr = [];
-        }
-    }
-
-    async updateExp() {
-        if (this.updateExpArr.length) {
-            this.updateExpArr.length === 1 ? await this.db.updateOneExp(this.updateExpArr[0].exp, this.updateExpArr[0].id) : await this.db.updateExp(this.updateExpArr);
-            this.updateExpArr = [];
-        }
-    }
 
 
     // Обновление сцены
-
     updateScene() {
         // Мобы
         this.checkMap();
@@ -550,18 +442,6 @@ class GameManager extends BaseModule {
         // Пули
         this.moveBullets();
         this.shootRegs();
-        this.updateBullets();
-        this.deleteBullets();
-        // Понижение хп
-        // this.lowerObjectsHp();
-        // this.lowerGamersHp();
-        // this.lowerTanksHp();
-        // this.lowerMobsHp();
-        // this.updateExp();
-        // Проверка знаменосца
-        // this.endGame();
-        // Смерть сущности
-        this.checkDead();
 
     }
 
