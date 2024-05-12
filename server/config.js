@@ -11,10 +11,10 @@ exports.SOCKETS = {
     GET_USER_INFO: "GET_USER_INFO",
     MOTION: "MOTION",
     FIRE: "FIRE",
-    ERROR: "ERROR",
     TOKEN_VERIFICATION: "TOKEN_VERIFICATION",
     GAME_MAP: "GAME_MAP",
     GAME_ENTITIES: "GAME_ENTITIES",
+    ERROR: "ERROR",
 };
 
 exports.MEDIATOR = {
@@ -22,6 +22,7 @@ exports.MEDIATOR = {
         GET_USER: "GET_USER",
         ALL_USERS: "ALL_USERS",
         GAME_TANKS: "GAME_TANKS",
+        // GET_TANK: "GET_TANK",
     },
 };
 

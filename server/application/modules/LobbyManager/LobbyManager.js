@@ -13,7 +13,6 @@ class LobbyManager extends BaseModule {
 
         this.ranks = {};
         this.initRanks();
-
         
         this.roles = {}
         this.initRoles(); 
