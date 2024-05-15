@@ -1,3 +1,5 @@
+const { heavyTankRoles, gamerRoles } = require("../../../config");
+
 class TankLobby {
     constructor({ db, crypto, uuid}) {
         this.db = db;
@@ -22,19 +24,19 @@ class TankLobby {
     }
 
     addGamer(user, roleId, socketId) {
-        this.type = [3, 4, 5].includes(roleId) ? 0 : 1;
-        this.socketIds.push(socketId)
+        this.type = heavyTankRoles.includes(roleId) ? 0 : 1;
+        this.socketIds.push(socketId);
 
         switch (roleId) {
-            case 3:
-            case 7:
+            case gamerRoles.heavyTankGunner:
+            case gamerRoles.middleTankGunner:
                 this.gunnerId = user.id;
                 break;
-            case 4:
-            case 6:
+            case gamerRoles.heavyTankMeh:
+            case gamerRoles.middleTankMeh:
                 this.driverId = user.id;
                 break;
-            case 5:
+            case gamerRoles.heavyTankCommander:
                 this.commanderId = user.id;
                 break;
         }

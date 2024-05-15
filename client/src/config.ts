@@ -53,6 +53,8 @@ export enum ESOCKET {
     FIRE = "FIRE",
     ERROR = "ERROR",
     TOKEN_VERIFICATION = "TOKEN_VERIFICATION",
+    GAME_MAP = "GAME_MAP",
+    GAME_ENTITIES = "GAME_ENTITIES",
 }
 
 export const MAP_SIZE = {

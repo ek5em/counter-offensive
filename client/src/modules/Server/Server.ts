@@ -45,7 +45,7 @@ export default class Server {
             this.socket.on(
                 ESOCKET.GET_MESSAGE,
                 (answer: IAnswer<IMessage[]>) => {
-                    mediator.call(this.events.NEW_MESSAGE, answer.data);
+                    mediator.call(this.events.NEW_MESSAGE, [...answer.data]);
                 }
             );
 
@@ -72,15 +72,20 @@ export default class Server {
                 this.STORE.setToken(null);
             });
 
-            this.socket.on(ESOCKET.TOKEN_VERIFICATION, () => {
-                this.STORE.setToken(this.STORE.getCookie().token);
-            });
+            this.socket.on(
+                ESOCKET.TOKEN_VERIFICATION,
+                (answer: IAnswer<IToken>) => {
+                    this.STORE.setToken(answer.data.token);
+                }
+            );
 
             this.socket.on(
                 ESOCKET.SET_GAMER_ROLE,
                 (answer: IAnswer<{ tankId: number; tankType: ETank }>) => {
                     if (answer.data.tankId) {
                         mediator.call(this.events.GO_TO_TANK, answer.data);
+                    } else {
+                        this.getUser();
                     }
                 }
             );
@@ -91,6 +96,15 @@ export default class Server {
 
             this.socket.on(ESOCKET.GET_SCENE, (answer: IAnswer<IScene>) => {
                 mediator.call(this.events.UPDATE_SCENE, answer.data);
+            });
+
+            this.socket.on(ESOCKET.GAME_MAP, (answer) => {
+                console.log(answer);
+            });
+            this.socket.on(ESOCKET.GAME_ENTITIES, (answer) => {});
+
+            this.socket.on(ESOCKET.MOTION, () => {
+                mediator.call(this.events.MOVE_UNIT, true);
             });
         }
     }
@@ -294,7 +308,7 @@ export default class Server {
             }
         } else {
             this.socket?.emit(ESOCKET.SET_GAMER_ROLE, {
-                token: this.mediator.get(this.triggers.token),
+                token: this.STORE.getToken(),
                 role,
                 tankId,
             });
@@ -306,18 +320,24 @@ export default class Server {
             this.STORE.setLobby(MOCK.lobby);
         } else {
             this.socket?.emit(ESOCKET.GET_LOBBY, {
-                token: this.mediator.get(this.triggers.TOKEN),
+                token: this.STORE.getToken(),
             });
         }
     }
 
     // ИГРА
 
+    getMap() {
+        this.socket?.emit(ESOCKET.GAME_MAP, {
+            token: this.STORE.getToken(),
+        });
+    }
+
     getScene() {
         if (this.useMock) {
         } else {
             this.socket?.emit(ESOCKET.GET_SCENE, {
-                token: this.mediator.get(this.triggers.TOKEN),
+                token: this.STORE.getToken(),
             });
         }
     }
@@ -326,7 +346,7 @@ export default class Server {
         if (this.useMock) {
         } else {
             this.socket?.emit(ESOCKET.SUICIDE, {
-                token: this.mediator.get(this.triggers.TOKEN),
+                token: this.STORE.getToken(),
             });
         }
     }
@@ -335,7 +355,7 @@ export default class Server {
         if (this.useMock) {
         } else {
             this.socket?.emit(ESOCKET.MOTION, {
-                token: this.mediator.get(this.triggers.TOKEN),
+                token: this.STORE.getToken(),
                 x,
                 y,
                 angle,
@@ -347,7 +367,7 @@ export default class Server {
         if (this.useMock) {
         } else {
             this.socket?.emit(ESOCKET.FIRE, {
-                token: this.mediator.get(this.triggers.TOKEN),
+                token: this.STORE.getToken(),
                 x,
                 y,
                 angle,

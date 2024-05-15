@@ -42,10 +42,11 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
 
         useEffect(() => {
             mediator.subscribe(NEW_MESSAGE, (newMessages: IMessage[]) => {
-                setMessages(newMessages.reverse());
+                setMessages(newMessages);
             });
 
             mediator.subscribe(SEND_MESSAGE_STATUS, (status: true | null) => {
+                console.log(status);
                 if (status) {
                     setInputText("");
                     scrollToBottom();
@@ -60,8 +61,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
         }, [isOpen]);
 
         const scrollToBottom = () => {
-            messagesEndRef.current &&
-                messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         };
 
         const handleInputChange = (
@@ -94,38 +94,45 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                             <div className={styles.messages}>
                                 {messages.length ? (
                                     <>
-                                        {messages.map((message, i) => (
-                                            <div
-                                                key={i}
-                                                className={cn(styles.message, {
-                                                    [styles.myMessge]:
-                                                        user?.id ===
-                                                        message.userId,
-                                                })}
-                                            >
-                                                <span className={styles.name}>
-                                                    [{message.nickname}
-                                                    <img
-                                                        src={getRankImg(
-                                                            message.rank_name
-                                                        )}
-                                                        alt="rank"
-                                                        className={
-                                                            styles.rank_img
+                                        {[...messages]
+                                            .reverse()
+                                            .map((message, i) => (
+                                                <div
+                                                    key={i}
+                                                    className={cn(
+                                                        styles.message,
+                                                        {
+                                                            [styles.myMessge]:
+                                                                user?.id ===
+                                                                message.userId,
                                                         }
-                                                    />
-                                                    ]
-                                                </span>
-                                                : {}
-                                                <span
-                                                    className={
-                                                        styles.message_text
-                                                    }
+                                                    )}
                                                 >
-                                                    {message.text}
-                                                </span>
-                                            </div>
-                                        ))}
+                                                    <span
+                                                        className={styles.name}
+                                                    >
+                                                        [{message.nickname}
+                                                        <img
+                                                            src={getRankImg(
+                                                                message.rank_name
+                                                            )}
+                                                            alt="rank"
+                                                            className={
+                                                                styles.rank_img
+                                                            }
+                                                        />
+                                                        ]
+                                                    </span>
+                                                    : {}
+                                                    <span
+                                                        className={
+                                                            styles.message_text
+                                                        }
+                                                    >
+                                                        {message.text}
+                                                    </span>
+                                                </div>
+                                            ))}
                                         <div ref={messagesEndRef} />
                                     </>
                                 ) : (

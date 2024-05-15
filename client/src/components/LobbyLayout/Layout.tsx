@@ -1,19 +1,23 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import cn from "classnames";
-import { useSetRoleHandler } from "../../hooks/useSetRoleHandler";
 import { ETank } from "../../modules/Server/interfaces";
+import { UnitButton } from "../UI";
 import { Header } from "..";
 import { tank2, tank3 } from "./assets";
 
 import styles from "./Layout.module.scss";
-import { UnitButton } from "../UI";
+import { useGlobalContext } from "../../hooks/useGlobalContext";
 
 export const withLayout = (Component: FunctionComponent) => {
     return (): JSX.Element => {
-        const setRoleHandler = useSetRoleHandler();
         const navigate = useNavigate();
         const location = useLocation();
+        const {server} = useGlobalContext();
+
+        useEffect(() => {
+            server.getLobby();
+        }, [])
 
         const path = location.pathname.split("/")[1];
 

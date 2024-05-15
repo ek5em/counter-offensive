@@ -8,12 +8,13 @@ class Tank {
         this.hp;
         this.x;
         this.y;
-        this.angle;
+        this.angle = 0;
         this.reloadTimestamp;
         this.gunnerId;
         this.driverId;
         this.commanderId;
-        this.towerAngle;
+        this.towerAngle = 0;
+        this.commanderAngle = 0;
     }
 
     addTank(type, gunnerId, driverId, commanderId = null) {
@@ -46,7 +47,20 @@ class Tank {
     damage(damage) {
         this.hp -= damage;
     }
-    
+
+    motion(x, y, angle) {
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+    }
+ 
+    rotateTower(angle) {
+        this.towerAngle = angle;
+    }
+
+    commanderRotate(angle) {
+        this.commanderAngle = angle;
+    }
 }
 
 module.exports = Tank;

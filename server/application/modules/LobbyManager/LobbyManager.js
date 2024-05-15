@@ -1,7 +1,12 @@
 const BaseModule = require("../BaseModule/BaseModule");
 const TankLobby = require("./TankLobby.js");
-const Tank = require("../GameManager/Tank.js")
-const { SOCKETS } = require("../../../config.js");
+const Tank = require("../GameManager/Tank.js");
+const {
+    SOCKETS,
+    footRoles,
+    tankRoles,
+    gamerRoles,
+} = require("../../../config.js");
 
 class LobbyManager extends BaseModule {
     constructor(db, io, Mediator) {
@@ -13,9 +18,9 @@ class LobbyManager extends BaseModule {
 
         this.ranks = {};
         this.initRanks();
-        
-        this.roles = {}
-        this.initRoles(); 
+
+        this.roles = {};
+        this.initRoles();
 
         this.startGameTime;
 
@@ -41,8 +46,8 @@ class LobbyManager extends BaseModule {
         this.ranks = ranks.reduce((acc, rank) => {
             acc[rank.experience] = {
                 rankName: rank.name,
-                level: rank.id
-            } 
+                level: rank.id,
+            };
             return acc;
         }, {});
     }
@@ -64,28 +69,36 @@ class LobbyManager extends BaseModule {
     }
 
     getRankByExperience(experience) {
-        for (const [exp, rank] of Object.entries(this.ranks).sort(([a], [b]) => b - a)) {
+        for (const [exp, rank] of Object.entries(this.ranks).sort(
+            ([a], [b]) => b - a
+        )) {
             if (experience >= exp) {
-                for(const [nextExp, nextRank] of Object.entries(this.ranks)) {
-                    if(nextRank.level === rank.level + 1) {
+                for (const [nextExp, nextRank] of Object.entries(this.ranks)) {
+                    if (nextRank.level === rank.level + 1) {
                         return {
                             ...rank,
-                            nextRank: nextExp - experience
+                            nextRank: nextExp - experience,
                         };
                     }
                 }
             }
         }
     }
-    
+
     tankRoleField(roleId) {
-        if (roleId === 3 || roleId === 7) {
+        if (
+            roleId === gamerRoles.heavyTankGunner ||
+            roleId === gamerRoles.middleTankGunner
+        ) {
             return "gunner_id";
         }
-        if (roleId === 4 || roleId === 6) {
+        if (
+            roleId === gamerRoles.heavyTankMeh ||
+            roleId === gamerRoles.middleTankMeh
+        ) {
             return "driver_id";
         }
-        if (roleId === 5) {
+        if (roleId === gamerRoles.heavyTankCommander) {
             return "commander_id";
         }
     }
@@ -93,8 +106,8 @@ class LobbyManager extends BaseModule {
     checkBannermanAvailability() {
         const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
 
-        for(const user of Object.entries(users)) {
-            if (user.role === 2) {
+        for (const user of Object.entries(users)) {
+            if (user.role === gamerRoles.bannerman) {
                 return false;
             }
         }
@@ -105,10 +118,15 @@ class LobbyManager extends BaseModule {
         const gameTanks = this.mediator.get(this.TRIGGERS.GAME_TANKS);
         const gameTank = new Tank({ db: this.db });
         if (tank.type) {
-            gameTank.addTank(tank.type,  tank.driverId, tank.gunnerId)
+            gameTank.addTank(tank.type, tank.driverId, tank.gunnerId);
             delete this.middleTanks[tankId];
         } else {
-            gameTank.addTank(tank.type,  tank.driverId, tank.gunnerId, tank.commanderId)
+            gameTank.addTank(
+                tank.type,
+                tank.driverId,
+                tank.gunnerId,
+                tank.commanderId
+            );
             delete this.heavyTanks[tankId];
         }
         gameTanks[tank.id] = gameTank;
@@ -117,14 +135,13 @@ class LobbyManager extends BaseModule {
     deleteEmptyTank() {
         for (const [id, tank] of Object.entries(this.heavyTanks)) {
             if (!tank.driverId && !tank.gunnerId && !tank.commanderId) {
-                console.log(this.heavyTanks[id])
-                delete this.heavyTanks[id]
+                delete this.heavyTanks[id];
             }
         }
 
         for (const [id, tank] of Object.entries(this.middleTanks)) {
             if (!tank.driverId && !tank.gunnerId) {
-                delete this.middleTanks[id]
+                delete this.middleTanks[id];
             }
         }
     }
@@ -135,21 +152,16 @@ class LobbyManager extends BaseModule {
         const tank = tanks[tankId];
         if (
             (tank.type && tank.gunnerId && tank.driverId) ||
-            (!tank.type &&
-                tank.gunnerId &&
-                tank.driverId &&
-                tank.commanderId)
+            (!tank.type && tank.gunnerId && tank.driverId && tank.commanderId)
         ) {
             this.addTank(tank, tankId);
         }
     }
 
-
-    
     // Когда будет готовая игра на активных записях переделать.
     addGamer(user, roleId) {
         const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
-        if(Object.values(users).find(user => user.roleId)) {
+        if (Object.values(users).find((user) => user.roleId)) {
             this.startGameTime = Date.now();
         }
         this.deleteGamerFromTankLobby(user.id);
@@ -158,21 +170,25 @@ class LobbyManager extends BaseModule {
 
     deleteGamerFromTankLobby(userId) {
         const tanks = { ...this.heavyTanks, ...this.middleTanks };
-        const tank = Object.values(tanks).find(tank => tank.driverId === userId || tank.gunnerId === userId || tank.commanderId === userId);
-        if(!tank) {
+        const tank = Object.values(tanks).find(
+            (tank) =>
+                tank.driverId === userId ||
+                tank.gunnerId === userId ||
+                tank.commanderId === userId
+        );
+        if (!tank) {
             return;
         }
-        if(tank.driverId === userId) {
+        if (tank.driverId === userId) {
             tank.driverId = null;
-        } else if(tank.gunnerId === userId) {
+        } else if (tank.gunnerId === userId) {
             tank.gunnerId = null;
-        } else if(tank.commanderId === userId) {
-            tank.commanderId = null; 
+        } else if (tank.commanderId === userId) {
+            tank.commanderId = null;
         }
     }
 
     setTankRoleHandler(user, roleId, tankId) {
-        console.log(tankId)
         const gamerRank = this.getRankByExperience(user.experience);
         const minPersonLevel = this.roles[roleId];
         // Проверка доступности роли
@@ -187,16 +203,15 @@ class LobbyManager extends BaseModule {
         const tanks = { ...this.heavyTanks, ...this.middleTanks };
 
         // Проверка наличия танкайди
-        if (!tankId){
-            console.log('dasdsadasd');
+        if (!tankId) {
             const tank = new TankLobby({
-                db: this.db, 
+                db: this.db,
                 crypto: this.crypto,
-                uuid: this.uuid
+                uuid: this.uuid,
             });
             this.addGamer(user, roleId);
             tank.addGamer(user, roleId);
-            if(tank.type) {
+            if (tank.type) {
                 this.middleTanks[this.nowTankId] = tank;
             } else {
                 this.heavyTanks[this.nowTankId] = tank;
@@ -208,26 +223,26 @@ class LobbyManager extends BaseModule {
         const tank = tanks[tankId];
         let is_free = false;
         switch (roleId) {
-            case 3:
-            case 7:
+            case gamerRoles.heavyTankGunner:
+            case gamerRoles.middleTankGunner:
                 is_free = !tank.gunnerId;
                 break;
-            case 4:
-            case 6:
+            case gamerRoles.heavyTankMeh:
+            case gamerRoles.middleTankMeh:
                 is_free = !tank.driverId;
                 break;
-            case 5:
+            case gamerRoles.heavyTankCommander:
                 is_free = !tank.commanderId;
                 break;
         }
-        
+
         if (!is_free) {
             return 238;
-        } 
+        }
 
         this.addGamer(user, roleId);
         tank.addGamer(user, roleId);
-        if(tank.type) {
+        if (tank.type) {
             this.middleTanks[tankId] = tank;
         } else {
             this.heavyTanks[tankId] = tank;
@@ -238,17 +253,22 @@ class LobbyManager extends BaseModule {
 
     setBannerman(user) {
         const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
-        if(!Object.values(users).find(user => user.roleId === 2)) {
-            this.addGamer(user, 2);
+        if (
+            !Object.values(users).find(
+                (user) => user.roleId === gamerRoles.bannerman
+            )
+        ) {
+            this.addGamer(user, gamerRoles.bannerman);
             return true;
         }
         return 237;
-
     }
 
     setGeneral(user) {
         const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
-        const nowPerson = Object.values(users).find(user => user.roleId === 1);
+        const nowPerson = Object.values(users).find(
+            (user) => user.roleId === gamerRoles.general
+        );
         const gamerRank = this.getRankByExperience(user.experience);
         const minPersonLevel = this.roles[1];
 
@@ -258,28 +278,31 @@ class LobbyManager extends BaseModule {
         }
 
         if (nowPerson) {
-            if(user.experience < nowPerson.experience) {
+            if (user.experience < nowPerson.experience) {
                 return 235;
             }
             // Подготовка к установке роли
             delete this.users[nowPerson.id];
         }
-      
-        this.addGamer(user, 1);
+
+        this.addGamer(user, gamerRoles.general);
         return true;
     }
 
     async setFootRoleHandler(user, roleId) {
-        // Установка пехотина(РПГшника)
-        if ([8, 9].includes(roleId)) {
+        if (
+            roleId === gamerRoles.infantry ||
+            roleId === gamerRoles.infantryRPG
+        ) {
             this.addGamer(user, roleId);
             return true;
-        } else if ([1, 2].includes(roleId)) {
-            if (roleId === 1) {
-                return this.setGeneral(user);
-            } else if (roleId === 2) {
-                return this.setBannerman(user);
-            }
+        }
+        if (roleId === gamerRoles.general) {
+            return this.setGeneral(user);
+        }
+
+        if (roleId === gamerRoles.bannerman) {
+            return this.setBannerman(user);
         }
     }
 
@@ -288,7 +311,7 @@ class LobbyManager extends BaseModule {
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
 
         if (user && user.token) {
-            if ([1, 2, 8, 9].includes(role)) {
+            if (footRoles.includes(role)) {
                 const setRole = this.setFootRoleHandler(user, role);
                 if (Number.isInteger(setRole)) {
                     socket.emit(SOCKETS.ERROR, this.answer.bad(setRole));
@@ -300,45 +323,47 @@ class LobbyManager extends BaseModule {
                     this.updateLobbyToAll();
                 }
                 return;
-                    
-            } else if ([3, 4, 5, 6, 7].includes(role)) {
-                const setRole = this.setTankRoleHandler(
-                    user,
-                    role,
-                    tankId
-                );
+            } else if (tankRoles.includes(role)) {
+                const setRole = this.setTankRoleHandler(user, role, tankId);
                 if (Number.isInteger(setRole))
                     socket.emit(SOCKETS.ERROR, this.answer.bad(setRole));
                 else {
                     const tank = this.getTankByUserId(user.id);
-                    
+
                     this.updateLobbyToAll();
                     // Нужно сделать так что бы всем танкам отправлялось сообщение если танк заполнился
                     socket.emit(
                         SOCKETS.SET_GAMER_ROLE,
-                        this.answer.good({ tankId: Number(tank.id), tankType: tank.type })
+                        this.answer.good({
+                            tankId: Number(tank.id),
+                            tankType: tank.type,
+                        })
                     );
                     this.updateLobbyToAll();
                 }
                 return;
             } else {
                 socket.emit(SOCKETS.ERROR, this.answer.bad(463));
-                return ;
+                return;
             }
         } else {
             socket.emit(SOCKETS.ERROR, this.answer.bad(401));
-            return; 
-        } 
+            return;
+        }
     }
 
-    getTankByUserId(userId){
+    getTankByUserId(userId) {
         const tanks = { ...this.heavyTanks, ...this.middleTanks };
         for (const [id, tank] of Object.entries(tanks)) {
-            if(tank.driverId === userId || tank.gunnerId === userId || tank.commanderId === userId) {
+            if (
+                tank.driverId === userId ||
+                tank.gunnerId === userId ||
+                tank.commanderId === userId
+            ) {
                 return {
                     ...tank,
-                    id
-                }
+                    id,
+                };
             }
         }
     }
@@ -346,7 +371,7 @@ class LobbyManager extends BaseModule {
     getGamer(user) {
         if (user.roleId) {
             let role = this.roles[user.roleId];
-            if ([3, 4, 5, 6, 7].includes(user.roleId)) {
+            if (tankRoles.includes(user.roleId)) {
                 let tank = this.getTankByUserId(user.id);
                 if (tank) {
                     return {
@@ -360,7 +385,7 @@ class LobbyManager extends BaseModule {
                     };
                 } else {
                     return false;
-                } 
+                }
             }
             return {
                 personId: user.roleId,
@@ -377,7 +402,7 @@ class LobbyManager extends BaseModule {
     getTanks() {
         const heavyTank = [];
         const middleTank = [];
-    
+
         for (const id in this.heavyTanks) {
             const tank = this.heavyTanks[id];
             heavyTank.push({
@@ -387,7 +412,7 @@ class LobbyManager extends BaseModule {
                 Commander: !!tank.commanderId,
             });
         }
-    
+
         for (const id in this.middleTanks) {
             const tank = this.middleTanks[id];
             middleTank.push({
@@ -396,10 +421,9 @@ class LobbyManager extends BaseModule {
                 Gunner: !!tank.gunnerId,
             });
         }
-    
+
         return { heavyTank: heavyTank, middleTank: middleTank };
     }
-    
 
     getUserInfo(data = {}, socket) {
         const { token } = data;
@@ -414,7 +438,7 @@ class LobbyManager extends BaseModule {
                 nickname: user.nickname,
                 rank_name: rank.rankName,
                 gamer_exp: user.experience,
-                next_rank: rank.nextRank
+                next_rank: rank.nextRank,
             };
             result.is_alive = this.getGamer(user);
             socket.emit(SOCKETS.GET_USER_INFO, this.answer.good(result));
@@ -425,33 +449,34 @@ class LobbyManager extends BaseModule {
 
     // Дописать
     getLobbyInfo() {
-
         this.deleteEmptyTank();
         const bannermanAvailability = this.checkBannermanAvailability();
         const tanks = this.getTanks();
-        
+
         return {
             bannerman: bannermanAvailability,
-            tanks: tanks
-        }
+            tanks: tanks,
+        };
     }
 
     // Дописать
     updateLobbyToAll() {
         const lobbyState = this.getLobbyInfo();
         this.io.emit(SOCKETS.GET_LOBBY, this.answer.good(lobbyState));
-        return ;
+        return;
     }
 
     getLobby(data = {}, socket) {
-        const { token } = data
+        const { token } = data;
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
 
         if (user && user.token) {
             const lobbyState = this.getLobbyInfo();
             socket.emit(SOCKETS.GET_LOBBY, this.answer.good(lobbyState));
             return;
-        } else socket.emit(SOCKETS.ERROR, this.answer.bad(401));
+        } else {
+            socket.emit(SOCKETS.ERROR, this.answer.bad(401));
+        }
     }
 
     suicideAndEndTanks(target1Id, target2Id, userId, tankId) {
@@ -464,8 +489,7 @@ class LobbyManager extends BaseModule {
         if (userId) {
             users[userId].suicide();
         }
-        delete gameTanks[tankId]
-        
+        delete gameTanks[tankId];
     }
 
     async suicide(data = {}, socket) {
@@ -476,7 +500,7 @@ class LobbyManager extends BaseModule {
             const tank = this.getTankByUserId(user.id);
             if (tank) {
                 switch (gamer.roleId) {
-                    case 3:
+                    case gamerRoles.heavyTankGunner:
                         this.suicideAndEndTanks(
                             tank.commanderId,
                             user.id,
@@ -484,7 +508,7 @@ class LobbyManager extends BaseModule {
                             tank.id
                         );
                         break;
-                    case 4:
+                    case gamerRoles.heavyTankMeh:
                         this.suicideAndEndTanks(
                             tank.commanderId,
                             tank.gunnerId,
@@ -492,7 +516,7 @@ class LobbyManager extends BaseModule {
                             tank.id
                         );
                         break;
-                    case 5:
+                    case gamerRoles.heavyTankCommander:
                         this.suicideAndEndTanks(
                             tank.driverId,
                             tank.gunnerId,
@@ -500,7 +524,7 @@ class LobbyManager extends BaseModule {
                             tank.id
                         );
                         break;
-                    case 6:
+                    case gamerRoles.middleTankMeh:
                         this.suicideAndEndTanks(
                             tank.gunnerId,
                             user.id,
@@ -508,7 +532,7 @@ class LobbyManager extends BaseModule {
                             tank.id
                         );
                         break;
-                    case 7:
+                    case gamerRoles.middleTankGunner:
                         this.suicideAndEndTanks(
                             tank.driverId,
                             user.id,

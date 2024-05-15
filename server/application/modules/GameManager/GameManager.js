@@ -1,10 +1,18 @@
-const BaseModule = require('../BaseModule/BaseModule');
+const BaseModule = require("../BaseModule/BaseModule");
 const Mob = require("./Mob.js");
-const Bullet = require("./Bullet.js");
-const GameMath = require('./GameMath');
-const easystarjs = require('easystarjs');
+const MapObject = require("./MapObject.js");
 
-const { SOCKETS, tankRoles, footRoles } = require("../../../config.js");
+const Bullet = require("./Bullet.js");
+const GameMath = require("./GameMath");
+const easystarjs = require("easystarjs");
+
+const {
+    SOCKETS,
+    tankRoles,
+    footRoles,
+    objectDict,
+    gamerRoles,
+} = require("../../../config.js");
 
 class GameManager extends BaseModule {
     constructor(db, io, Mediator) {
@@ -13,27 +21,28 @@ class GameManager extends BaseModule {
         this.easystar = new easystarjs.js();
         this.gameMath = new GameMath();
 
-
         this.mobId = 0;
         this.objectId = 0;
-        
+
         this.map;
         this.startGameTimestamp = 0;
-        
+
         this.tanks = {};
         this.bullets = {};
         this.mobs = {};
         this.tanks = {};
         this.objects = {
             static: {},
-            dynamic: {}
+            dynamic: {},
         };
-        
+
         this.gameState;
 
-
         this.mediator.set(this.TRIGGERS.GAME_TANKS, () => this.tanks);
-        this.mediator.set(this.TRIGGERS.START_GAME, () => this.startGameTimestamp);
+        this.mediator.set(
+            this.TRIGGERS.START_GAME,
+            () => this.startGameTimestamp
+        );
 
         this.getObjects();
         this.fillMap();
@@ -43,25 +52,21 @@ class GameManager extends BaseModule {
         }
 
         io.on("connection", (socket) => {
-            socket.on(SOCKETS.SET_GAMER_ROLE, (data) =>
-                this.setGamerRole(data, socket)
-            );
-            socket.on(SOCKETS.GET_USER_INFO, (data) =>
-                this.getUserInfo(data, socket)
-            );
-            socket.on(SOCKETS.GET_LOBBY, (data) => this.getLobby(data, socket));
-            socket.on(SOCKETS.SUICIDE, (data) => this.suicide(data, socket));
+            socket.on(SOCKETS.GAME_MAP, (data) => this.getMap(data, socket));
+            // socket.on(SOCKETS.GAME_ENTITIES, (data) => this.getEntities(data, socket));
+            socket.on(SOCKETS.MOTION, (data) => this.motion(data, socket));
+            socket.on(SOCKETS.FIRE, (data) => this.fire(data, socket));
             socket.on("disconnect", () => console.log("disconnect", socket.id));
         });
 
-        setInterval(() => {this.updateScene()}, 1000);
+        setInterval(() => {
+            this.updateScene();
+        }, 1000);
     }
-
-
 
     getTankByGunnerId(gunnerId) {
         for (const tank of Object.values(this.tanks)) {
-            if(tank.gunnerId === gunnerId) {
+            if (tank.gunnerId === gunnerId) {
                 return tank;
             }
         }
@@ -71,25 +76,29 @@ class GameManager extends BaseModule {
         const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
         const gamers = [];
         for (const [id, user] of Object.entries(users)) {
-            if(user.roleId) {
-                gamers.push({id: id, user: user});
+            if (user.roleId in footRoles) {
+                gamers.push({ id: id, user: user });
             }
         }
         return gamers;
     }
 
-    getTankByUserId(userId){
+    getTankByUserId(userId) {
         for (const [id, tank] of Object.entries(this.tanks)) {
-            if(tank.driverId === userId || tank.gunnerId === userId || tank.commanderId === userId) {
+            if (
+                tank.driverId === userId ||
+                tank.gunnerId === userId ||
+                tank.commanderId === userId
+            ) {
                 return {
                     ...tank,
-                    id
-                }
+                    id,
+                };
             }
         }
     }
 
-    // Выстрел 
+    // Выстрел
     tankFire(user, x, y, angle) {
         let tank = this.getTankByGunnerId(user.id);
         if (tank.fire()) {
@@ -97,7 +106,7 @@ class GameManager extends BaseModule {
             const dy = Math.sin(angle);
             const bullet = new Bullet(user.id, x + dx, y + dy, dx, dy, 1);
             this.bullets[this.bulletsId] = bullet;
-            this.bulletId +=1;
+            this.bulletId += 1;
             tank.updateTimestamp();
         }
     }
@@ -106,61 +115,56 @@ class GameManager extends BaseModule {
         if (user.fire()) {
             const dx = Math.cos(angle);
             const dy = Math.sin(angle);
-            const bullet = new Bullet(user.id, x + 0.3 * dx, y + 0.3 * dy, dx, dy, bulletType);
+            const bullet = new Bullet(
+                user.id,
+                x + 0.3 * dx,
+                y + 0.3 * dy,
+                dx,
+                dy,
+                bulletType
+            );
             this.bullets[this.bulletsId] = bullet;
-            this.bulletId +=1;
+            this.bulletId += 1;
             user.updateReloadTimestamp();
         }
     }
 
     mobFire(mob, x, y, angle, personId) {
-        if(mob.fire()) {
+        if (mob.fire()) {
             let dx = Math.cos(angle);
             let dy = Math.sin(angle);
             let bulletType = personId === 9 ? 1 : 0;
             const bullet = new Bullet(null, x + dx, y + dy, dx, dy, bulletType);
             this.bullets[this.bulletsId] = bullet;
-            this.bulletId +=1;
+            this.bulletId += 1;
             mob.updateReloadTimestamp();
         }
-        
     }
 
     /*Map*/
     checkMap() {
         if (!this.map) {
-            this.fillMap()
-        };
+            this.fillMap();
+        }
     }
 
-    async getObjects() { 
+    async getObjects() {
         if (!Object.keys(this.objects.static).length) {
             const objects = await this.db.getStaticObjects();
             this.objects.static = objects.reduce((acc, object) => {
-                acc[object.id] = new Object({
-                    x: object.x,
-                    y: object.y,
-                    sizeX: object.sizeX,
-                    sizeY: object.sizeY,
-                    status: object.status
-                }); 
+                acc[object.id] = new MapObject({
+                    ...object,
+                });
                 return acc;
             }, {});
         }
         const objects = await this.db.getDynamicObjects();
         this.objects.dynamic = objects.reduce((acc, object) => {
-            acc[objects.id] = new Object({
+            acc[object.id] = new MapObject({
                 ...object,
-                hp: objects.hp,
-                x: objects.x,
-                y: objects.y,
-                sizeX: objects.sizeX,
-                sizeY: objects.sizeY,
-                status: objects.status
-            }); 
+            });
             return acc;
         }, {});
-
     }
 
     fillMap() {
@@ -184,24 +188,37 @@ class GameManager extends BaseModule {
     generatePointWithoutObject(x1, x2, y1, y2) {
         let xs = Math.floor(Math.random() * (x2 - x1 + 1)) + x1;
         let ys = Math.floor(Math.random() * (y2 - y1 + 1)) + y1;
-        
+
         if (this.map[xs][ys] === 0) {
             return [xs, ys];
-        }  
-        else return this.generatePointWithoutObject(x1, x2, y1, y2);
+        } else return this.generatePointWithoutObject(x1, x2, y1, y2);
     }
- 
+
     addSquad(params) {
         let mobsCounter = 0;
         for (const [id, mob] of Object.entries(this.mobs)) {
-            if (mob.x > params[0] && mob.x < params[1] && mob.y > params[2] && mob.y < params[3])
+            if (
+                mob.x > params[0] &&
+                mob.x < params[1] &&
+                mob.y > params[2] &&
+                mob.y < params[3]
+            )
                 mobsCounter++;
         }
         if (mobsCounter < params[8]) {
             for (let i = mobsCounter; i < params[8]; i++) {
-                let point = this.generatePointWithoutObject(params[4], params[5], params[6], params[7]);
-                
-                const mob = new Mob(point[0], point[1], Math.floor(Math.random() * (9 - 8 + 1)) + 8);
+                let point = this.generatePointWithoutObject(
+                    params[4],
+                    params[5],
+                    params[6],
+                    params[7]
+                );
+
+                const mob = new Mob(
+                    point[0],
+                    point[1],
+                    Math.floor(Math.random() * (9 - 8 + 1)) + 8
+                );
                 this.mobs[this.mobId] = mob;
                 this.mobId++;
             }
@@ -211,47 +228,50 @@ class GameManager extends BaseModule {
     addMobs() {
         const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
         let mobsCount = Object.keys(this.mobs).length;
-        let gamerCount = 3 * Object.keys(users).length + 4 * Object.keys(this.tanks).length;
+        let gamerCount =
+            3 * Object.keys(users).length + 4 * Object.keys(this.tanks).length;
 
         // Максимальное количество мобов
-        let allMobsCount = gamerCount + 32
+        let allMobsCount = gamerCount + 32;
 
         // Проверяю изменилось ли количество мобов на всей карте
         if (mobsCount >= allMobsCount) return;
 
         // Координаты отрядов мобов
-        let coords = [[90, 140, 70, 115, 110, 140, 95, 115, 4],
-        [45, 90, 85, 115, 55, 85, 86, 110, 4],
-        [30, 95, 55, 85, 40, 90, 60, 80, 4],
-        [96, 124, 14, 75, 100, 117, 22, 70, 4],
-        [125, 145, 50, 80, 130, 145, 58, 75, 4],
-        [65, 95, 5, 30, 70, 90, 5, 40, 4],
-        [5, 30, 55, 95, 5, 20, 60, 90, 4],
-        [20, 70, 30, 55, 30, 60, 35, 50, 4]];
+        let coords = [
+            [90, 140, 70, 115, 110, 140, 95, 115, 4],
+            [45, 90, 85, 115, 55, 85, 86, 110, 4],
+            [30, 95, 55, 85, 40, 90, 60, 80, 4],
+            [96, 124, 14, 75, 100, 117, 22, 70, 4],
+            [125, 145, 50, 80, 130, 145, 58, 75, 4],
+            [65, 95, 5, 30, 70, 90, 5, 40, 4],
+            [5, 30, 55, 95, 5, 20, 60, 90, 4],
+            [20, 70, 30, 55, 30, 60, 35, 50, 4],
+        ];
 
         for (let coord of coords) {
             this.addSquad(coord);
         }
     }
 
-
-
-    
-
     findTargetGamer(mob) {
-        const users = this.mediator.get(this.TRIGGERS.ALL_USERS).values();
-        const allGamers = users.concat(this.tanks.values());
-
+        const users = Object.values(this.mediator.get(this.TRIGGERS.ALL_USERS));
+        const allGamers = users.concat(Object.values(this.tanks));
         const targetDistance = 1000;
         let target;
 
-        allGamers.forEach(gamer => {
+        allGamers.forEach((gamer) => {
             // Дистанция до игрока
-            let distance = this.gameMath.calculateDistance(mob.x, gamer.x, mob.y, gamer.y);
+            let distance = this.gameMath.calculateDistance(
+                mob.x,
+                gamer.x,
+                mob.y,
+                gamer.y
+            );
             if (distance < targetDistance) {
-                target = { distance: distance, x: gamer.x, y: gamer.y }
+                target = { distance: distance, x: gamer.x, y: gamer.y };
             }
-        })
+        });
         if (target) {
             return target;
         } else {
@@ -259,66 +279,105 @@ class GameManager extends BaseModule {
         }
     }
 
-
     mobAction(mob, angle) {
-            this.mobFire(mob.x, mob.y, angle, mob.personId);
-            mob.rotate(angle);
+        this.mobFire(mob.x, mob.y, angle, mob.personId);
+        mob.rotate(angle);
     }
 
     moveMobs() {
-        if (this.getGamers().length === 0 && Object.values(this.tanks).length === 0)
-            return 0
+        if (
+            this.getGamers().length === 0 &&
+            Object.values(this.tanks).length === 0
+        )
+            return 0;
 
         for (const [id, mob] of Object.entries(this.mobs)) {
             let path = [];
             // Проверка необходимости обновления пути моба
-            if ((Date.now() - mob.pathUpdate > 1000) || mob.path == []) {
-
+            if (Date.now() - mob.pathUpdate > 1000 || mob.path == []) {
                 // Поиск целевого игрока
                 let targetGamer = this.findTargetGamer(mob);
                 if (targetGamer && targetGamer.distance < 25) {
-
                     //Угол поворота до целевого игрока
-                    let angle = this.gameMath.calculateAngle(targetGamer.x, targetGamer.y, mob.x, mob.y);
+                    let angle = this.gameMath.calculateAngle(
+                        targetGamer.x,
+                        targetGamer.y,
+                        mob.x,
+                        mob.y
+                    );
                     this.mobAction(mob, angle);
 
                     // Случай когда моб находится около своей цели и не идет дальше
-                    if ((mob.personId === 9 && targetGamer.distance < 4) || (mob.personId === 8 && targetGamer.distance < 2)) {
+                    if (
+                        (mob.personId === gamerRoles.infantryRPG &&
+                            targetGamer.distance < 4) ||
+                        (mob.personId === gamerRoles.infantry &&
+                            targetGamer.distance < 2)
+                    ) {
                         continue;
                     }
 
                     // Моб ищет путь до своей цели
-                    this.easystar.findPath(Math.ceil(mob.x), Math.ceil(mob.y), Math.ceil(targetGamer.x), Math.ceil(targetGamer.y), async (mobPath) => {
-                        if (mobPath) {
-                            path = mobPath;
-                            mob.setPath(path);
+                    this.easystar.findPath(
+                        Math.ceil(mob.x),
+                        Math.ceil(mob.y),
+                        Math.ceil(targetGamer.x),
+                        Math.ceil(targetGamer.y),
+                        async (mobPath) => {
+                            if (mobPath) {
+                                path = mobPath;
+                                mob.setPath(path);
+                            }
                         }
-                    });
+                    );
                     this.easystar.calculate();
-                } else { // Моб находится далеко от цели
+                } else {
+                    // Моб находится далеко от цели
                     continue;
-                } 
-            } else { // Действие пути у моба еще активно
+                }
+            } else {
+                // Действие пути у моба еще активно
                 if (mob.path.length && mob.path.length > 0) {
                     const targetCoord = path[path.length - 1];
-                    const angle = this.gameMath.calculateAngle(targetCoord.x, targetCoord.y, mob.x, mob.y);
+                    const angle = this.gameMath.calculateAngle(
+                        targetCoord.x,
+                        targetCoord.y,
+                        mob.x,
+                        mob.y
+                    );
                     this.mobAction(mob, angle);
                 } else continue;
             }
-
 
             if (path[1]) {
                 // Дистанция пройденная за один рендер
                 let distance = mob.movementSpeed * (this.game.timeout / 1000);
                 distance = distance > 1 ? 1 : distance;
-                const distanceToNextCell = this.gameMath.calculateDistance(mob.x, path[1].x, mob.y, path[1].y);
+                const distanceToNextCell = this.gameMath.calculateDistance(
+                    mob.x,
+                    path[1].x,
+                    mob.y,
+                    path[1].y
+                );
                 const newDistance = distance - distanceToNextCell;
                 let newCoords;
-             
+
                 if (newDistance > 0) {
-                    newCoords = this.gameMath.calculateShiftPoint(path[1].x, path[1].y, path[2].x, path[2].y, newDistance);
+                    newCoords = this.gameMath.calculateShiftPoint(
+                        path[1].x,
+                        path[1].y,
+                        path[2].x,
+                        path[2].y,
+                        newDistance
+                    );
                 } else {
-                    newCoords = this.gameMath.calculateShiftPoint(mob.x, mob.y, path[1].x, path[1].y, distance);
+                    newCoords = this.gameMath.calculateShiftPoint(
+                        mob.x,
+                        mob.y,
+                        path[1].x,
+                        path[1].y,
+                        distance
+                    );
                 }
 
                 mob.move(newCoords[0], newCoords[1]);
@@ -326,8 +385,7 @@ class GameManager extends BaseModule {
         }
     }
 
-
-/* Пули */t
+    /* Пули */ t;
 
     moveBullets() {
         if (!this.bullets.length) {
@@ -338,30 +396,43 @@ class GameManager extends BaseModule {
         }
     }
 
-
     moveBullet(id, bullet) {
-        if (bullet.x >= 150 || bullet.x <= 0 || bullet.y >= 120 || bullet.y <= 0) {
-            delete this.bullets[id]
+        if (
+            bullet.x >= 150 ||
+            bullet.x <= 0 ||
+            bullet.y >= 120 ||
+            bullet.y <= 0
+        ) {
+            delete this.bullets[id];
         } else {
             bullet.move();
         }
     }
-
 
     shootRegs() {
         if (!this.bullets.length) {
             return 0;
         }
         for (const [bulletId, bullet] of Object.entries(this.bullets)) {
-            let damage = bullet.type == 0 ? 2 : 50; 
+            let damage = bullet.type == 0 ? 2 : 50;
             let shootFlag = false;
             for (const [gamerId, gamer] of this.getGamers()) {
                 if (bullet.userId != gamer.id && gamer.hp > 0) {
-                    let range = this.gameMath.shootReg(gamer.x, gamer.y, bullet.x, bullet.y, bullet.x + bullet.dx, bullet.y + bullet.dy, 0.2);
+                    let range = this.gameMath.shootReg(
+                        gamer.x,
+                        gamer.y,
+                        bullet.x,
+                        bullet.y,
+                        bullet.x + bullet.dx,
+                        bullet.y + bullet.dy,
+                        0.2
+                    );
                     if (range) {
                         gamer.damage(damage);
-                        if(gamer.checkDead()){
-                            const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
+                        if (gamer.checkDead()) {
+                            const users = this.mediator.get(
+                                this.TRIGGERS.ALL_USERS
+                            );
                             delete users[gamerId];
                             bullet.kill();
                         }
@@ -372,10 +443,18 @@ class GameManager extends BaseModule {
             }
             if (!shootFlag) {
                 for (const [tankId, tank] of Object.entries(this.tanks)) {
-                    let range = this.gameMath.shootReg(tank.x, tank.y, bullet.x, bullet.y, bullet.x + bullet.dx, bullet.y + bullet.dy, 0.5);
+                    let range = this.gameMath.shootReg(
+                        tank.x,
+                        tank.y,
+                        bullet.x,
+                        bullet.y,
+                        bullet.x + bullet.dx,
+                        bullet.y + bullet.dy,
+                        0.5
+                    );
                     if (range) {
                         tank.damage(damage);
-                        if(gamer.checkDead()){
+                        if (gamer.checkDead()) {
                             delete this.tanks[tankId];
                             bullet.kill();
                         }
@@ -387,10 +466,18 @@ class GameManager extends BaseModule {
 
             if (!shootFlag) {
                 for (const [mobId, mob] of Object.entries(this.mobs)) {
-                    let range = this.gameMath.shootReg(mob.x, mob.y, bullet.x, bullet.y, bullet.x + bullet.dx, bullet.y + bullet.dy, 0.2);
+                    let range = this.gameMath.shootReg(
+                        mob.x,
+                        mob.y,
+                        bullet.x,
+                        bullet.y,
+                        bullet.x + bullet.dx,
+                        bullet.y + bullet.dy,
+                        0.2
+                    );
                     if (range) {
                         mob.damage(damage);
-                        if(mob.checkDead()){
+                        if (mob.checkDead()) {
                             delete this.mobs[mobId];
                             bullet.kill();
                         }
@@ -400,11 +487,18 @@ class GameManager extends BaseModule {
                 }
             }
             if (!shootFlag) {
-                for (const [objectId, object] of Object.entries(this.objects.dynamic)) {
-                    if ((bullet.x + bullet.dx >= object.x && bullet.x + bullet.dx <= object.x + object.sizeX) && (bullet.y + bullet.dy >= object.y && bullet.y + bullet.dy <= object.y + object.sizeY)) {
-                        if (object.status != 'i') {
+                for (const [objectId, object] of Object.entries(
+                    this.objects.dynamic
+                )) {
+                    if (
+                        bullet.x + bullet.dx >= object.x &&
+                        bullet.x + bullet.dx <= object.x + object.sizeX &&
+                        bullet.y + bullet.dy >= object.y &&
+                        bullet.y + bullet.dy <= object.y + object.sizeY
+                    ) {
+                        if (object.status != "i") {
                             object.damage(damage);
-                            if(object.checkDead()) {
+                            if (object.checkDead()) {
                                 delete this.objects.dynamic[objectId];
                             }
                         }
@@ -442,7 +536,6 @@ class GameManager extends BaseModule {
     //     return false;
     // }
 
-
     // async endGame() {
     //     let player = await this.playerBannermanInZone();
     //     if (player) {
@@ -459,9 +552,6 @@ class GameManager extends BaseModule {
     //     }
     // }
 
-
-
-
     // Обновление сцены
     updateScene() {
         // Мобы
@@ -471,7 +561,6 @@ class GameManager extends BaseModule {
         // Пули
         this.moveBullets();
         this.shootRegs();
-
     }
 
     getMap(data = {}, socket) {
@@ -479,11 +568,61 @@ class GameManager extends BaseModule {
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
 
         if (user && user.token) {
-            socket.emit(SOCKETS.GAME_MAP, this.answer.good(this.objects));
+            const objects = {
+                dynamic: {
+                    houses: [],
+                    stones: [],
+                    spikes: [],
+                    stumps: [],
+                    sands: [],
+                },
+                static: {},
+            };
+            for (const dynamicObj of Object.values(this.objects.dynamic)) {
+                switch (dynamicObj.type) {
+                    case objectDict.house:
+                        objects.dynamic.houses.push(dynamicObj);
+                        break;
+                    case objectDict.stone:
+                        objects.dynamic.stones.push(dynamicObj);
+                        break;
+                    case objectDict.spike:
+                        objects.dynamic.spikes.push(dynamicObj);
+                        break;
+                    case objectDict.stump:
+                        objects.dynamic.stumps.push(dynamicObj);
+                        break;
+                    case objectDict.sand:
+                        objects.dynamic.sands.push(dynamicObj);
+                        break;
+                }
+            }
+            for (const staticObj in Object.values(this.objects.static)) {
+                switch (staticObj) {
+                    case objectDict.house:
+                        objects.static.houses.push(dynamicObj);
+                        break;
+                    case objectDict.stone:
+                        objects.static.stones.push(dynamicObj);
+                        break;
+                    case objectDict.spike:
+                        objects.static.spikes.push(dynamicObj);
+                        break;
+                    case objectDict.stump:
+                        objects.static.stumps.push(dynamicObj);
+                        break;
+                    case objectDict.sand:
+                        objects.static.sands.push(dynamicObj);
+                        break;
+                }
+            }
+
+            socket.emit(SOCKETS.GAME_MAP, this.answer.good(objects));
+            return;
         }
-        socket.emit(SOCKETS.ERROR, this.answer.bad(401))
+        socket.emit(SOCKETS.ERROR, this.answer.bad(401));
     }
-    
+
     getScene(data = {}) {
         const { token } = data;
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
@@ -493,22 +632,22 @@ class GameManager extends BaseModule {
             result.gametime = Date.now() - this.startGameTimestamp;
             if (footRoles.includes(user.roleId)) {
                 result.gamer = {
-                    'person_id': user.roleId,
-                    'x': user.x,
-                    'y': user.y,
-                    'angle': user.angle,
-                    'hp': user.hp
+                    person_id: user.roleId,
+                    x: user.x,
+                    y: user.y,
+                    angle: user.angle,
+                    hp: user.hp,
                 };
             } else {
                 const tank = this.getTankByUserId(user.id);
                 if (tank) {
                     result.gamer = {
-                        'person_id': user.roleId,
-                        'x': tank.x,
-                        'y': tank.y,
-                        'angle': tank.angle,
-                        'tower_angle': tank.tower_angle,
-                        'hp': tank.hp
+                        person_id: user.roleId,
+                        x: tank.x,
+                        y: tank.y,
+                        angle: tank.angle,
+                        tower_angle: tank.tower_angle,
+                        hp: tank.hp,
                     };
                 } else result.gamer = null;
             }
@@ -521,16 +660,11 @@ class GameManager extends BaseModule {
         //     result.is_dead = true;
         // }
 
-
-
         // Отправлять время в лобби
-
-
 
         // if(gamer[0].status == "w"){
         //     result.is_end = 'true';
         // } else await this.update();
-
 
         // if([1, 2, 8, 9].includes(gamer[0].person_id)){
         //     result.gamer = {
@@ -587,52 +721,65 @@ class GameManager extends BaseModule {
         // return result;
     }
 
+    motion(data = {}, socket) {
+        const { token, x, y, angle } = data;
+        const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
+        if (user) {
+            if ([ gamerRoles.heavyTankGunner, gamerRoles.middleTankGunner ].includes(user.roleId)) {
+                if(typeof angle === "number") {
+                    const tank = this.getTankByUserId(user.id);
+                    tank.rotateTower(angle);
+                    socket.emit(SOCKETS.MOTION, this.answer.good(true));
+                } else {
+                    socket.emit(SOCKETS.ERROR, this.answer.bad(422));
+                }
+            }
+            
+            if ([ gamerRoles.heavyTankMeh, gamerRoles.middleTankMeh ].includes(user.roleId)) {
+                if ( typeof x === "number" && typeof y === "number" && typeof angle === "number") {
+                    const tank = this.getTankByUserId(user.id);
+                    tank.motion(x, y,angle);
+                    socket.emit(SOCKETS.MOTION, this.answer.good(true));
+                } else {
+                    socket.emit(SOCKETS.ERROR, this.answer.bad(422));
+                }
+            }
 
-    async motion(userId, x, y, angle) {
-        let gamer = await this.db.getGamerById(userId);
+            if (user.roleId === gamerRoles.heavyTankCommander) {
+                if ( typeof x === "number" && typeof y === "number" && typeof angle === "number") {
+                    const tank = this.getTankByUserId(user.id);
+                    tank.commanderRotate(angle);
+                    socket.emit(SOCKETS.MOTION, this.answer.good(true));
+                } else {
+                    socket.emit(SOCKETS.ERROR, this.answer.bad(422));
+                }
+            }
 
-        if (!gamer[0]) return true;
-
-        if ([3, 7].includes(gamer[0].person_id)) {
-            if (typeof angle === 'number') {
-                await this.db.updateTowerRotate(userId, angle);
-                await this.db.updateGamersHash(this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex'));
-            } else return 422;
+            if (footRoles.includes(user.roleId)) {
+                if ( typeof x === "number" && typeof y === "number" && typeof angle === "number") {
+                    user.motion(x, y,angle);
+                    socket.emit(SOCKETS.MOTION, this.answer.good(true));
+                } else {
+                    socket.emit(SOCKETS.ERROR, this.answer.bad(422));
+                }
+            }
+    
         }
-        else if ([4, 6].includes(gamer[0].person_id)) {
-            if (typeof x === 'number' && typeof y === 'number' && typeof angle === 'number') {
-                await this.db.updateTankMotion(userId, x, y, angle);
-                await this.db.updateGamersHash(this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex'));
-            } else return 422;
-        }
-        else if (gamer[0].person_id == 5) {
-            if (typeof angle === 'number') {
-                await this.db.updateCommanderRotate(userId, angle);
-                await this.db.updateGamersHash(this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex'));
-            } else return 422;
-        }
-        else if ([1, 2, 8, 9].includes(gamer[0].person_id)) {
-            if (typeof x === 'number' && typeof y === 'number' && typeof angle === 'number') {
-                await this.db.updateMotion(userId, x, y, angle);
-                await this.db.updateGamersHash(this.crypto.createHash('sha256').update(this.uuid.v4()).digest('hex'));
-            } else return 422;
-        }
-        return true;
     }
 
+    fire(data = {}, socket) {
+        const {user_id, x, y, angle} = data;
+        const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
 
-    async fire(user_id, x, y, angle) {
-        let gamer = await this.db.getGamerAndPersonByUserId(user_id);
-        gamer = gamer[0];
-        if (!gamer) return true;
-        if ([3, 7].includes(gamer.person_id)) {
-            await this.tankFire(user_id, gamer, x, y, angle);
-        } else if (gamer.person_id === 9) {
-            await this.infantryFire(user_id, gamer, x, y, angle, 1);
-        } else if (gamer.person_id === 8) {
-            await this.infantryFire(user_id, gamer, x, y, angle, 0);
-        } else if (gamer.person_id === 1) {
-            await this.infantryFire(user_id, gamer, x, y, angle, 0);
+        if (user.status !== 'a') return true;
+        if ([gamerRoles.heavyTankGunner, gamerRoles.middleTankGunner].includes(gamer.person_id)) {
+            this.tankFire(user_id, gamer, x, y, angle);
+        } else if (gamer.person_id === gamerRoles.infantryRPG) {
+            this.infantryFire(user_id, gamer, x, y, angle, 1);
+        } else if (gamer.person_id === gamerRoles.infantry) {
+            this.infantryFire(user_id, gamer, x, y, angle, 0);
+        } else if (gamer.person_id === gamerRoles.general) {
+            this.infantryFire(user_id, gamer, x, y, angle, 0);
         }
         return true;
     }

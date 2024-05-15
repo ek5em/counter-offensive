@@ -13,7 +13,7 @@ export default class Store {
         this.user = null;
         this.lobby = null;
         this.unit = null;
-        this.token = this.getCookie().token;
+        this.token = null;
         this.mediator = mediator;
         this.events = mediator.getEventTypes();
     }

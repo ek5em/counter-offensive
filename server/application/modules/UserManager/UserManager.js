@@ -97,6 +97,7 @@ class UserManager extends BaseModule {
     // не приходит токен
     async tokenVerification(data = {}, socket) {
         const { token } = data;
+        console.log(token)
         if(token) {
             const user = new User({
                 db: this.db,
@@ -104,12 +105,15 @@ class UserManager extends BaseModule {
                 uuid: this.uuid,
                 socketId: socket.id
             });
+            console.log('юзер из манагера', token);
             if (await user.tokenVerification(token)) {
                 this.users[user.id] = user;
-                socket.emit(SOCKETS.TOKEN_VERIFICATION, this.answer.good(true));
+                console.log('true')
+                socket.emit(SOCKETS.TOKEN_VERIFICATION, this.answer.good({token: token}));
                 return;
             }
-            socket.emit(SOCKETS.ERROR, this.answer.bad(401));
+            console.log('sdfsdfsdfsadbvcbc')
+            socket.emit(SOCKETS.ERROR, this.answer.bad(4089));
             return;
         }
         socket.emit(SOCKETS.ERROR, this.answer.bad(461));

@@ -1,4 +1,4 @@
-class Tank {
+class MapObject {
     constructor({x, y, sizeX, sizeY, angle, type, hp}) {
         this.x = x;
         this.y = y;
@@ -23,4 +23,4 @@ class Tank {
     
 }
 
-module.exports = Tank;
+module.exports = MapObject;

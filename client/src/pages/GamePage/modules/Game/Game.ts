@@ -120,7 +120,7 @@ export default class Game {
         });
 
         this.unitMotion();
-        this.server.getScene();
+        this.server.getMap();
     }
 
     getScene() {

@@ -28,7 +28,7 @@ exports.MEDIATOR = {
 
 exports.updateSceneTimestamp = 16;
 
-const gamerRoles = {
+exports.gamerRoles = {
     general: 1,
     bannerman: 2,
     heavyTankGunner: 3,
@@ -36,23 +36,44 @@ const gamerRoles = {
     heavyTankCommander: 5,
     middleTankMeh: 6,
     middleTankGunner: 7,
-    infantry: 9,
+    infantry: 8,
     infantryRPG: 9,
 };
 
-exports.gamerRoles;
-
-exports.tankRoles = [
-    gamerRoles.heavyTankCommander,
-    gamerRoles.heavyTankGunner,
-    gamerRoles.heavyTankMeh,
-    gamerRoles.middleTankMeh,
-    gamerRoles.middleTankGunner
+exports.heavyTankRoles = [
+    this.gamerRoles.heavyTankCommander,
+    this.gamerRoles.heavyTankGunner,
+    this.gamerRoles.heavyTankMeh,
 ];
 
+exports.middleTankRoles = [
+    this.gamerRoles.middleTankMeh,
+    this.gamerRoles.middleTankGunner,
+];
+
+exports.tankRoles = [...this.heavyTankRoles, ...this.middleTankRoles];
+
 exports.footRoles = [
-    gamerRoles.general,
-    gamerRoles.bannerman,
-    gamerRoles.infantry,
-    gamerRoles.infantryRPG,
-]
+    this.gamerRoles.general,
+    this.gamerRoles.bannerman,
+    this.gamerRoles.infantry,
+    this.gamerRoles.infantryRPG,
+];
+
+exports.objectDict = {
+    house: 1,
+    stone: 2,
+    spike: 5,
+    stump: 6,
+    sand: 14,
+};
+
+exports.dynamicObjects = [
+    this.objectDict.house,
+    this.objectDict.stone,
+    this.objectDict.spike,
+    this.objectDict.stump,
+    this.objectDict.sand,
+];
+
+exports.staticObjects = [];

@@ -2,7 +2,7 @@ class DB {
     constructor() {
         const mysql = require("mysql");
         this.connection = mysql.createConnection({
-            host: "MySQL-8.2",
+            host: "localhost",
             user: "root",
             database: "counter_offensive",
             password: null
@@ -76,13 +76,14 @@ class DB {
 
 
     async addGamer(userId){
-        let query = "INSERT INTO `gamers` (`user_id`, `experience`, `status`) VALUES (?, 0, 'lobby');";
+        let query = "INSERT INTO `gamers` (`user_id`, `experience`) VALUES (?, 0);";
         await this.queryHandler(query, [userId]); 
     }
 
     async getGamerById(userId) {
         let query = "SELECT * FROM gamers WHERE user_id=?";
-        return await this.queryHandler(query, [userId]);
+        const gamer = await this.queryHandler(query, [userId])
+        return gamer;
     }
 
     /* Чат */
@@ -115,16 +116,16 @@ class DB {
     async getPersons() {
         let query = "SELECT * FROM persons";
         return await this.queryHandlerAll(query,[]);
-    }
+    } 
 
     /* Объекты */
     async getStaticObjects() {
-        let query = "SELECT type, x, y, sizeX, sizeY, angle FROM objects WHERE status in ('s')";
+        let query = "SELECT id, type, x, y, sizeX, sizeY, angle, status FROM objects WHERE status in ('s')";
         return await this.queryHandlerAll(query, []);
     }
 
     async getDynamicObjects() {
-        let query = "SELECT id, hp, x, y, sizeX, sizeY, status FROM objects WHERE status in('a', 'i')";
+        let query = "SELECT id, type, hp, x, y, sizeX, sizeY, angle, status FROM objects WHERE status in('a', 'i')";
         return await this.queryHandlerAll(query, []);
     }
 }
