@@ -113,16 +113,16 @@ INSERT INTO `users` (`login`, `nickname`, `password`) VALUES
 ('testgeneral1', 'testuser', 'aac5a55cac1167803fb0437337f5236cc590c08b939add1f0eb753b5ac2a4547'),
 ('testgeneral2', 'testuser', 'f13da73dfccd34814fc79bdfd6d7d4d75b6369c1802ff89a3e522897c9d575c5');
 
-INSERT INTO `gamers` (`user_id`, `experience`, `reload_timestamp`) VALUES
-(1, 0, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(2, 0, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(3, 0, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(4, 720, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(5, 720, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(6, 5088, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(7, 5088, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(8, 9600, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(9, 17948, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000));
+INSERT INTO `gamers` (`user_id`, `experience`) VALUES
+(1, 0), 
+(2, 0), 
+(3, 0), 
+(4, 720), 
+(5, 720), 
+(6, 5088), 
+(7, 5088), 
+(8, 9600), 
+(9, 17948);
 
 /* Значения по умолчанию в таблице game*/
 

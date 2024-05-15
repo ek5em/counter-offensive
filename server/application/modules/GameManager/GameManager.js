@@ -13,12 +13,14 @@ class GameManager extends BaseModule {
         this.easystar = new easystarjs.js();
         this.gameMath = new GameMath();
 
-        this.tanks = {};
-        // id
+
         this.mobId = 0;
         this.objectId = 0;
-        // 
+        
         this.map;
+        this.startGameTimestamp = 0;
+        
+        this.tanks = {};
         this.bullets = {};
         this.mobs = {};
         this.tanks = {};
@@ -26,13 +28,31 @@ class GameManager extends BaseModule {
             static: {},
             dynamic: {}
         };
+        
         this.gameState;
 
 
         this.mediator.set(this.TRIGGERS.GAME_TANKS, () => this.tanks);
+        this.mediator.set(this.TRIGGERS.START_GAME, () => this.startGameTimestamp);
 
         this.getObjects();
         this.fillMap();
+
+        if (!this.io) {
+            return;
+        }
+
+        io.on("connection", (socket) => {
+            socket.on(SOCKETS.SET_GAMER_ROLE, (data) =>
+                this.setGamerRole(data, socket)
+            );
+            socket.on(SOCKETS.GET_USER_INFO, (data) =>
+                this.getUserInfo(data, socket)
+            );
+            socket.on(SOCKETS.GET_LOBBY, (data) => this.getLobby(data, socket));
+            socket.on(SOCKETS.SUICIDE, (data) => this.suicide(data, socket));
+            socket.on("disconnect", () => console.log("disconnect", socket.id));
+        });
 
         setInterval(this.updateScene(), 1000);
     }
@@ -56,6 +76,17 @@ class GameManager extends BaseModule {
             }
         }
         return gamers;
+    }
+
+    getTankByUserId(userId){
+        for (const [id, tank] of Object.entries(this.tanks)) {
+            if(tank.driverId === userId || tank.gunnerId === userId || tank.commanderId === userId) {
+                return {
+                    ...tank,
+                    id
+                }
+            }
+        }
     }
 
     // Выстрел 
@@ -103,30 +134,30 @@ class GameManager extends BaseModule {
     }
 
     async getObjects() { 
-        if (!Object.keys(this.map.static).length) {
+        if (!Object.keys(this.object.static).length) {
             const objects = await this.db.getStaticObjects();
-            this.objects.static = objects.reduce((acc, objects) => {
-                acc[objects.experience] = {
-                    hp: objects.hp,
+            this.objects.static = objects.reduce((acc, object) => {
+                acc[objects.id] = new Object({
                     x: objects.x,
                     y: objects.y,
                     sizeX: objects.sizeX,
                     sizeY: objects.sizeY,
                     status: objects.status
-                } 
+                }); 
                 return acc;
             }, {});
         }
         const objects = await this.db.getDynamicObjects();
-        this.objects.dynamic = objects.reduce((acc, objects) => {
-            acc[objects.experience] = {
+        this.objects.dynamic = objects.reduce((acc, object) => {
+            acc[objects.id] = new Object({
+                ...object,
                 hp: objects.hp,
                 x: objects.x,
                 y: objects.y,
                 sizeX: objects.sizeX,
                 sizeY: objects.sizeY,
                 status: objects.status
-            } 
+            }); 
             return acc;
         }, {});
 
@@ -230,12 +261,12 @@ class GameManager extends BaseModule {
     }
 
 
-    async mobAction(mob, angle) {
+    mobAction(mob, angle) {
             this.mobFire(mob.x, mob.y, angle, mob.personId);
             mob.rotate(angle);
     }
 
-    async moveMobs() {
+    moveMobs() {
         if (this.getGamers().length === 0 && Objectvalues(this.tanks).length === 0)
             return 0
 
@@ -250,7 +281,7 @@ class GameManager extends BaseModule {
 
                     //Угол поворота до целевого игрока
                     let angle = this.gameMath.calculateAngle(targetGamer.x, targetGamer.y, mob.x, mob.y);
-                    await this.mobAction(mob, angle);
+                    this.mobAction(mob, angle);
 
                     // Случай когда моб находится около своей цели и не идет дальше
                     if ((mob.personId === 9 && targetGamer.distance < 4) || (mob.personId === 8 && targetGamer.distance < 2)) {
@@ -272,7 +303,7 @@ class GameManager extends BaseModule {
                 if (mob.path.length && mob.path.length > 0) {
                     const targetCoord = path[path.length - 1];
                     const angle = this.gameMath.calculateAngle(targetCoord.x, targetCoord.y, mob.x, mob.y);
-                    await this.mobAction(mob, angle);
+                    this.mobAction(mob, angle);
                 } else continue;
             }
 
@@ -309,7 +340,7 @@ class GameManager extends BaseModule {
     }
 
 
-    async moveBullet(id, bullet) {
+    moveBullet(id, bullet) {
         if (bullet.x >= 150 || bullet.x <= 0 || bullet.y >= 120 || bullet.y <= 0) {
             delete this.bullets[id]
         } else {
@@ -318,12 +349,11 @@ class GameManager extends BaseModule {
     }
 
 
-    async shootRegs() {
+    shootRegs() {
         if (!this.bullets.length) {
             return 0;
         }
         for (const [bulletId, bullet] of Object.entries(this.bullets)) {
-            let currentHp = 0;
             let damage = bullet.type == 0 ? 2 : 50; 
             let shootFlag = false;
             for (const [gamerId, gamer] of this.getGamers()) {
@@ -357,7 +387,7 @@ class GameManager extends BaseModule {
             }
 
             if (!shootFlag) {
-                for (const [mobId, mob] of  Object.entries(this.mobs)) {
+                for (const [mobId, mob] of Object.entries(this.mobs)) {
                     let range = this.gameMath.shootReg(mob.x, mob.y, bullet.x, bullet.y, bullet.x + bullet.dx, bullet.y + bullet.dy, 0.2);
                     if (range) {
                         mob.damage(damage);
@@ -445,11 +475,23 @@ class GameManager extends BaseModule {
 
     }
 
-    async getScene(data = {}) {
+    getMap(data = {}, socket) {
         const { token } = data;
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
-        const tank = this.getTankByUserId();
+
         if (user && user.token) {
+            socket.emit(SOCKETS.GAME_MAP, this.answer.good(this.objects));
+        }
+        socket.emit(SOCKETS.ERROR, this.answer.bad(401))
+    }
+    
+    getScene(data = {}) {
+        const { token } = data;
+        const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
+
+        if (user && user.token) {
+            const result = {};
+            result.gametime = Date.now() - this.startGameTimestamp;
             if (footRoles.includes(user.roleId)) {
                 result.gamer = {
                     'person_id': user.roleId,
@@ -459,7 +501,7 @@ class GameManager extends BaseModule {
                     'hp': user.hp
                 };
             } else {
-                let tank = await this.getTankByUserId(user.id);
+                const tank = this.getTankByUserId(user.id);
                 if (tank) {
                     result.gamer = {
                         'person_id': user.roleId,
@@ -473,7 +515,6 @@ class GameManager extends BaseModule {
             }
         }
         // let gamer = await this.db.getGamerById(userId);
-        // let result = {};
         // this.game = await this.db.getGame();
         // this.game = this.game[0];
 
@@ -484,7 +525,6 @@ class GameManager extends BaseModule {
 
 
         // Отправлять время в лобби
-        // result.gametime = this.game.timer - this.game.startGameTimestamp;
 
 
 

@@ -22,7 +22,7 @@ exports.MEDIATOR = {
         GET_USER: "GET_USER",
         ALL_USERS: "ALL_USERS",
         GAME_TANKS: "GAME_TANKS",
-        // GET_TANK: "GET_TANK",
+        START_GAME: "START_GAME",
     },
 };
 
