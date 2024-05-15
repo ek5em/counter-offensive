@@ -54,7 +54,7 @@ class GameManager extends BaseModule {
             socket.on("disconnect", () => console.log("disconnect", socket.id));
         });
 
-        setInterval(this.updateScene(), 1000);
+        setInterval(() => {this.updateScene()}, 1000);
     }
 
 
@@ -134,15 +134,15 @@ class GameManager extends BaseModule {
     }
 
     async getObjects() { 
-        if (!Object.keys(this.object.static).length) {
+        if (!Object.keys(this.objects.static).length) {
             const objects = await this.db.getStaticObjects();
             this.objects.static = objects.reduce((acc, object) => {
-                acc[objects.id] = new Object({
-                    x: objects.x,
-                    y: objects.y,
-                    sizeX: objects.sizeX,
-                    sizeY: objects.sizeY,
-                    status: objects.status
+                acc[object.id] = new Object({
+                    x: object.x,
+                    y: object.y,
+                    sizeX: object.sizeX,
+                    sizeY: object.sizeY,
+                    status: object.status
                 }); 
                 return acc;
             }, {});
@@ -165,8 +165,8 @@ class GameManager extends BaseModule {
 
     fillMap() {
         // Алгоритм не хочет работать с прямоугольной картой. Проблем с таким способом создания квадратной не возникает
-        this.map = Array(151).fill([Array(151).fill(0)]);
-        const grid = Array(151).fill([Array(151).fill(0)]);
+        this.map = Array(151).fill(Array(151).fill(0));
+        const grid = Array(151).fill(Array(151).fill(0));
         for (const [id, object] of Object.entries(this.objects.dynamic)) {
             for (let i = object.x; i < object.x + object.sizeX + 1; i++) {
                 for (let j = object.y; j < object.y + object.sizeY + 1; j++) {
@@ -184,16 +184,16 @@ class GameManager extends BaseModule {
     generatePointWithoutObject(x1, x2, y1, y2) {
         let xs = Math.floor(Math.random() * (x2 - x1 + 1)) + x1;
         let ys = Math.floor(Math.random() * (y2 - y1 + 1)) + y1;
-
+        
         if (this.map[xs][ys] === 0) {
             return [xs, ys];
-        }
+        }  
         else return this.generatePointWithoutObject(x1, x2, y1, y2);
     }
-
+ 
     addSquad(params) {
         let mobsCounter = 0;
-        for (let mob of this.mobs) {
+        for (const [id, mob] of Object.entries(this.mobs)) {
             if (mob.x > params[0] && mob.x < params[1] && mob.y > params[2] && mob.y < params[3])
                 mobsCounter++;
         }
@@ -207,7 +207,6 @@ class GameManager extends BaseModule {
             }
         }
     }
-
 
     addMobs() {
         const users = this.mediator.get(this.TRIGGERS.ALL_USERS);
@@ -267,7 +266,7 @@ class GameManager extends BaseModule {
     }
 
     moveMobs() {
-        if (this.getGamers().length === 0 && Objectvalues(this.tanks).length === 0)
+        if (this.getGamers().length === 0 && Object.values(this.tanks).length === 0)
             return 0
 
         for (const [id, mob] of Object.entries(this.mobs)) {
