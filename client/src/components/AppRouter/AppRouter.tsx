@@ -22,20 +22,13 @@ export const AppRouter: FC = () => {
     const location = useLocation();
 
     useEffect(() => {
-        errorHandler();
-        server.tokenVerification();
-        server.getLobby();
-    }, []);
-
-    useEffect(() => {
         const {
             GO_TO_TANK,
             UPDATE_USER,
             END_GAME,
-            LOGIN,
-            LOGOUT,
             AUTH_ERROR,
             THROW_TO_GAME,
+            UPDATE_TOKEN,
         } = mediator.getEventTypes();
 
         mediator.subscribe(END_GAME, () => {
@@ -64,22 +57,25 @@ export const AppRouter: FC = () => {
             // user.is_alive && navigate("/game");
         });
 
-        mediator.subscribe(LOGIN, () => {
+        mediator.subscribe(UPDATE_TOKEN, () => {
             setRoutes(getRouter());
-            server.getUser();
         });
 
-        mediator.subscribe(LOGOUT, () => {
-            setRoutes(getRouter());
-        });
+        
 
         mediator.subscribe(THROW_TO_GAME, () => {
             navigate("/game");
         });
 
         mediator.subscribe(AUTH_ERROR, () => {
-            mediator.call(LOGOUT, true);
+            server.STORE.setToken(null);
         });
+    }, []);
+
+    useEffect(() => {
+        errorHandler();
+        server.tokenVerification();
+        server.getLobby();
     }, []);
 
     return (

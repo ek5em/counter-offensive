@@ -16,12 +16,6 @@ export default class Store {
         this.token = this.getCookie().token;
         this.mediator = mediator;
         this.events = mediator.getEventTypes();
-
-        const { LOBBY, TOKEN, USER } = mediator.getTriggerTypes();
-
-        mediator.set(LOBBY, () => this.getLobby());
-        mediator.set(TOKEN, () => this.getToken());
-        mediator.set(USER, () => this.getUser());
     }
 
     setUser(user: IGamerInfo) {
@@ -35,6 +29,7 @@ export default class Store {
 
     setLobby(lobby: ILobby) {
         this.lobby = lobby;
+        this.mediator.call(this.events.LOBBY_UPDATE, this.lobby);
     }
 
     getLobby(): ILobby {
@@ -72,10 +67,9 @@ export default class Store {
                 Date.now() + 30 * 24 * 60 * 60 * 1000
             ); // 30 дней
             document.cookie = `token=${token}; expires=${expirationDate.toUTCString()}; path=/;`;
-            this.mediator.call(this.events.LOGIN, this.token);
         } else {
             document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-            this.mediator.call(this.events.LOGOUT, this.token);
         }
+        this.mediator.call(this.events.UPDATE_TOKEN, this.token);
     }
 }
