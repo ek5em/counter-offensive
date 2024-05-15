@@ -13,7 +13,6 @@ class LobbyManager extends BaseModule {
 
         this.ranks = {};
         this.initRanks();
-
         
         this.roles = {}
         this.initRoles(); 
@@ -49,7 +48,7 @@ class LobbyManager extends BaseModule {
     }
 
     async initRoles() {
-        const roles = await this.db.getAllPersons();
+        const roles = await this.db.getPersons();
         this.roles = roles.reduce((acc, roles) => {
             acc[roles.id] = {
                 name: roles.name,

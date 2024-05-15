@@ -4,15 +4,16 @@ class Tank {
         this.crypto = crypto;
         this.uuid = uuid;
         this.socketId = [socketId];
-        // from DB
         this.type;
         this.hp;
         this.x;
         this.y;
         this.angle;
+        this.reloadTimestamp;
         this.gunnerId;
         this.driverId;
         this.commanderId;
+        this.towerAngle;
     }
 
     addTank(type, gunnerId, driverId, commanderId = null) {
@@ -21,6 +22,29 @@ class Tank {
         this.gunnerId = gunnerId;
         this.driverId = driverId;
         this.commanderId = commanderId;
+    }
+
+    fire() {
+        if(Date.now() - this.reloadTimestamp > 100) {
+            return true;
+        }
+        return false;
+    }
+
+    updateReloadtimestamp() {
+        this.reloadTimestamp = Date.now()
+    }
+
+    checkDead() {
+        if(this.hp < 0) {
+            // Написать код смерти.
+            return true;
+        }
+        return false;
+    }
+
+    damage(damage) {
+        this.hp -= damage;
     }
     
 }
