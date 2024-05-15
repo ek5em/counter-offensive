@@ -69,13 +69,11 @@ export default class Server {
             );
 
             this.socket.on(ESOCKET.LOGOUT, () => {
-                mediator.call(this.events.LOGOUT, true);
+                this.STORE.setToken(null);
             });
 
             this.socket.on(ESOCKET.TOKEN_VERIFICATION, () => {
-                mediator.call(this.events.LOGIN, {
-                    token: this.mediator.get(this.triggers.TOKEN),
-                });
+                this.STORE.setToken(this.STORE.getCookie().token);
             });
 
             this.socket.on(
@@ -121,7 +119,7 @@ export default class Server {
                     token: `${Math.random()}`,
                 };
                 MOCK.users.push(newUser);
-                this.mediator.call(this.events.LOGIN, { token: newUser.token });
+                this.STORE.setToken(newUser.token);
             }
         } else {
             const hash = SHA256(login + password).toString();
@@ -133,7 +131,7 @@ export default class Server {
         if (this.useMock) {
             const user = MOCK.users.find((u) => u.login === login);
             if (user) {
-                this.mediator.call(this.events.LOGIN, { token: user.token });
+                this.STORE.setToken(user.token);
             } else {
                 this.mediator.call(this.events.SERVER_ERROR, {
                     code: 403,
@@ -157,7 +155,7 @@ export default class Server {
             });
         } else {
             this.socket?.emit(ESOCKET.TOKEN_VERIFICATION, {
-                token: this.STORE.getToken(),
+                token: this.STORE.getCookie().token,
             });
         }
     }
@@ -168,7 +166,6 @@ export default class Server {
                 (u) => u.token === this.STORE.getToken()
             );
             if (user) {
-                this.mediator.call(this.events.UPDATE_USER, true);
                 this.STORE.setUser(user);
             } else {
                 this.mediator.call(this.events.SERVER_ERROR, {
@@ -185,7 +182,7 @@ export default class Server {
 
     logout() {
         if (this.useMock) {
-            this.mediator.call(this.events.LOGOUT, true);
+            this.STORE.setToken(null);
         } else {
             this.socket?.emit(ESOCKET.LOGOUT, {
                 token: this.STORE.getToken(),
@@ -290,7 +287,10 @@ export default class Server {
                     }
                 }
                 this.mediator.call(this.events.LOBBY_UPDATE, true);
-                this.mediator.call(this.events.UPDATE_USER, true);
+                this.mediator.call(
+                    this.events.UPDATE_USER,
+                    this.STORE.getUser()
+                );
             }
         } else {
             this.socket?.emit(ESOCKET.SET_GAMER_ROLE, {
@@ -304,7 +304,6 @@ export default class Server {
     getLobby() {
         if (this.useMock) {
             this.STORE.setLobby(MOCK.lobby);
-            this.mediator.call(this.events.LOBBY_UPDATE, true);
         } else {
             this.socket?.emit(ESOCKET.GET_LOBBY, {
                 token: this.mediator.get(this.triggers.TOKEN),

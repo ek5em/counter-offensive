@@ -8,7 +8,7 @@ import {
 } from "react";
 import cn from "classnames";
 import { useGlobalContext } from "../../hooks/useGlobalContext";
-import { IMessage } from "../../modules/Server/interfaces";
+import { IGamerInfo, IMessage } from "../../modules/Server/interfaces";
 import { getRankImg } from "../../helpers";
 import { sendMessage, chatIcon } from "./assets";
 import { closeIcon } from "../../assets/png";
@@ -37,6 +37,8 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
         const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
         const { NEW_MESSAGE, SEND_MESSAGE_STATUS } = mediator.getEventTypes();
+
+        const user = server.STORE.getUser();
 
         useEffect(() => {
             mediator.subscribe(NEW_MESSAGE, (newMessages: IMessage[]) => {
@@ -97,8 +99,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                                                 key={i}
                                                 className={cn(styles.message, {
                                                     [styles.myMessge]:
-                                                        server.STORE.getUser()
-                                                            ?.id ===
+                                                        user?.id ===
                                                         message.userId,
                                                 })}
                                             >

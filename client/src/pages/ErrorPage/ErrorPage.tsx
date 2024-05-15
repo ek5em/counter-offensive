@@ -8,8 +8,6 @@ import styles from "./ErrorPage.module.scss";
 const ErrorPage: FC = () => {
     const { state }: { state: { error: IError } | null } = useLocation();
     const error = state?.error ?? { code: 404, text: "Страница не найдена" };
-    console.log(state, error);
-
     return (
         <div className={styles.wrapper}>
             <div className={styles.error}>

@@ -16,18 +16,14 @@ import styles from "./Header.module.scss";
 
 export const Header: FC = () => {
     const [user, setUser] = useState<IGamerInfo | null>(null);
-    const { server, mediator } = useGlobalContext();
-
-    useEffect(() => {
-        const user = server.STORE.getUser();
-        user && setUser(user);
-    }, [server.STORE.user]);
+    const { mediator, server } = useGlobalContext();
 
     useEffect(() => {
         const { UPDATE_USER } = mediator.getEventTypes();
-        mediator.subscribe(UPDATE_USER, () => {
-            setUser(server.STORE.getUser());
+        mediator.subscribe(UPDATE_USER, (user: IGamerInfo | null) => {
+            setUser(user);
         });
+        server.getUser();
     }, []);
 
     return (
