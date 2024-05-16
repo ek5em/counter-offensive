@@ -224,12 +224,13 @@ class GameManager extends BaseModule {
                     params[6],
                     params[7]
                 );
+                console.log(point)
 
-                const mob = new Mob(
-                    point[0],
-                    point[1],
-                    Math.floor(Math.random() * (9 - 8 + 1)) + 8
-                );
+                const mob = new Mob({
+                    x:point[0],
+                    y:point[1],
+                    type: Math.floor(Math.random() * (9 - 8 + 1)) + 8
+                });
                 this.mobs[this.mobId] = mob;
                 this.mobId++;
             }
@@ -521,12 +522,54 @@ class GameManager extends BaseModule {
         }
     }
 
+    // /* Конец игры */
+    // async playerBannermanInZone() {
+    //     let bannerman = await this.db.getBannerman();
+    //     bannerman = bannerman[0];
+    //     if (!bannerman) {
+    //         if (this.game.pBanner_timestamp != 0) {
+    //             await this.db.updatePlayerBannermanTimestamp(0);
+    //             this.game.pBanner_timestamp = 0;
+    //         }
+    //         return false;
+    //     }
+    //     let dist = this.gameMath.calculateDistance(bannerman.x, bannerman.mobBaseX, bannerman.y, bannerman.mobBaseY);
+    //     if (dist <= bannerman.baseRadius) {
+    //         if (this.game.pBanner_timestamp == 0) {
+    //             await this.db.updatePlayerBannermanTimestamp(this.game.timer);
+    //             this.game.pBanner_timestamp = this.game.timer;
+    //         }
+    //         return true;
+    //     }
+    //     if (this.game.pBanner_timestamp != 0) {
+    //         await this.db.updatePlayerBannermanTimestamp(0);
+    //         this.game.pBanner_timestamp = 0;
+    //     }
+    //     return false;
+    // }
+
+    // async endGame() {
+    //     let player = await this.playerBannermanInZone();
+    //     if (player) {
+    //         if (this.game.timer - this.game.pBanner_timestamp >= this.game.banner_timeout) {
+    //             await this.db.deleteBodies();
+    //             await this.db.deleteBullets();
+    //             await this.db.addBannermanExp(400);
+    //             await this.db.addWinnerExp(200);
+    //             await this.db.deleteTanks();
+    //             await this.db.deleteMobs();
+    //             await this.db.setWinners();
+    //             await this.db.updateObjectsHp();
+    //         }
+    //     }
+    // }
+
     // Обновление сцены
     updateScene() {
         // Мобы
         this.checkMap();
         this.addMobs();
-        this.moveMobs();
+        // this.moveMobs();
         // Пули
         this.moveBullets();
         this.shootRegs();
@@ -535,29 +578,53 @@ class GameManager extends BaseModule {
     getEntities(data = {}, socket) {
         const { token } = data;
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
-    
+
         if (user && user.token) {
             const entities = {
-                gamers: this.getEntitiesArray(this.getGamers(), ['x', 'y', 'angle', 'roleId']),
-                tanks: this.getEntitiesArray(this.tanks, ['x', 'y', 'angle', 'towerAngle']),
-                mobs: this.getEntitiesArray(this.mobs, ['x', 'y', 'angle']),
-                bullets: this.getEntitiesArray(this.bullets)
+                gamers: [],
+                tanks: [],
+                mobs: [],
+                bullets: []
+            }
+
+            const gamers = this.getGamers();
+            for (const {id, user} of gamers) {
+                entities.gamers.push({
+                    x: user.x,
+                    y: user.y,
+                    angle: user.angle,
+                    roleId: user.roleId
+                })
+            }
+            // console.log(this.tanks);
+
+            for (const tank in Object.values(this.tanks)) {
+                entities.tanks.push({
+                    x: tank.x,
+                    y: tank.y,
+                    angle: tank.angle,
+                    towerAngle: tank.towerAngle
+                })
+            }
+
+            for (const mob of Object.values(this.mobs)) {
+                entities.mobs.push({
+                    x: mob.x,
+                    y: mob.y,
+                    angle: mob.angle,
+                    type: mob.type
+                })
+            }
+
+            for (const bullet of Object.values(this.bullets)) {
+                entities.bullets.push({
+                    ...bullet
+                })
             }
             socket.emit(SOCKETS.GAME_ENTITIES, this.answer.good(entities));
+            return;
         }
         socket.emit(SOCKETS.ERROR, this.answer.bad(401));
-    }
-    
-    getEntitiesArray(collection, keys) {
-        return Object.values(collection).map(item => {
-            if (keys) {
-                let result = {};
-                keys.forEach(key => result[key] = item[key]);
-                return result;
-            } else {
-                return { ...item };
-            }
-        });
     }
 
     getMap(data = {}, socket) {

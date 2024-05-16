@@ -393,41 +393,37 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
 
     const drawCrossyRoadsEnd = (roads: IMapObject[]) => {
         roads.forEach((road) => {
-            const { x, y, sizeY, angle } = road;
-            canvas?.spriteDir(
-                img,
-                x,
-                y + sizeY,
-                ...crossyRoadEndSprite,
-                -angle
-            );
+            const { x, y, angle } = road;
+            canvas?.spriteDir(img, x, y + 2, ...crossyRoadEndSprite, -angle);
         });
     };
 
     const drawCrossyRoadsTurn = (roads: IMapObject[]) => {
         roads.forEach((road) => {
-            const { x, angle, sizeY, y } = road;
-            canvas?.spriteDir(
-                img,
-                x,
-                y + sizeY,
-                ...crossyRoadTurnSprite,
-                -angle
-            );
+            const { x, angle, y } = road;
+            canvas?.spriteDir(img, x, y + 2, ...crossyRoadTurnSprite, -angle);
         });
     };
 
     const drawCrossyRoadsTurnCont = (roads: IMapObject[]) => {
         roads.forEach((road) => {
-            const { x, angle, sizeY, y } = road;
+            const { x, angle, y } = road;
             canvas?.spriteDir(
                 img,
                 x,
-                y + sizeY,
+                y + 2,
                 ...crossyRoadTurnContSprite,
                 -angle
             );
         });
+    };
+
+    const drawBase = (base: { x: number; y: number; radius: number }) => {
+        const { innerColor: c1, outerColor: c2 } = objectConf.base;
+        const { x, y, radius } = base;
+        canvas?.circle({ x, y, r: radius }, c2);
+        canvas?.circle({ x, y, r: radius * 0.8 }, c1);
+        return;
     };
 
     const drawObjects = (map: IMap) => {
@@ -440,16 +436,16 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
             crossyRoadsEnd,
             crossyRoadsTurn,
             crossyRoadsTurnCont,
+            base,
         } = map.static;
 
         drawGrass();
         drawWalls(walls);
-        // drawCrossyRoads(crossyRoads);
+        drawCrossyRoads(crossyRoads);
         drawCrossyRoadsEnd(crossyRoadsEnd);
-        // drawCrossyRoadsTurn(crossyRoadsTurn);
-        // drawCrossyRoadsTurnCont(crossyRoadsTurnCont);
+        drawCrossyRoadsTurn(crossyRoadsTurn);
+        drawCrossyRoadsTurnCont(crossyRoadsTurnCont);
         drawRoads(roads);
-
         drawTrees(trees);
         drawBushes(bushes);
 
@@ -458,18 +454,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         drawSpikes(spikes);
         drawStones(stones);
         drawStumps(stumps);
-
-        /* map.forEach((obj) => {
-            const { x, y, angle, sizeX, sizeY } = obj;
-            switch (obj.type) {
-                case EMapObject.base: {
-                    const { innerColor: c1, outerColor: c2 } = objectConf.base;
-                    const r = obj.r ? obj.r : objectConf.base.r;
-                    canvas?.circle({ x, y, r }, c2);
-                    canvas?.circle({ x, y, r: r * 0.9 }, c1);
-                    return;
-                }
-        }); */
+        drawBase(base);
     };
 
     const drawBullets = (bullets: IBullet[]) => {
@@ -624,7 +609,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         });
     };
 
-    const showEnemyBase = (base: IMapObject) => {
+    const showEnemyBase = (base: { x: number; y: number; radius: number }) => {
         const unit = game.getUnit();
         const { left, bottom, width, height } = WIN;
         const vectorToBase = {
@@ -633,8 +618,8 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         };
 
         if (
-            Math.abs(vectorToBase.y) > height / 2 + objectConf.base.r ||
-            Math.abs(vectorToBase.x) > width / 2 + objectConf.base.r
+            Math.abs(vectorToBase.y) > height / 2 + base.radius ||
+            Math.abs(vectorToBase.x) > width / 2 + base.radius
         ) {
             let x = base.x,
                 y = base.y;
@@ -655,7 +640,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
                 {
                     x,
                     y,
-                    r: 0.5,
+                    r: 1,
                 },
                 "#f00"
             );
@@ -674,8 +659,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         !(unit instanceof General) && tracer?.trace(unit, WIN);
 
         drawGamers(gamers);
-        const base = null; /* map.find((el) => el.type === EMapObject.base); */
-        base && showEnemyBase(base);
+        showEnemyBase(game.getScene().map.static.base);
     };
 
     const updateWIN = () => {

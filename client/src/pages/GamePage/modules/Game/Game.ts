@@ -69,6 +69,7 @@ export default class Game {
                     stumps: [],
                 },
                 static: {
+                    base: { x: 134, y: 108, radius: 2 },
                     bushes: [],
                     crossyRoads: [],
                     crossyRoadsEnd: [],
@@ -88,30 +89,36 @@ export default class Game {
             Space: false,
         };
 
-        const { THROW_TO_LOBBY, UPDATE_SCENE, MOVE_UNIT, UPDATE_TIME } =
+        const { THROW_TO_LOBBY, UPDATE_MAP, MOVE_UNIT, UPDATE_TIME } =
             mediator.getEventTypes();
 
         this.user = server.STORE.getUser()?.is_alive ?? null;
         this.unit = getUnit(this.user);
 
-        this.mediator.subscribe(UPDATE_SCENE, (scene: IMap) => {
-            const updateHouses = scene.dynamic.houses.map((house) => ({
+        this.mediator.subscribe(UPDATE_MAP, (map: IMap) => {
+            map.dynamic.spikes = map.dynamic.spikes.map((spike) => ({
+                ...spike,
+                y: spike.y + spike.sizeY,
+            }));
+            map.dynamic.stumps = map.dynamic.stumps.map((stump) => ({
+                ...stump,
+                y: stump.y + stump.sizeY,
+            }));
+            map.dynamic.houses = map.dynamic.houses.map((house) => ({
                 ...house,
                 y: house.y + house.sizeY,
             }));
-            const updatedSands = scene.dynamic.sands.map((sand) => ({
+            map.dynamic.sands = map.dynamic.sands.map((sand) => ({
                 ...sand,
                 y: sand.y + sand.sizeY,
             }));
+            map.dynamic.stones = map.dynamic.stones.map((stone) => ({
+                ...stone,
+                y: stone.y + stone.sizeY,
+            }));
 
-            scene.dynamic.houses = updateHouses;
-            scene.dynamic.sands = updatedSands;
-
-            this.scene.map = scene;
-            this.scene.map.static = { ...scene.static, ...staticMap };
-
-            console.log(this.scene);
-            
+            this.scene.map = map;
+            this.scene.map.static = { ...map.static, ...staticMap };
         });
 
         this.mediator.subscribe(MOVE_UNIT, () => {
@@ -120,6 +127,7 @@ export default class Game {
 
         this.unitMotion();
         this.server.getMap();
+        this.server.getEntities();
     }
 
     getScene() {

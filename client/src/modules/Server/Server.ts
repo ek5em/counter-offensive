@@ -13,6 +13,7 @@ import {
     ETank,
     IMessage,
     ERank,
+    IMap,
 } from "./interfaces";
 import { ESOCKET } from "../../config";
 import { MOCK } from "./mock";
@@ -94,8 +95,8 @@ export default class Server {
                 this.STORE.setLobby(answer.data);
             });
 
-            this.socket.on(ESOCKET.GAME_MAP, (answer) => {
-                mediator.call(this.events.UPDATE_SCENE, answer.data);
+            this.socket.on(ESOCKET.GAME_MAP, (answer: IAnswer<IMap>) => {
+                mediator.call(this.events.UPDATE_MAP, answer.data);
             });
 
             this.socket.on(ESOCKET.GAME_ENTITIES, (answer) => {});
@@ -325,15 +326,18 @@ export default class Server {
     // ИГРА
 
     getMap() {
-        this.socket?.emit(ESOCKET.GAME_MAP, {
-            token: this.STORE.getToken(),
-        });
-    }
-
-    getScene() {
         if (this.useMock) {
         } else {
-            this.socket?.emit(ESOCKET.GET_SCENE, {
+            this.socket?.emit(ESOCKET.GAME_MAP, {
+                token: this.STORE.getToken(),
+            });
+        }
+    }
+
+    getEntities() {
+        if (this.useMock) {
+        } else {
+            this.socket?.emit(ESOCKET.GAME_ENTITIES, {
                 token: this.STORE.getToken(),
             });
         }
