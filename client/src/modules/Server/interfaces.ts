@@ -126,6 +126,7 @@ export interface IStaticMap {
     crossyRoadsTurnCont: any[];
     crossyRoadsTurn: any[];
     crossyRoadsEnd: any[];
+    base: { x: number; y: number; radius: number };
 }
 
 export interface IMap {
