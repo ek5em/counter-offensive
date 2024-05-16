@@ -1,11 +1,11 @@
-const DB = require('../DB'); // Импортируем класс DB
-const db = new DB(); // Создаем экземпляр класса DB
+const DB = require('../DB'); 
+const db = new DB(); 
 
 describe('GetUserByLogin', () => {
-    // ...
+
 
     
-    test('the first user has the id testuse', async () =>{
+    test('the first user has the id 1', async () =>{
         const testUserLogin = "testuse";
         const testUserId = 1;
         const user = await db.getUserByLogin(testUserLogin);
