@@ -2,7 +2,7 @@ class DB {
     constructor() {
         const mysql = require("mysql");
         this.connection = mysql.createConnection({
-            host: "localhost",
+            host: "MySQL-8.2",
             user: "root",
             database: "counter_offensive",
             password: null

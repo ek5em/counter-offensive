@@ -224,7 +224,6 @@ class GameManager extends BaseModule {
                     params[6],
                     params[7]
                 );
-                console.log(point)
 
                 const mob = new Mob({
                     x:point[0],
