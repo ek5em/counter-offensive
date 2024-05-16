@@ -77,3 +77,8 @@ exports.dynamicObjects = [
 ];
 
 exports.staticObjects = [];
+
+exports.bulletDict = {
+    gunBullet: 0,
+    RPGBullet: 1
+};

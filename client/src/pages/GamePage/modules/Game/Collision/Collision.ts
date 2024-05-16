@@ -90,7 +90,7 @@ class Collision {
     }
 
     checkAllBlocksUnit(unit: TUnit): void {
-        this.scene.map.forEach((obj) => {
+       /*  this.scene.map.forEach((obj) => {
             const { x, y, sizeX, sizeY, type, angle } = obj;
             switch (type) {
                 case EMapObject.house: {
@@ -167,7 +167,7 @@ class Collision {
                 });
             }
         });
-
+ */
         this.bordersUnit(unit);
     }
 }

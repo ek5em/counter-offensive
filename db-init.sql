@@ -1,11 +1,8 @@
 CREATE TABLE IF NOT EXISTS `game` (
   `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `timestamp` BIGINT NOT NULL DEFAULT 0,
-  `timeout` INT NOT NULL DEFAULT 26,
-  `startGameTimestamp` BIGINT NOT NULL DEFAULT 0,
-  `mobBase_x` FLOAT NULL DEFAULT NULL,
-  `mobBase_y` FLOAT NULL DEFAULT NULL,
-  `base_radius` FLOAT NULL DEFAULT 2,
+  `mobBaseX` FLOAT NULL DEFAULT NULL,
+  `mobBaseY` FLOAT NULL DEFAULT NULL,
+  `baseRadius` FLOAT NULL DEFAULT 2,
   PRIMARY KEY (`id`)
 );
 
@@ -23,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 CREATE TABLE IF NOT EXISTS `gamers` (
   `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `user_id` MEDIUMINT NOT NULL DEFAULT -1,
+  `userId` MEDIUMINT NOT NULL DEFAULT -1,
   `experience` INT NOT NULL DEFAULT 0,
   `money` INT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
@@ -41,29 +38,10 @@ CREATE TABLE IF NOT EXISTS `persons` (
   PRIMARY KEY (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `kills` (
-  `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `person_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `x` FLOAT NOT NULL,
-  `y` FLOAT NOT NULL,
-  `angle` FLOAT NOT NULL DEFAULT 0,
-  `killTime` DATETIME NOT NULL,
-  PRIMARY KEY (`id`)
-);
-
 CREATE TABLE IF NOT EXISTS `ranks` (
   `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL DEFAULT 'Медный ранг',
   `experience` INT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `games` ( 
-  `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `startTime` DATETIME NOT NULL DEFAULT '2000-10-01 00:00:00', 
-  `endTime` DATETIME NOT NULL DEFAULT '2000-10-01 00:00:00', 
-  `status` VARCHAR(10) NOT NULL DEFAULT 'end',
-  `winner` VARCHAR(10) NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
 
@@ -113,7 +91,7 @@ INSERT INTO `users` (`login`, `nickname`, `password`) VALUES
 ('testgeneral1', 'testuser', 'aac5a55cac1167803fb0437337f5236cc590c08b939add1f0eb753b5ac2a4547'),
 ('testgeneral2', 'testuser', 'f13da73dfccd34814fc79bdfd6d7d4d75b6369c1802ff89a3e522897c9d575c5');
 
-INSERT INTO `gamers` (`user_id`, `experience`) VALUES
+INSERT INTO `gamers` (`userId`, `experience`) VALUES
 (1, 0), 
 (2, 0), 
 (3, 0), 
@@ -126,8 +104,8 @@ INSERT INTO `gamers` (`user_id`, `experience`) VALUES
 
 /* Значения по умолчанию в таблице game*/
 
-INSERT INTO `game` (`timestamp`, `mobBase_x`, `mobBase_y`, `startGameTimestamp`) 
-VALUES (ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000), '134', '108', ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000));
+INSERT INTO `game` (`mobBaseX`, `mobBaseY`) 
+VALUES ('134', '108');
 
 /* Добавление уровней в таблицу ranks */
 INSERT INTO `ranks` (`name`, `experience`) VALUES 

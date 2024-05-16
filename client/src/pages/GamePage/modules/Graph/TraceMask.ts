@@ -118,7 +118,7 @@ export default class TraceMask {
         scene.forEach((obj) => {
             const { x, y, sizeX: dx, sizeY: dy } = obj;
             const { stone, bush, tree } = objectConf;
-            switch (obj.type) {
+            /* switch (obj.type) {
                 case EMapObject.house: {
                     this.polygon([
                         { x, y },
@@ -141,7 +141,7 @@ export default class TraceMask {
                 case EMapObject.tree: {
                     this.circle({ x: x + tree.r, y: y - tree.r, r: tree.r });
                 }
-            }
+            } */
         });
         this.maskContext.closePath();
     }

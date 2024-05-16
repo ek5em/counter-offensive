@@ -55,7 +55,6 @@ class User {
             
             const gamer = await this.db.getGamerById(user.id);
             this._includeUserData(user, token);
-            console.log(gamer)
             this._includeGamerData(gamer);
             return true;
         }

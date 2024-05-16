@@ -1,7 +1,7 @@
 const BaseModule = require("../BaseModule/BaseModule");
 const Mob = require("./Mob.js");
 const MapObject = require("./MapObject.js");
-
+const Base = require("./Base.js");
 const Bullet = require("./Bullet.js");
 const GameMath = require("./GameMath");
 const easystarjs = require("easystarjs");
@@ -12,6 +12,7 @@ const {
     footRoles,
     objectDict,
     gamerRoles,
+    bulletDict
 } = require("../../../config.js");
 
 class GameManager extends BaseModule {
@@ -46,6 +47,7 @@ class GameManager extends BaseModule {
 
         this.getObjects();
         this.fillMap();
+        this.getBase();
 
         if (!this.io) {
             return;
@@ -53,7 +55,7 @@ class GameManager extends BaseModule {
 
         io.on("connection", (socket) => {
             socket.on(SOCKETS.GAME_MAP, (data) => this.getMap(data, socket));
-            // socket.on(SOCKETS.GAME_ENTITIES, (data) => this.getEntities(data, socket));
+            socket.on(SOCKETS.GAME_ENTITIES, (data) => this.getEntities(data, socket));
             socket.on(SOCKETS.MOTION, (data) => this.motion(data, socket));
             socket.on(SOCKETS.FIRE, (data) => this.fire(data, socket));
             socket.on("disconnect", () => console.log("disconnect", socket.id));
@@ -98,13 +100,22 @@ class GameManager extends BaseModule {
         }
     }
 
+    async getBase() {
+        const base = await this.db.getBase();
+        this.base = new Base({
+            x: base.x,
+            y:base.y,
+            radius: base.radius
+        }) 
+    }
+
     // Выстрел
     tankFire(user, x, y, angle) {
         let tank = this.getTankByGunnerId(user.id);
         if (tank.fire()) {
             const dx = Math.cos(angle);
             const dy = Math.sin(angle);
-            const bullet = new Bullet(user.id, x + dx, y + dy, dx, dy, 1);
+            const bullet = new Bullet(user.id, x + dx, y + dy, dx, dy, bulletDict.RPGBullet);
             this.bullets[this.bulletsId] = bullet;
             this.bulletId += 1;
             tank.updateTimestamp();
@@ -133,7 +144,7 @@ class GameManager extends BaseModule {
         if (mob.fire()) {
             let dx = Math.cos(angle);
             let dy = Math.sin(angle);
-            let bulletType = personId === 9 ? 1 : 0;
+            let bulletType = personId === gamerRoles.infantryRPG ? bulletDict.RPGBullet : bulletDict.gunBullet;
             const bullet = new Bullet(null, x + dx, y + dy, dx, dy, bulletType);
             this.bullets[this.bulletsId] = bullet;
             this.bulletId += 1;
@@ -510,48 +521,6 @@ class GameManager extends BaseModule {
         }
     }
 
-    // /* Конец игры */
-    // async playerBannermanInZone() {
-    //     let bannerman = await this.db.getBannerman();
-    //     bannerman = bannerman[0];
-    //     if (!bannerman) {
-    //         if (this.game.pBanner_timestamp != 0) {
-    //             await this.db.updatePlayerBannermanTimestamp(0);
-    //             this.game.pBanner_timestamp = 0;
-    //         }
-    //         return false;
-    //     }
-    //     let dist = this.gameMath.calculateDistance(bannerman.x, bannerman.mobBaseX, bannerman.y, bannerman.mobBaseY);
-    //     if (dist <= bannerman.baseRadius) {
-    //         if (this.game.pBanner_timestamp == 0) {
-    //             await this.db.updatePlayerBannermanTimestamp(this.game.timer);
-    //             this.game.pBanner_timestamp = this.game.timer;
-    //         }
-    //         return true;
-    //     }
-    //     if (this.game.pBanner_timestamp != 0) {
-    //         await this.db.updatePlayerBannermanTimestamp(0);
-    //         this.game.pBanner_timestamp = 0;
-    //     }
-    //     return false;
-    // }
-
-    // async endGame() {
-    //     let player = await this.playerBannermanInZone();
-    //     if (player) {
-    //         if (this.game.timer - this.game.pBanner_timestamp >= this.game.banner_timeout) {
-    //             await this.db.deleteBodies();
-    //             await this.db.deleteBullets();
-    //             await this.db.addBannermanExp(400);
-    //             await this.db.addWinnerExp(200);
-    //             await this.db.deleteTanks();
-    //             await this.db.deleteMobs();
-    //             await this.db.setWinners();
-    //             await this.db.updateObjectsHp();
-    //         }
-    //     }
-    // }
-
     // Обновление сцены
     updateScene() {
         // Мобы
@@ -563,10 +532,38 @@ class GameManager extends BaseModule {
         this.shootRegs();
     }
 
+    getEntities(data = {}, socket) {
+        const { token } = data;
+        const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
+    
+        if (user && user.token) {
+            const entities = {
+                gamers: this.getEntitiesArray(this.getGamers(), ['x', 'y', 'angle', 'roleId']),
+                tanks: this.getEntitiesArray(this.tanks, ['x', 'y', 'angle', 'towerAngle']),
+                mobs: this.getEntitiesArray(this.mobs, ['x', 'y', 'angle']),
+                bullets: this.getEntitiesArray(this.bullets)
+            }
+            socket.emit(SOCKETS.GAME_ENTITIES, this.answer.good(entities));
+        }
+        socket.emit(SOCKETS.ERROR, this.answer.bad(401));
+    }
+    
+    getEntitiesArray(collection, keys) {
+        return Object.values(collection).map(item => {
+            if (keys) {
+                let result = {};
+                keys.forEach(key => result[key] = item[key]);
+                return result;
+            } else {
+                return { ...item };
+            }
+        });
+    }
+
     getMap(data = {}, socket) {
         const { token } = data;
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
-
+    
         if (user && user.token) {
             const objects = {
                 dynamic: {
@@ -576,53 +573,40 @@ class GameManager extends BaseModule {
                     stumps: [],
                     sands: [],
                 },
-                static: {},
+                static: {
+                    bushes: [],
+                    trees:[],
+                    crossyRoadEnds: [],
+                    base: this.base,
+                },
             };
+    
+            const addObject = (obj, type, array) => {
+                if (obj.type === type) {
+                    array.push(obj);
+                }
+            }
+    
             for (const dynamicObj of Object.values(this.objects.dynamic)) {
-                switch (dynamicObj.type) {
-                    case objectDict.house:
-                        objects.dynamic.houses.push(dynamicObj);
-                        break;
-                    case objectDict.stone:
-                        objects.dynamic.stones.push(dynamicObj);
-                        break;
-                    case objectDict.spike:
-                        objects.dynamic.spikes.push(dynamicObj);
-                        break;
-                    case objectDict.stump:
-                        objects.dynamic.stumps.push(dynamicObj);
-                        break;
-                    case objectDict.sand:
-                        objects.dynamic.sands.push(dynamicObj);
-                        break;
-                }
+                addObject(dynamicObj, objectDict.house, objects.dynamic.houses);
+                addObject(dynamicObj, objectDict.stone, objects.dynamic.stones);
+                addObject(dynamicObj, objectDict.spike, objects.dynamic.spikes);
+                addObject(dynamicObj, objectDict.stump, objects.dynamic.stumps);
+                addObject(dynamicObj, objectDict.sand, objects.dynamic.sands);
             }
-            for (const staticObj in Object.values(this.objects.static)) {
-                switch (staticObj) {
-                    case objectDict.house:
-                        objects.static.houses.push(dynamicObj);
-                        break;
-                    case objectDict.stone:
-                        objects.static.stones.push(dynamicObj);
-                        break;
-                    case objectDict.spike:
-                        objects.static.spikes.push(dynamicObj);
-                        break;
-                    case objectDict.stump:
-                        objects.static.stumps.push(dynamicObj);
-                        break;
-                    case objectDict.sand:
-                        objects.static.sands.push(dynamicObj);
-                        break;
-                }
+    
+            for (const staticObj of Object.values(this.objects.static)) {
+                addObject(staticObj, objectDict.bush, objects.static.bushes);
+                addObject(staticObj, objectDict.tree, objects.static.trees);
+                addObject(staticObj, objectDict.crossyRoadEnd, objects.static.crossyRoadEnds);
             }
-
+    
             socket.emit(SOCKETS.GAME_MAP, this.answer.good(objects));
             return;
         }
         socket.emit(SOCKETS.ERROR, this.answer.bad(401));
     }
-
+    
     getScene(data = {}) {
         const { token } = data;
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
@@ -632,7 +616,7 @@ class GameManager extends BaseModule {
             result.gametime = Date.now() - this.startGameTimestamp;
             if (footRoles.includes(user.roleId)) {
                 result.gamer = {
-                    person_id: user.roleId,
+                    roleId: user.roleId,
                     x: user.x,
                     y: user.y,
                     angle: user.angle,
@@ -642,83 +626,16 @@ class GameManager extends BaseModule {
                 const tank = this.getTankByUserId(user.id);
                 if (tank) {
                     result.gamer = {
-                        person_id: user.roleId,
+                        roleId: user.roleId,
                         x: tank.x,
                         y: tank.y,
                         angle: tank.angle,
-                        tower_angle: tank.tower_angle,
+                        towerAngle: tank.towerAngle,
                         hp: tank.hp,
                     };
                 } else result.gamer = null;
             }
         }
-        // let gamer = await this.db.getGamerById(userId);
-        // this.game = await this.db.getGame();
-        // this.game = this.game[0];
-
-        // if(["dead", "lobby"].includes(gamer[0].status)){
-        //     result.is_dead = true;
-        // }
-
-        // Отправлять время в лобби
-
-        // if(gamer[0].status == "w"){
-        //     result.is_end = 'true';
-        // } else await this.update();
-
-        // if([1, 2, 8, 9].includes(gamer[0].person_id)){
-        //     result.gamer = {
-        //         'person_id': gamer[0].person_id,
-        //         'x': gamer[0].x,
-        //         'y': gamer[0].y,
-        //         'angle': gamer[0].angle,
-        //         'hp': gamer[0].hp
-        //     };
-        // } else{
-        //     let tank = await this.db.getTankByUserId(userId);
-        //     if(tank[0] && [3, 4, 5, 6, 7].includes(gamer[0].person_id)){
-        //         result.gamer = {
-        //             'person_id': gamer[0].person_id,
-        //             'x': tank[0].x,
-        //             'y': tank[0].y,
-        //             'angle': tank[0].angle,
-        //             'tower_angle': tank[0].tower_angle,
-        //             'hp': tank[0].hp
-        //         };
-        //     } else result.gamer = null;
-        // }
-
-        // if (this.game.hashGamers !== hashGamers) {
-        //     result.gamers = await this.getGamers();
-        //     result.tanks = await this.getTanks();
-        //     result.hashGamers = this.game.hashGamers;
-        // }
-
-        // if (this.game.hashMobs !== hashMobs) {
-        //     result.mobs = await this.getMobs();
-        //     result.hashMobs = this.game.hashMobs;
-        // }
-
-        // if (this.game.hashBullets !== hashBullets) {
-        //     result.bullets = await this.getBullets();
-        //     result.hashBullets = this.game.hashBullets;
-        // }
-
-        // if (this.game.hashMap !== hashMap) {
-        //     result.mobBase = {
-        //         x: this.game.mobBase_x,
-        //         y: this.game.mobBase_y,
-        //         radius: this.game.base_radius
-        //     };
-        //     result.map = await this.getObjects();
-        //     result.hashMap = this.game.hashMap;
-        // }
-
-        // if (this.game.hashBodies !== hashBodies) {
-        //     result.bodies = await this.getBodies();
-        //     result.hashBodies = this.game.hashBodies;
-        // }
-        // return result;
     }
 
     motion(data = {}, socket) {
@@ -768,20 +685,22 @@ class GameManager extends BaseModule {
     }
 
     fire(data = {}, socket) {
-        const {user_id, x, y, angle} = data;
+        const {token, x, y, angle} = data;
         const user = this.mediator.get(this.TRIGGERS.GET_USER, token);
 
-        if (user.status !== 'a') return true;
+        if (user.status !== 'a') {
+            socket.emit(SOCKETS.FIRE, this.answer.good(true));
+        }
         if ([gamerRoles.heavyTankGunner, gamerRoles.middleTankGunner].includes(gamer.person_id)) {
             this.tankFire(user_id, gamer, x, y, angle);
         } else if (gamer.person_id === gamerRoles.infantryRPG) {
-            this.infantryFire(user_id, gamer, x, y, angle, 1);
+            this.infantryFire(user_id, gamer, x, y, angle, bulletDict.RPGBullet);
         } else if (gamer.person_id === gamerRoles.infantry) {
-            this.infantryFire(user_id, gamer, x, y, angle, 0);
+            this.infantryFire(user_id, gamer, x, y, angle, bulletDict.gunBullet);
         } else if (gamer.person_id === gamerRoles.general) {
-            this.infantryFire(user_id, gamer, x, y, angle, 0);
+            this.infantryFire(user_id, gamer, x, y, angle, bulletDict.gunBullet);
         }
-        return true;
+        socket.emit(SOCKETS.FIRE, this.answer.good(true));
     }
 }
 

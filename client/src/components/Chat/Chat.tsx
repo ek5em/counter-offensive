@@ -46,7 +46,6 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
             });
 
             mediator.subscribe(SEND_MESSAGE_STATUS, (status: true | null) => {
-                console.log(status);
                 if (status) {
                     setInputText("");
                     scrollToBottom();

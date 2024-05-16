@@ -106,11 +106,31 @@ export interface ITank extends IPoint {
 }
 
 export interface IMapObject extends IPoint {
-    type: EMapObject;
     sizeX: number;
     sizeY: number;
-    isVert: boolean;
-    r: number;
+}
+
+export interface IDynamicMap {
+    houses: IMapObject[];
+    sands: IMapObject[];
+    spikes: IMapObject[];
+    stones: IMapObject[];
+    stumps: IMapObject[];
+}
+
+export interface IStaticMap {
+    bushes: any[];
+    trees: any[];
+    roads: any[];
+    crossyRoads: any[];
+    crossyRoadsTurnCont: any[];
+    crossyRoadsTurn: any[];
+    crossyRoadsEnd: any[];
+}
+
+export interface IMap {
+    dynamic: IDynamicMap;
+    static: IStaticMap;
 }
 
 export interface IScene {

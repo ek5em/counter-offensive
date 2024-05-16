@@ -54,6 +54,23 @@ class DB {
         return await this.queryHandler(query, [token], true);
     }
 
+    async addUser(login, nickname, hash, token) {
+        let query = "INSERT INTO users (login, nickname, password, token, tokenLastUse, timeCreate) VALUES(?, ?, ?, ?, NOW(), NOW())";
+        await this.queryHandler(query, [login, nickname, hash, token]); 
+    }
+
+
+    async addGamer(userId){
+        let query = "INSERT INTO `gamers` (`userId`, `experience`) VALUES (?, 0);";
+        await this.queryHandler(query, [userId]); 
+    }
+
+    async getGamerById(userId) {
+        let query = "SELECT * FROM gamers WHERE userId=?";
+        const gamer = await this.queryHandler(query, [userId])
+        return gamer;
+    }
+
     async updateToken(userId, token) {
         let query = "UPDATE users SET tokenLastUse = NOW(), token = ? WHERE id=?";
         await this.queryHandler(query, [token, userId]);
@@ -69,23 +86,6 @@ class DB {
         await this.queryHandler(query, [userId]);
     }
 
-    async addUser(login, nickname, hash, token) {
-        let query = "INSERT INTO users (login, nickname, password, token, tokenLastUse, timeCreate) VALUES(?, ?, ?, ?, NOW(), NOW())";
-        await this.queryHandler(query, [login, nickname, hash, token]); 
-    }
-
-
-    async addGamer(userId){
-        let query = "INSERT INTO `gamers` (`user_id`, `experience`) VALUES (?, 0);";
-        await this.queryHandler(query, [userId]); 
-    }
-
-    async getGamerById(userId) {
-        let query = "SELECT * FROM gamers WHERE user_id=?";
-        const gamer = await this.queryHandler(query, [userId])
-        return gamer;
-    }
-
     /* Чат */
     async addMessage(userId, message) {
         let query = "INSERT INTO messages (userId, text, sendTime) VALUES(?, ?, NOW())";
@@ -94,17 +94,17 @@ class DB {
 
 
     async getMessages(){
-        let query = `SELECT u.id AS userId, u.nickname AS nickname, m.text AS text, r.id AS level, r.name AS rank_name, m.sendTime AS sendTime
+        let query = `SELECT u.id AS userId, u.nickname AS nickname, m.text AS text, r.id AS level, r.name AS rankName, m.sendTime AS sendTime
         FROM messages AS m 
         INNER JOIN users AS u ON m.userId=u.id
-        JOIN ranks AS r ON r.id=(SELECT MAX(r.id) as level FROM gamers AS g JOIN ranks as r ON r.experience<=g.experience WHERE g.user_id=u.id)
+        JOIN ranks AS r ON r.id=(SELECT MAX(r.id) as level FROM gamers AS g JOIN ranks as r ON r.experience<=g.experience WHERE g.userId=u.id)
         ORDER BY m.sendTime DESC
         LIMIT 30`;
         return await this.queryHandlerAll(query, []);
     }
 
-    async getGame() {
-        let query = "SELECT *, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000) as timer FROM game WHERE id=1";
+    async getBase() {
+        let query = "SELECT mobBaseX AS x, mobBaseY AS y, baseRadius AS radius FROM game WHERE id=1";
         return await this.queryHandler(query, [], true);
     }
     

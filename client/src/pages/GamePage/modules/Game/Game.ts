@@ -1,9 +1,11 @@
+import { staticMap } from "../../../../config";
 import { Mediator, Server } from "../../../../modules";
 import {
     EGamerRole,
     IBody,
     IBullet,
     IGamer,
+    IMap,
     IMapObject,
     IMob,
     IScene,
@@ -19,7 +21,7 @@ export interface IGameScene {
     mobs: IMob[];
     gamers: IGamer[];
     bodies: IBody[];
-    map: IMapObject[];
+    map: IMap;
 }
 
 export enum EKeys {
@@ -58,7 +60,24 @@ export default class Game {
             gamers: [],
             tanks: [],
             bodies: [],
-            map: [],
+            map: {
+                dynamic: {
+                    houses: [],
+                    sands: [],
+                    spikes: [],
+                    stones: [],
+                    stumps: [],
+                },
+                static: {
+                    bushes: [],
+                    crossyRoads: [],
+                    crossyRoadsEnd: [],
+                    crossyRoadsTurn: [],
+                    crossyRoadsTurnCont: [],
+                    roads: [],
+                    trees: [],
+                },
+            },
         };
 
         this.keyPressed = {
@@ -75,44 +94,24 @@ export default class Game {
         this.user = server.STORE.getUser()?.is_alive ?? null;
         this.unit = getUnit(this.user);
 
-        this.mediator.subscribe(UPDATE_SCENE, (scene: IScene) => {
-            const {
-                bodies,
-                bullets,
-                gamer,
-                gamers,
-                gametime,
-                is_dead,
-                is_end,
-                map,
-                mobBase,
-                mobs,
-                tanks,
-            } = scene;
+        this.mediator.subscribe(UPDATE_SCENE, (scene: IMap) => {
+            const updateHouses = scene.dynamic.houses.map((house) => ({
+                ...house,
+                y: house.y + house.sizeY,
+            }));
+            const updatedSands = scene.dynamic.sands.map((sand) => ({
+                ...sand,
+                y: sand.y + sand.sizeY,
+            }));
 
-            if (bodies) {
-                this.scene.bodies = bodies;
-            }
+            scene.dynamic.houses = updateHouses;
+            scene.dynamic.sands = updatedSands;
 
-            if (bullets) {
-                this.scene.bullets = bullets;
-            }
+            this.scene.map = scene;
+            this.scene.map.static = { ...scene.static, ...staticMap };
 
-            if (gamers) {
-                this.scene.gamers = gamers;
-            }
-
-            if (mobs) {
-                this.scene.mobs = mobs;
-            }
-
-            if (tanks) {
-                this.scene.tanks = tanks;
-            }
-
-            if (gamer) {
-                this.serverUnit = gamer;
-            }
+            console.log(this.scene);
+            
         });
 
         this.mediator.subscribe(MOVE_UNIT, () => {
@@ -125,36 +124,6 @@ export default class Game {
 
     getScene() {
         return this.scene;
-    }
-
-    unitMotion() {
-        if (this.user) {
-            const { x, y, angle } = this.unit;
-            const { personId: role } = this.user;
-            if (
-                role !== EGamerRole.middleTankGunner &&
-                role !== EGamerRole.heavyTankGunner &&
-                role !== EGamerRole.heavyTankCommander
-            ) {
-                this.server.unitMotion(x, y, angle);
-            } else {
-                this.server.unitMotion(null, null, angle);
-                if (this.serverUnit) {
-                    this.unit.x = this.serverUnit.x;
-                    this.unit.y = this.serverUnit.y;
-                }
-            }
-
-            if (
-                this.keyPressed.Space &&
-                (role === EGamerRole.infantry ||
-                    role === EGamerRole.infantryRPG ||
-                    role === EGamerRole.middleTankGunner ||
-                    role === EGamerRole.heavyTankGunner)
-            ) {
-                // makeShot();
-            }
-        }
     }
 
     keyDown(key: EKeys) {
@@ -184,6 +153,36 @@ export default class Game {
                     y + Math.sin(angle) * weaponLength,
                     angle
                 );
+            }
+        }
+    }
+
+    unitMotion() {
+        if (this.user) {
+            const { x, y, angle } = this.unit;
+            const { personId: role } = this.user;
+            if (
+                role !== EGamerRole.middleTankGunner &&
+                role !== EGamerRole.heavyTankGunner &&
+                role !== EGamerRole.heavyTankCommander
+            ) {
+                this.server.unitMotion(x, y, angle);
+            } else {
+                this.server.unitMotion(null, null, angle);
+                if (this.serverUnit) {
+                    this.unit.x = this.serverUnit.x;
+                    this.unit.y = this.serverUnit.y;
+                }
+            }
+
+            if (
+                this.keyPressed.Space &&
+                (role === EGamerRole.infantry ||
+                    role === EGamerRole.infantryRPG ||
+                    role === EGamerRole.middleTankGunner ||
+                    role === EGamerRole.heavyTankGunner)
+            ) {
+                // makeShot();
             }
         }
     }

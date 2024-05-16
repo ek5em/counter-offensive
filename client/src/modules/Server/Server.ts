@@ -94,13 +94,10 @@ export default class Server {
                 this.STORE.setLobby(answer.data);
             });
 
-            this.socket.on(ESOCKET.GET_SCENE, (answer: IAnswer<IScene>) => {
+            this.socket.on(ESOCKET.GAME_MAP, (answer) => {
                 mediator.call(this.events.UPDATE_SCENE, answer.data);
             });
 
-            this.socket.on(ESOCKET.GAME_MAP, (answer) => {
-                console.log(answer);
-            });
             this.socket.on(ESOCKET.GAME_ENTITIES, (answer) => {});
 
             this.socket.on(ESOCKET.MOTION, () => {
