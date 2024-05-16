@@ -1,0 +1,84 @@
+@import "../../styles/mixins.scss";
+@import "../../styles/root.scss";
+
+$minHeight: 80px;
+$borderRadius: 15px;
+$textWrapper: 2px;
+
+.header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    width: 100%;
+    gap: $gap;
+    justify-content: space-between;
+
+    & > div {
+        @include center;
+    }
+}
+
+.name {
+    @include text(35px, "Times New Roman", 400);
+    align-self: flex-start;
+}
+
+.rank {
+    img {
+        height: 25px;
+    }
+}
+
+.logo {
+    justify-content: flex-end;
+
+    img {
+        height: 100%;
+    }
+}
+
+.userInfo {
+    justify-content: flex-start;
+    gap: $gap;
+
+    & > img {
+        @include border(1px, 0);
+        min-width: $minHeight;
+        max-width: 150px;
+        aspect-ratio: 1/1;
+        
+    }
+}
+
+.exp_progress {
+    @include center;
+    min-width: 300px;
+    padding: 0 20px;
+}
+
+.progress_bar {
+    @include border(1px, $borderRadius);
+    align-self: flex-start;
+    position: relative;
+    text-align: center;
+    width: 100%;
+    background-color: $dark-green;
+
+    span {
+        @include textWrapper(2px);
+        position: relative;
+        font-size: 35px;
+        color: $white;
+    }
+
+    .full {
+        border-radius: $borderRadius;
+    }
+}
+
+.progress {
+    height: 100%;
+    position: absolute;
+    background: $light-green;
+    border-top-left-radius: $borderRadius;
+    border-bottom-left-radius: $borderRadius;
+}

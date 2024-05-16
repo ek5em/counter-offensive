@@ -1,0 +1,31 @@
+@import "../../../../styles/mixins.scss";
+@import "../../../../styles/root.scss";
+
+$absoluteOffset:10px;
+
+.overlay {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+}
+
+.leave {
+    @include text(20px, "Times New Roman", 800, $white);
+    @include border(1px, 20px);
+    position: absolute;
+    background-color: $red;
+    padding: 5px 10px;
+    top: $absoluteOffset;
+    left: $absoluteOffset;
+    text-align: center;
+    user-select: none;
+    cursor: pointer;
+}
+
+.chatBlock {
+    position: absolute;
+    left: $absoluteOffset;
+    bottom: $absoluteOffset;
+    width: 50%;
+    max-width: 450px;
+}

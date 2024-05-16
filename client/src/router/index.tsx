@@ -1,74 +1,84 @@
 import { Navigate, RouteProps } from "react-router-dom";
 import {
-   ErrorPage,
-   GamePage,
-   LobbyInfo,
-   LoginPage,
-   RegistrationPage,
-   HeavyTankLobby,
-   MiddleTankLobby,
-   HeavyTankDetail,
-   MiddleTankDetail,
+    ErrorPage,
+    GamePage,
+    LobbyInfo,
+    LoginPage,
+    RegistrationPage,
+    HeavyTankLobby,
+    MiddleTankLobby,
+    HeavyTankDetail,
+    MiddleTankDetail,
 } from "../pages";
 
+export enum ERoute {
+    auth = "authorization",
+    reg = "registration",
+    error = "error",
+    lobby = "lobby",
+    heavyTank = "heavy_tanks",
+    middleTank = "middle_tanks",
+    game = "game",
+}
+
 export const publicRoutes: RouteProps[] = [
-   {
-      path: "/",
-      element: <LoginPage />,
-   },
-   {
-      path: "/authorization",
-      element: <LoginPage />,
-   },
-   {
-      path: "/registration",
-      element: <RegistrationPage />,
-   },
-   {
-      path: "/error",
-      element: <ErrorPage />,
-   },
-   {
-      path: "*",
-      element: <Navigate to="/" replace />,
-   },
+    {
+        path: "/",
+        element: <LoginPage />,
+    },
+    {
+        path: `/${ERoute.auth}`,
+        element: <LoginPage />,
+    },
+    {
+        path: `/${ERoute.reg}`,
+        element: <RegistrationPage />,
+    },
+    {
+        path: `/${ERoute.error}`,
+        element: <ErrorPage />,
+    },
+    {
+        path: "*",
+        element: <Navigate to={`/${ERoute.error}`}  />,
+    },
 ];
 
 export const privateRoutes: RouteProps[] = [
-   {
-      path: "/",
-      element: <LobbyInfo />,
-   },
-   {
-      path: "/lobby",
-      element: <LobbyInfo />,
-   },
-   {
-      path: "/heavy_tanks",
-      element: <HeavyTankLobby />,
-   },
-   {
-      path: "/middle_tanks",
-      element: <MiddleTankLobby />,
-   },
-   {
-      path: "/heavy_tanks/:id",
-      element: <HeavyTankDetail />,
-   },
-   {
-      path: "/middle_tanks/:id",
-      element: <MiddleTankDetail />,
-   },
-   {
-      path: "/game",
-      element: <GamePage />,
-   },
-   {
-      path: "/error",
-      element: <ErrorPage />,
-   },
-   {
-      path: "*",
-      element: <Navigate to="/" replace />,
-   },
+    {
+        path: "/",
+        element: <LobbyInfo />,
+    },
+    {
+        path: `/${ERoute.lobby}`,
+        element: <LobbyInfo />,
+    },
+    {
+        path: `/${ERoute.heavyTank}`,
+        element: <HeavyTankLobby />,
+    },
+    {
+        path: `/${ERoute.middleTank}`,
+        element: <MiddleTankLobby />,
+    },
+    {
+        path: `/${ERoute.heavyTank}/:id`,
+        element: <HeavyTankDetail />,
+    },
+    {
+        path: `/${ERoute.middleTank}/:id`,
+        element: <MiddleTankDetail />,
+    },
+    {
+        path: `/${ERoute.game}`,
+        element: <GamePage />,
+    },
+    {
+        path: `/${ERoute.error}`,
+        element: <ErrorPage />,
+    },
+    {
+        path: "*",
+        element: <Navigate to="/" replace />,
+    },
 ];

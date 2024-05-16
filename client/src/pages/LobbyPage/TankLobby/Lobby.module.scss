@@ -1,0 +1,68 @@
+@import "../../../styles/root.scss";
+@import "../../../styles/mixins.scss";
+
+$tankLobbyBg: #92704d;
+$circleSize: 30px;
+
+.lobby {
+    @include border(1px, 5px);
+    padding: 5px;
+    background: $tankLobbyBg;
+    grid-column: tanksend / end;
+}
+
+.list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    height: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.tank {
+    @include border(1px, 0);
+    @include text(25px, Pangolin, 400);
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background-color: $gray;
+    align-items: center;
+    padding: 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $dark-gray;
+    }
+}
+
+.circles {
+    display: flex;
+    gap: 10px;
+
+    div {
+        @include border(1px, auto);
+        height: $circleSize;
+        width: $circleSize;
+        border-radius: 50%;
+        background-color: $primary-green;
+    }
+
+    .occupied {
+        background-color: $red;
+    }
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    text-align: center;
+
+    button {
+        font-size: 40px;
+    }
+}

@@ -1,0 +1,111 @@
+@import "../../../styles/root.scss";
+@import "../../../styles/mixins.scss";
+
+$svgWrapperDiv: #0f0;
+
+.details {
+    @include border(3px, 15px);
+    grid-column: tanksend / end;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: $gray;
+    padding: 5px 10px;
+
+    svg {
+        width: 100%;
+        height: fit-content;
+    }
+}
+
+.close {
+    position: absolute;
+    right: 0;
+    top: -2px;
+    cursor: pointer;
+}
+
+.info {
+    @include text(40px, Neucha, 400);
+}
+
+.svg_wrapper {
+    position: relative;
+    margin-right: 30px;
+
+    div {
+        @include border(2px);
+        @include text(40px, Neucha, 400);
+        transition: 0.1s;
+        display: flex;
+        cursor: pointer;
+        background-color: $svgWrapperDiv;
+        border-radius: 50%;
+        padding: 10px 15px;
+        text-align: center;
+        position: absolute;
+
+        &:hover {
+            scale: 1.1;
+        }
+    }
+}
+
+.middle_tank {
+    .driver {
+        top: 50%;
+        left: 50%;
+    }
+
+    .gunner {
+        top: 20%;
+        left: 37%;
+    }
+}
+
+.heavy_tank {
+    .driver {
+        top: 55%;
+        left: 65%;
+    }
+
+    .gunner {
+        top: 37%;
+        left: 53%;
+    }
+
+    .commander {
+        top: 20%;
+        left: 30%;
+    }
+}
+
+.unavailable {
+    background-color: $red !important;
+    pointer-events: none;
+    -webkit-text-stroke: 0.5px $white;
+}
+
+@media (max-width: 850px) {
+    .details svg {
+        display: none;
+    }
+
+    .svg_wrapper div {
+        position: relative;
+        border-radius: 0;
+        width: 100%;
+        font-size: 30px;
+        margin-top: 10px;
+    }
+
+    .driver,
+    .gunner,
+    .commander {
+        left: 0 !important;
+        top: 0 !important;
+    }
+}

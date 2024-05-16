@@ -1,59 +1,75 @@
-import { EHash, IUserInfo } from "../Server/interfaces";
-
-interface IHash {
-   lobby: string | null;
-   chat: string | null;
-   bullets: string | null;
-   gamers: string | null;
-   mobs: string | null;
-   map: string | null;
-   bodies: string | null;
-}
+import Mediator, { TEVENTS } from "../Mediator/Mediator";
+import { IGamerInfo, ILobby } from "../Server/interfaces";
 
 export default class Store {
-   hash: IHash;
-   user: IUserInfo | null;
+    token: string | null;
+    user: IGamerInfo | null;
+    lobby: ILobby | null;
+    unit: null;
+    mediator: Mediator;
+    events: TEVENTS;
 
-   constructor() {
-      this.hash = {
-         bullets: null,
-         chat: null,
-         gamers: null,
-         lobby: null,
-         mobs: null,
-         map: null,
-         bodies: null,
-      };
-      this.user = null;
-   }
+    constructor(mediator: Mediator) {
+        this.user = null;
+        this.lobby = null;
+        this.unit = null;
+        this.token = null;
+        this.mediator = mediator;
+        this.events = mediator.getEventTypes();
+    }
 
-   getHash(type: EHash): string | null {
-      return this.hash[type];
-   }
+    setUser(user: IGamerInfo) {
+        this.user = user;
+        this.mediator.call(this.events.UPDATE_USER, this.user);
+    }
 
-   getToken(): string | null {
-      return this.user ? this.user.token : null;
-   }
+    getUser() {
+        return this.user;
+    }
 
-   setHash(type: EHash, hash: string | null) {
-      this.hash[type] = hash;
-   }
+    setLobby(lobby: ILobby) {
+        this.lobby = lobby;
+        this.mediator.call(this.events.LOBBY_UPDATE, this.lobby);
+    }
 
-   setToken(token: string | null) {
-      if (this.user) {
-         this.user.token = token;
-      }
-   }
+    getLobby(): ILobby {
+        return this.lobby
+            ? this.lobby
+            : {
+                  bannerman: true,
+                  general: true,
+                  tanks: {
+                      heavyTank: [],
+                      middleTank: [],
+                  },
+              };
+    }
 
-   clearHash() {
-      this.hash = {
-         bullets: null,
-         chat: null,
-         gamers: null,
-         lobby: null,
-         map: null,
-         mobs: null,
-         bodies: null,
-      };
-   }
+    getCookie(): { [key: string]: string } {
+        const cookie: { [key: string]: string } = {};
+        document.cookie.split(";").forEach((c) => {
+            const [key, value] = c.split("=");
+            if (key && value) {
+                cookie[key.trim()] = value.trim();
+            }
+        });
+        return cookie;
+    }
+
+    getToken(): string | null {
+        return this.token;
+    }
+
+    setToken(token: string | null) {
+        this.token = token;
+        if (token) {
+            const expirationDate = new Date(
+                Date.now() + 30 * 24 * 60 * 60 * 1000
+            ); // 30 дней
+            document.cookie = `token=${token}; expires=${expirationDate.toUTCString()}; path=/;`;
+        } else {
+            document.cookie = `token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        }
+        this.mediator.call(this.events.UPDATE_TOKEN, this.token);
+    }
 }

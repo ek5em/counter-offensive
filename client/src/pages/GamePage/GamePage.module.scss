@@ -1,0 +1,18 @@
+@import "../../styles/root.scss";
+@import "../../styles/mixins.scss";
+
+.game {
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    canvas {
+        cursor: url("../../assets/png/crosshair.png") 15 15, auto;
+    }
+
+    .canvas::-webkit-scrollbar {
+        width: 0;
+        overflow: hidden;
+    }
+}

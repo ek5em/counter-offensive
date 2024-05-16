@@ -1,97 +1,106 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import cn from "classnames";
 import { useSetRoleHandler } from "../../../../hooks/useSetRoleHandler";
-import { ServerContext } from "../../../../App";
+import { useGlobalContext } from "../../../../hooks/useGlobalContext";
 import { withLayout } from "../../../../components/LobbyLayout/Layout";
-import {
-   EGamerRole,
-   ILobby,
-   IMiddleTank,
-} from "../../../../modules/Server/interfaces";
-
+import { EGamerRole, IMiddleTank } from "../../../../modules/Server/interfaces";
+import { closeIcon } from "../../../../assets/png";
 import { ReactComponent as MiddleTank } from "./middleTank.svg";
-import CrossIcon from "../closeIcon.png";
 
-import "../TankDetail.css";
+import styles from "../Detail.module.scss";
 
-const TankDetail: FC<{ lobby: ILobby | null }> = ({ lobby }) => {
-   const [tank, setTank] = useState<IMiddleTank>({
-      Gunner: false,
-      Mechanic: false,
-      id: 0,
-   });
-   const server = useContext(ServerContext);
-   const navigate = useNavigate();
-   const params = useParams();
-   const setRoleHandler = useSetRoleHandler();
+const TankDetail: FC = () => {
+    const { server, mediator } = useGlobalContext();
+    const [tank, setTank] = useState<IMiddleTank>({
+        Gunner: false,
+        Mechanic: false,
+        id: 0,
+    });
+    const navigate = useNavigate();
+    const params = useParams();
+    const setRoleHandler = useSetRoleHandler();
 
-   useEffect(() => {
-      const id = Number(params.id);
-      if (id) {
-         const newTank = lobby?.tanks.middleTank.find((tank) => tank.id === id);
-         if (newTank) {
-            return setTank(newTank);
-         }
-      }
-      setTank({
-         ...tank,
-         id: Number(`1${server.STORE.user?.id}`),
-      });
-   }, [lobby]);
+    useEffect(() => {
+        const { GO_TO_TANK, LOBBY_UPDATE } = mediator.getEventTypes();
 
-   const goBack = () => {
-      navigate("/middle_tanks");
-   };
+        mediator.subscribe(LOBBY_UPDATE, () => {
+            const newTank = server.STORE.getLobby().tanks.middleTank.find(
+                (tank) => tank.id === Number(params.id)
+            );
+            newTank && setTank(newTank);
+        });
 
-   const calcPlaces = (): string => {
-      const placesCount = 2;
-      var occupiedPlacesCount = 0;
-      tank.Gunner && occupiedPlacesCount++;
-      tank.Mechanic && occupiedPlacesCount++;
+        mediator.subscribe(GO_TO_TANK, (newTank: { tankId: number }) => {
+            if (newTank.tankId !== tank.id) {
+                const tanks = server.STORE.getLobby().tanks.middleTank;
+                setTank(
+                    tanks.find((tank) => tank.id === newTank.tankId) ?? {
+                        ...tank,
+                    }
+                );
+            }
+        });
 
-      return `${occupiedPlacesCount}/${placesCount}`;
-   };
+        const newTank = server.STORE.getLobby().tanks.middleTank.find(
+            (tank) => tank.id === Number(params.id)
+        );
+        newTank && setTank(newTank);
+    }, []);
 
-   return (
-      <div className="tank_details">
-         <div className="tank_info">
-            <p>Двухместный танк</p>
-            <p>Танк {tank.id}</p>
-            <p>Занято мест {calcPlaces()}</p>
-         </div>
-         <div className={cn("tank_svg_wrapper", "middle_tank")}>
-            <div
-               id={"test_button_shooter2"}
-               onClick={() =>
-                  setRoleHandler(EGamerRole.middleTankGunner, tank.id)
-               }
-               className={cn("tank_gunner", {
-                  tank_unavailable_role: tank.Gunner,
-               })}
-            >
-               Наводчик
+    const goBack = () => {
+        navigate("/middle_tanks");
+    };
+
+    const calcPlaces = (): string => {
+        const placesCount = 2;
+        var occupiedPlacesCount = 0;
+        tank.Gunner && occupiedPlacesCount++;
+        tank.Mechanic && occupiedPlacesCount++;
+
+        return `${occupiedPlacesCount}/${placesCount}`;
+    };
+
+    return (
+        <div className={styles.details}>
+            <div className={styles.info}>
+                <p>Средний танк {tank.id ? `№${tank.id}` : ""}</p>
+                <p>Занято мест {calcPlaces()}</p>
             </div>
-            <div
-               id={"test_button_tankDriver2"}
-               onClick={() => setRoleHandler(EGamerRole.middleTankMeh, tank.id)}
-               className={cn("tank_driver", {
-                  tank_unavailable_role: tank.Mechanic,
-               })}
-            >
-               МехВод
+            <div className={cn(styles.svg_wrapper, styles.middle_tank)}>
+                <div
+                    id={"test_button_shooter2"}
+                    onClick={() =>
+                        setRoleHandler(EGamerRole.middleTankGunner, tank.id)
+                    }
+                    className={cn(styles.gunner, {
+                        [styles.unavailable]: tank.Gunner,
+                    })}
+                >
+                    Наводчик
+                </div>
+                <div
+                    id={"test_button_tankDriver2"}
+                    onClick={() =>
+                        setRoleHandler(EGamerRole.middleTankMeh, tank.id)
+                    }
+                    className={cn(styles.driver, {
+                        [styles.unavailable]: tank.Mechanic,
+                    })}
+                >
+                    МехВод
+                </div>
+                <MiddleTank />
             </div>
-            <MiddleTank />
-         </div>
-         <img
-            id={"test_button_cross"}
-            className="tank_lobby_close"
-            src={CrossIcon}
-            alt="Закрыть"
-            onClick={goBack}
-         />
-      </div>
-   );
+            <img
+                id={"test_button_cross"}
+                className={styles.close}
+                src={closeIcon}
+                alt="Закрыть"
+                onClick={goBack}
+            />
+        </div>
+    );
 };
 
 export default withLayout(TankDetail);

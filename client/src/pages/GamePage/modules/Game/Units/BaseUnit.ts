@@ -1,4 +1,4 @@
-import { IPressedKeys } from "../../../components/GameCanvas/GameCanvas";
+import { TPressedKeys } from "../Game";
 
 export default class BaseUnit {
     x: number;
@@ -32,7 +32,7 @@ export default class BaseUnit {
         this.diagonalSpeed = (this.speed * Math.sqrt(2)) / 2;
     }
 
-    move(keyPressed: IPressedKeys, time: number): void {
+    move(keyPressed: TPressedKeys, time: number): void {
         return;
     }
 

@@ -1,0 +1,41 @@
+@import "../../../styles/root.scss";
+@import "../../../styles/mixins.scss";
+
+$fontSize: 30px;
+
+.info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    gap: $gap;
+}
+
+.opened {
+    grid-column: span 2;
+
+    .info {
+        flex-direction: column-reverse;
+    }
+}
+
+.ratingAndLogout {
+    @include center;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+
+    button {
+        width: 100%;
+    }
+}
+
+.rating {
+    font-size: $fontSize;
+}
+
+.logout {
+    font-size: $fontSize;
+    padding: 5px 10px;
+}

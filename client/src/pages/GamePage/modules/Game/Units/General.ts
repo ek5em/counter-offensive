@@ -1,4 +1,4 @@
-import { IPressedKeys } from "../../../components/GameCanvas/GameCanvas";
+import { TPressedKeys } from "../Game";
 import BaseUnit from "./BaseUnit";
 
 export default class General extends BaseUnit {
@@ -6,7 +6,7 @@ export default class General extends BaseUnit {
         super(x, y, angle, 0, speed);
     }
 
-    move(keyPressed: IPressedKeys, time: number): void {
+    move(keyPressed: TPressedKeys, time: number): void {
         if (keyPressed.Up) {
             this.y += this.speed;
         }

@@ -1,0 +1,124 @@
+@import "../../styles/root.scss";
+@import "../../styles/mixins.scss";
+
+$chatImg: 40px;
+$titleSize: 40px;
+$messageFontSize: 25px;
+
+.chat {
+    @include border(1px, 10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.lobby {
+    height: 100%;
+    width: 100%;
+    background-color: $yellow;
+
+    .form {
+        background-color: $orange;
+    }
+}
+
+.game {
+    background-color: $gray;
+
+    .form {
+        background-color: $white;
+    }
+}
+
+.messages {
+    display: flex;
+    flex-direction: column;
+    max-height: 60vh;
+    padding: 5px 10px;
+    overflow-y: auto;
+    gap: 10px;
+}
+
+.messages::-webkit-scrollbar {
+    display: none;
+}
+
+.name {
+    @include text($messageFontSize, "Times New Roman", 700);
+}
+
+.message {
+    @include text($messageFontSize, "Neucha", 400);
+    @include border(1px, 0);
+    padding: 5px 10px;
+    background-color: $light-green;
+    border-radius: 15px;
+    word-break: break-all;
+    width: fit-content;
+
+    img {
+        height: $messageFontSize;
+    }
+}
+
+.myMessge {
+    background-color: $orange;
+}
+
+.chatOpenner {
+    @include border(1px, 10px);
+    @include text($titleSize, Neucha, bold);
+    display: grid;
+    justify-self: right;
+    grid-template-columns: $chatImg auto;
+    gap: 5px;
+    align-items: center;
+    background-color: $yellow;
+    cursor: pointer;
+    padding: 0 10px;
+
+    img {
+        height: $chatImg;
+        width: $chatImg;
+    }
+}
+
+.title {
+    @include text($titleSize, Neucha, 400, $white);
+    @include textWrapper;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid $black;
+    padding: 5px 10px;
+
+    img {
+        width: $chatImg;
+        height: $chatImg;
+        cursor: pointer;
+    }
+}
+
+.form {
+    @include border(1px, 10px);
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.input_chat {
+    width: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0 10px;
+    font-size: 25px;
+}
+
+.send {
+    @include center;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+}

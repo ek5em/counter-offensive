@@ -1,5 +1,4 @@
-import { IPressedKeys } from "../../../components/GameCanvas/GameCanvas";
-
+import { TPressedKeys } from "../Game";
 import BaseUnit from "./BaseUnit";
 
 export default class MiddleTower extends BaseUnit {
@@ -15,7 +14,7 @@ export default class MiddleTower extends BaseUnit {
         super(x, y, angle, r, speed, weaponLength, visiableAngle);
     }
 
-    move(keyPressed: IPressedKeys, time: number) {
+    move(keyPressed: TPressedKeys, time: number) {
         if (keyPressed.Left) {
             this.angle += this.speed * time;
         }

@@ -1,5 +1,4 @@
-import { IPressedKeys } from "../../../components/GameCanvas/GameCanvas";
-
+import { TPressedKeys } from "../Game";
 import BaseUnit from "./BaseUnit";
 
 export default class MiddleCorpus extends BaseUnit {
@@ -17,7 +16,7 @@ export default class MiddleCorpus extends BaseUnit {
         this.tankRotateSpeed = rotateSpeed;
     }
 
-    move(keyPressed: IPressedKeys, time: number) {
+    move(keyPressed: TPressedKeys, time: number) {
         const moveAngleDelta = Math.PI / 2;
 
         if (keyPressed.Left) {

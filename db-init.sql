@@ -1,23 +1,8 @@
 CREATE TABLE IF NOT EXISTS `game` (
   `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `hashUnits` VARCHAR(100) NOT NULL DEFAULT '',
-  `hashScene` VARCHAR(100) NOT NULL DEFAULT '',
-  `chatHash` VARCHAR(100) NOT NULL DEFAULT '',
-  `hashBullets` VARCHAR(100) NOT NULL DEFAULT '',
-  `hashLobby` VARCHAR(100) NOT NULL DEFAULT '',
-  `hashGamers` VARCHAR(100) NOT NULL DEFAULT '',
-  `hashMobs` VARCHAR(100) NOT NULL DEFAULT '',
-  `hashMap` VARCHAR(100) NOT NULL DEFAULT '',
-  `hashBodies` VARCHAR(100) NOT NULL DEFAULT '',
-  `hashTanks` VARCHAR(100) NOT NULL DEFAULT '',
-  `timestamp` BIGINT NOT NULL DEFAULT 0,
-  `timeout` INT NOT NULL DEFAULT 1000,
-  `startGameTimestamp` BIGINT NOT NULL DEFAULT 0,
-  `pBanner_timestamp` BIGINT NOT NULL DEFAULT 0,
-  `banner_timeout` INT NOT NULL DEFAULT 15000,
-  `mobBase_x` FLOAT NULL DEFAULT NULL,
-  `mobBase_y` FLOAT NULL DEFAULT NULL,
-  `base_radius` FLOAT NULL DEFAULT 2,
+  `mobBaseX` FLOAT NULL DEFAULT NULL,
+  `mobBaseY` FLOAT NULL DEFAULT NULL,
+  `baseRadius` FLOAT NULL DEFAULT 2,
   PRIMARY KEY (`id`)
 );
 
@@ -26,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `login` VARCHAR(20) NOT NULL DEFAULT '',
   `nickname` VARCHAR(20) NOT NULL DEFAULT '', 
   `password` VARCHAR(100) NOT NULL DEFAULT '', 
-  `token` VARCHAR(100) NOT NULL DEFAULT '', 
+  `token` VARCHAR(100) DEFAULT NULL, 
   `tokenLastUse` DATETIME NOT NULL DEFAULT '2000-10-01 00:00:00',
   `timeCreate` DATETIME NOT NULL DEFAULT '2000-10-01 00:00:00', 
   `photo` VARCHAR(100) NOT NULL DEFAULT 'default.jpg',
@@ -35,29 +20,9 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 CREATE TABLE IF NOT EXISTS `gamers` (
   `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `user_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `person_id` MEDIUMINT NOT NULL DEFAULT -1,
+  `userId` MEDIUMINT NOT NULL DEFAULT -1,
   `experience` INT NOT NULL DEFAULT 0,
-  `hp` INT NOT NULL DEFAULT 0,
   `money` INT NOT NULL DEFAULT 0,
-  `x` FLOAT NULL DEFAULT NULL,
-  `y` FLOAT NULL DEFAULT NULL,
-  `angle` FLOAT NULL DEFAULT 0,
-  `status` VARCHAR(32) NOT NULL DEFAULT '',
-  `reload_timestamp` BIGINT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `mobs` (
-  `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `person_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `hp` INT NOT NULL DEFAULT 0,
-  `x` FLOAT NULL DEFAULT NULL,
-  `y` FLOAT NULL DEFAULT NULL,
-  `angle` FLOAT NULL DEFAULT NULL,
-  `path` JSON,
-  `path_update` BIGINT NOT NULL DEFAULT 0,
-  `reload_timestamp` BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 );
 
@@ -73,29 +38,10 @@ CREATE TABLE IF NOT EXISTS `persons` (
   PRIMARY KEY (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `kills` (
-  `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `person_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `x` FLOAT NOT NULL,
-  `y` FLOAT NOT NULL,
-  `angle` FLOAT NOT NULL DEFAULT 0,
-  `killTime` DATETIME NOT NULL,
-  PRIMARY KEY (`id`)
-);
-
 CREATE TABLE IF NOT EXISTS `ranks` (
   `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL DEFAULT 'Медный ранг',
   `experience` INT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-);
-
-CREATE TABLE IF NOT EXISTS `games` ( 
-  `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `startTime` DATETIME NOT NULL DEFAULT '2000-10-01 00:00:00', 
-  `endTime` DATETIME NOT NULL DEFAULT '2000-10-01 00:00:00', 
-  `status` VARCHAR(10) NOT NULL DEFAULT 'end',
-  `winner` VARCHAR(10) NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
 
@@ -107,43 +53,6 @@ CREATE TABLE IF NOT EXISTS `messages` (
   PRIMARY KEY (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `tank_lobby` (
-  `id` MEDIUMINT NOT NULL AUTO_INCREMENT, 
-  `person_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `user_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `tank_id` INT NOT NULL DEFAULT -1,
-  PRIMARY KEY (`id`)
-); 
-
-CREATE TABLE IF NOT EXISTS`bullets` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT, 
-  `user_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `type` TINYINT NOT NULL Default 1,
-  `x1` FLOAT NOT NULL DEFAULT 0,
-  `y1` FLOAT NOT NULL DEFAULT 0,
-  `x2` FLOAT NOT NULL DEFAULT 0,
-  `y2` FLOAT NOT NULL DEFAULT 0,
-  `dx` FLOAT NOT NULL DEFAULT 0,
-  `dy` FLOAT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-); 
-
-CREATE TABLE IF NOT EXISTS `tanks` (
-  `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
-  `type` MEDIUMINT NOT NULL DEFAULT 1,
-  `driver_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `gunner_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `commander_id` MEDIUMINT NOT NULL DEFAULT -1,
-  `hp` INT NOT NULL DEFAULT 100,
-  `x` FLOAT NULL DEFAULT NULL,
-  `y` FLOAT NULL DEFAULT NULL,
-  `angle` FLOAT NOT NULL DEFAULT 0,
-  `speed` FLOAT NOT NULL DEFAULT 0,
-  `tower_angle` FLOAT NOT NULL DEFAULT 0,
-  `commander_angle` FLOAT NOT NULL DEFAULT 0,
-  `reload_timestamp` BIGINT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
-);
 
 CREATE TABLE IF NOT EXISTS `bodies` (
   `id` MEDIUMINT NOT NULL AUTO_INCREMENT,
@@ -182,21 +91,21 @@ INSERT INTO `users` (`login`, `nickname`, `password`) VALUES
 ('testgeneral1', 'testuser', 'aac5a55cac1167803fb0437337f5236cc590c08b939add1f0eb753b5ac2a4547'),
 ('testgeneral2', 'testuser', 'f13da73dfccd34814fc79bdfd6d7d4d75b6369c1802ff89a3e522897c9d575c5');
 
-INSERT INTO `gamers` (`user_id`, `experience`, `reload_timestamp`) VALUES
-(1, 0, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(2, 0, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(3, 0, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(4, 720, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(5, 720, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(6, 5088, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(7, 5088, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(8, 9600, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000)), 
-(9, 17948, ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000));
+INSERT INTO `gamers` (`userId`, `experience`) VALUES
+(1, 0), 
+(2, 0), 
+(3, 0), 
+(4, 720), 
+(5, 720), 
+(6, 5088), 
+(7, 5088), 
+(8, 9600), 
+(9, 17948);
 
 /* Значения по умолчанию в таблице game*/
 
-INSERT INTO `game` (`hashUnits`, `hashScene`, `chatHash`, `hashBullets`, `hashLobby`, `hashGamers`, `hashMobs`, `hashMap`, `hashBodies`, `timestamp`, `mobBase_x`, `mobBase_y`, `startGameTimestamp`) 
-VALUES ('1', '1', '1', '1', '1', '1', '1', '1', '1', ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000), '134', '108', ROUND(UNIX_TIMESTAMP(CURTIME(4)) * 1000));
+INSERT INTO `game` (`mobBaseX`, `mobBaseY`) 
+VALUES ('134', '108');
 
 /* Добавление уровней в таблицу ranks */
 INSERT INTO `ranks` (`name`, `experience`) VALUES 
@@ -230,8 +139,8 @@ INSERT INTO `persons` (`name`, `hp`, `reloadSpeed`, `movementSpeed`, `rotateSpee
 ('heavyTankCommander', 400, 7, 1, 1, 12),
 ('middleTankMeh', 250, 7, 1, 1, 5),
 ('middleTankGunner', 250, 7, 1, 1, 5),
-('infantry', 8, 0.3, 0.2, 1, 1),
-('infantryRPG', 8, 5, 0.2, 1, 1);
+('infantry', 8, 0.3, 1, 1, 1),
+('infantryRPG', 8, 5, 1, 1, 1);
 
 INSERT INTO `objects` (`x`, `y`, `angle`, `type`, `hp`, `sizeX`, `sizeY`, `status`) VALUES
 /* Создание домов*/

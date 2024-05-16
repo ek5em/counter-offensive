@@ -1,0 +1,23 @@
+@import "../../../styles/root.scss";
+@import "../../../styles/mixins.scss";
+
+$fontSize: 20px;
+
+.alert {
+    @include border(2px);
+    display: flex;
+    text-align: center;
+    word-wrap: break-word;
+    font-size: $fontSize;
+    padding: 2px 10px;
+    width: $inputWidth;
+}
+
+.warning {
+    background-color: $yellow;
+}
+
+.error {
+    background-color: $red;
+    -webkit-text-stroke: 1px $white;
+}

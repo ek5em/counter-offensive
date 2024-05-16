@@ -1,6 +1,5 @@
-db
 *env*
-*log*
+.log
 node_modules
 build
 .idea

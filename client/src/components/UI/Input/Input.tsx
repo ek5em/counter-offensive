@@ -1,57 +1,62 @@
-import React, { useState } from "react";
+import { useState, FC } from "react";
 import { ReactComponent as OpenEyeIcon } from "./openEye.svg";
 import { ReactComponent as CloseEyeIcon } from "./closeEye.svg";
 import cn from "classnames";
 
-import "./Input.css";
+import styles from "./Input.module.scss";
 
-type TType = "password" | "text";
-
-interface IInputProps {
-   id: string;
-   text: string;
-   value: string;
-   onChange: (value: string) => void;
-   className?: string;
-   type?: TType;
+export enum EInput {
+    text = "text",
+    password = "password",
 }
 
-const Input: React.FC<IInputProps> = ({
-   text,
-   id,
-   className,
-   type = "text",
-   onChange,
+interface IInputProps {
+    id: string;
+    text: string;
+    value: string;
+    onChange: (value: string) => void;
+    className?: string;
+    type?: EInput;
+}
+
+export const Input: FC<IInputProps> = ({
+    text,
+    id,
+    className,
+    type = EInput.text,
+    onChange,
 }) => {
-   const [inputType, setInputType] = useState<TType>(type);
+    const [inputType, setInputType] = useState<EInput>(type);
 
-   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.value);
-   };
+    const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+        onChange(e.target.value);
+    };
 
-   const changeType = () => {
-      setInputType(inputType === "text" ? "password" : "text");
-   };
+    const changeType = () => {
+        setInputType(inputType === EInput.text ? EInput.password : EInput.text);
+    };
 
-   return (
-      <div className="input_wrapper">
-         <input
-            id={id}
-            type={inputType}
-            onChange={onChangeHandler}
-            placeholder={text}
-            autoComplete="off"
-            className={cn("input_element", className, {
-               input_password: type === "password",
-            })}
-         />
-         {type === "password" && (
-            <div onClick={changeType} className="eye">
-               {inputType === "text" ? <OpenEyeIcon /> : <CloseEyeIcon />}
-            </div>
-         )}
-      </div>
-   );
+    return (
+        <div className={styles.wrapper}>
+            <input
+                id={id}
+                type={inputType}
+                onChange={onChangeHandler}
+                placeholder={text}
+                autoComplete="off"
+                className={cn(styles.input, className, {
+                    [styles.password]: type === EInput.password,
+                })}
+            />
+            {type === EInput.password && (
+                <div onClick={changeType} className={styles.eye}>
+                    {inputType === EInput.text ? (
+                        <OpenEyeIcon />
+                    ) : (
+                        <CloseEyeIcon />
+                    )}
+                </div>
+            )}
+        </div>
+    );
 };
-
-export default Input;

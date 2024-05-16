@@ -1,0 +1,41 @@
+@import "../../../styles/mixins.scss";
+@import "../../../styles/root.scss";
+
+$rotate: rotateZ(-45deg);
+$imgHeight: 130px;
+
+.unit {
+    @include border(1px, 5px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: transparent;
+    overflow: hidden;
+    cursor: pointer;
+    transition: $transition;
+
+    &:hover {
+        border: 3px solid $green;
+    }
+}
+
+.imgWrapper {
+    display: flex;
+    img {
+        width: 100%;
+        transform: translateX(5%) $rotate scale(1.5);
+        margin-bottom: 10vh;
+    }
+}
+
+.rank {
+    @include center;
+    @include text(30px, Neucha, 400);
+    @include textWrapper(1px, $white);
+    height: 20%;
+    align-self: center;
+
+    p {
+        transform: $rotate;
+    }
+}

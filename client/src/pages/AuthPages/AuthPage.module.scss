@@ -1,0 +1,57 @@
+@import "../../styles/root.scss";
+@import "../../styles/mixins.scss";
+
+$fontSize: 25px;
+$formSize: 70%;
+$inputsGap: 10px;
+$contentGap: 30px;
+$authWindowBg: #85c18b82;
+
+.authPage {
+    @include center;
+    flex-direction: column;
+}
+
+.wrapper {
+    @include center;
+    padding: 20px;
+    margin-top: 10vh;
+}
+
+.content {
+    @include border(2px, 20px);
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: $contentGap;
+    background: $authWindowBg;
+}
+
+.title {
+    button {
+        @include text($fontSize, Rubik Dirt, 400);
+        @include border(3px, 60px);
+        padding: 5px 15px;
+        width: 100%;
+    }
+}
+
+.submit {
+    padding: 0 15px;
+    font-size: calc($fontSize + 3px);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $gap;
+    height: $formSize;
+
+    .values {
+        display: flex;
+        flex-direction: column;
+        gap: $inputsGap;
+    }
+}

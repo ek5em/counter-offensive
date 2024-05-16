@@ -1,50 +1,57 @@
-import { FC, useContext, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import cn from "classnames";
-import { MediatorContext } from "../../App";
-import "./Modal.css";
+import { useGlobalContext } from "../../hooks/useGlobalContext";
+
+import styles from "./Modal.module.scss";
 
 interface MoodalError {
-   id: string;
-   message: string;
+    id: string;
+    message: string;
 }
 
+const clearDelay = 4000;
+
 export const Modal: FC = () => {
-   const [message, setMessage] = useState<MoodalError>({ message: "", id: "" });
+    const [message, setMessage] = useState<MoodalError>({
+        message: "",
+        id: "",
+    });
 
-   const mediator = useContext(MediatorContext);
-   const { ROLE_ERROR } = mediator.getTriggerTypes();
+    const { mediator } = useGlobalContext();
 
-   useEffect(() => {
-      let timeoutId: NodeJS.Timeout;
+    const { ROLE_ERROR } = mediator.getEventTypes();
 
-      mediator.set(ROLE_ERROR, (newMessaage: MoodalError) => {
-         setMessage(newMessaage);
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
 
-         clearTimeout(timeoutId);
+        mediator.subscribe(ROLE_ERROR, (newMessaage: MoodalError) => {
+            setMessage(newMessaage);
 
-         timeoutId = setTimeout(() => {
+            clearTimeout(timeoutId);
+
+            timeoutId = setTimeout(() => {
+                clearMessage();
+            }, clearDelay);
+        });
+
+        return () => {
             clearMessage();
-         }, 4000);
-      });
+        };
+    }, []);
 
-      return () => {
-         clearMessage();
-      };
-   }, []);
-
-   const clearMessage = () => {
-      setMessage({ message: "", id: "" });
-   };
-   return (
-      <div
-         className={cn("modal_window", {
-            disabled: !message.message,
-         })}
-         onClick={clearMessage}
-      >
-         <div className="modal_message" id={message.id}>
-            {message.message}
-         </div>
-      </div>
-   );
+    const clearMessage = () => {
+        setMessage({ message: "", id: "" });
+    };
+    return (
+        <div
+            className={cn(styles.modal, {
+                disabled: !message.message,
+            })}
+            onClick={clearMessage}
+        >
+            <div className={styles.message} id={message.id}>
+                {message.message}
+            </div>
+        </div>
+    );
 };

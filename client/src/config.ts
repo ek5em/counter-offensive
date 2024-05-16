@@ -5,38 +5,61 @@ const DOMAIN = 'http://counter-offensive'; */
 
 //prod
 
-const PORT = null;
-const DOMAIN = "http://counter-offensive";
+const PORT = 3000;
+const DOMAIN = "http://localhost";
 
 export const HOST = PORT ? `${DOMAIN}:${PORT}` : DOMAIN;
 
 export const MEDIATOR = {
     EVENTS: {
         SERVER_ERROR: "SERVER_ERROR",
-    },
-    TRIGGERS: {
+        GO_TO_TANK: "GO_TO_TANK",
+        UPDATE_USER: "UPDATE_USER",
+        UPDATE_TOKEN: "UPDATE_TOKEN",
+        LOBBY_UPDATE: "LOBBY_UPDATE",
+        END_GAME: "END_GAME",
         WARNING: "WARNING",
-        LOGIN: "LOGIN",
-        LOGOUT: "LOGOUT",
         AUTH_ERROR: "AUTH_ERROR",
         ROLE_ERROR: "ROLE_ERROR",
         THROW_TO_GAME: "THROW_TO_GAME",
         THROW_TO_LOBBY: "THROW_TO_LOBBY",
-        UPDATE_SCENE: "UPDATE_SCENE",
+        UPDATE_MAP: "UPDATE_MAP",
         UPDATE_TIME: "UPDATE_TIME",
+        NEW_MESSAGE: "NEW_MESSAGE",
+        SEND_MESSAGE_STATUS: "SEND_MESSAGE_STATUS",
+        MOVE_UNIT: "MOVE_UNIT",
+    },
+
+    TRIGGERS: {
+        LOBBY: "LOBBY",
+        TOKEN: "TOKEN",
+        USER: "USER",
     },
 };
+
+export enum ESOCKET {
+    SEND_MESSAGE = "SEND_MESSAGE",
+    GET_MESSAGE = "GET_MESSAGE",
+    REGISTRATION = "REGISTRATION",
+    LOGIN = "LOGIN",
+    LOGOUT = "LOGOUT",
+    UPDATE_PASSWORD = "UPDATE_PASSWORD",
+    SET_GAMER_ROLE = "SET_GAMER_ROLE",
+    GET_LOBBY = "GET_LOBBY",
+    SUICIDE = "SUICIDE",
+    GET_USER_INFO = "GET_USER_INFO",
+    GET_SCENE = "GET_SCENE",
+    MOTION = "MOTION",
+    FIRE = "FIRE",
+    ERROR = "ERROR",
+    TOKEN_VERIFICATION = "TOKEN_VERIFICATION",
+    GAME_MAP = "GAME_MAP",
+    GAME_ENTITIES = "GAME_ENTITIES",
+}
 
 export const MAP_SIZE = {
     width: 150,
     height: 120,
-};
-
-export const requestDelay = {
-    chat: 2000,
-    lobby: 300,
-    game: 150,
-    gamerUpdate: 150,
 };
 
 export const entitiesConfig = {
@@ -82,7 +105,7 @@ export const entitiesConfig = {
     },
 
     bannerman: {
-        speed: 0.0015,
+        speed: 0.05 /* 0.0015 */,
         r: 0.35,
         visiableAngle: 120,
     },
@@ -119,8 +142,8 @@ export const objectConf = {
 };
 
 export const WINConf = {
-    width: 15,
-    height: 15,
+    width: 40,
+    height: 40,
 };
 
 export const walls = [
@@ -319,14 +342,14 @@ export const staticMap = {
         { x: 136, y: 15 },
         { x: 135, y: 21 },
     ],
-    road: [{ x: 108, y: 0, sizeX: 3, sizeY: 120 }],
-    crossyRoad: [
+    roads: [{ x: 108, y: 0, sizeX: 3, sizeY: 120 }],
+    crossyRoads: [
         {
             x: 16,
             y: 18,
             sizeX: 2,
             sizeY: 10,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 18,
@@ -340,7 +363,7 @@ export const staticMap = {
             y: 26,
             sizeX: 2,
             sizeY: 62,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 18,
@@ -354,7 +377,7 @@ export const staticMap = {
             y: 66,
             sizeX: 2,
             sizeY: 6,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 18,
@@ -368,7 +391,7 @@ export const staticMap = {
             y: 86,
             sizeX: 2,
             sizeY: 16,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 18,
@@ -382,7 +405,7 @@ export const staticMap = {
             y: 98,
             sizeX: 2,
             sizeY: 2,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 34,
@@ -396,7 +419,7 @@ export const staticMap = {
             y: 90,
             sizeX: 2,
             sizeY: 8,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 62,
@@ -410,21 +433,21 @@ export const staticMap = {
             y: 100,
             sizeX: 2,
             sizeY: 4,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 16,
             y: 62,
             sizeX: 2,
             sizeY: 2,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 72,
             y: 54,
             sizeX: 2,
             sizeY: 34,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 74,
@@ -452,7 +475,7 @@ export const staticMap = {
             y: 82,
             sizeX: 2,
             sizeY: 6,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 40,
@@ -473,21 +496,21 @@ export const staticMap = {
             y: 72,
             sizeX: 2,
             sizeY: 8,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 38,
             y: 60,
             sizeX: 2,
             sizeY: 20,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 42,
             y: 54,
             sizeX: 2,
             sizeY: 4,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 40,
@@ -501,14 +524,14 @@ export const staticMap = {
             y: 48,
             sizeX: 2,
             sizeY: 4,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 84,
             y: 48,
             sizeX: 2,
             sizeY: 4,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 68,
@@ -529,28 +552,28 @@ export const staticMap = {
             y: 8,
             sizeX: 2,
             sizeY: 8,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 48,
             y: 18,
             sizeX: 2,
             sizeY: 2,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 76,
             y: 10,
             sizeX: 2,
             sizeY: 6,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 78,
             y: 18,
             sizeX: 2,
             sizeY: 6,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 110,
@@ -578,7 +601,7 @@ export const staticMap = {
             y: 38,
             sizeX: 2,
             sizeY: 6,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 130,
@@ -599,7 +622,7 @@ export const staticMap = {
             y: 54,
             sizeX: 2,
             sizeY: 6,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 110,
@@ -613,14 +636,14 @@ export const staticMap = {
             y: 78,
             sizeX: 2,
             sizeY: 2,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 142,
             y: 78,
             sizeX: 2,
             sizeY: 2,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 110,
@@ -648,31 +671,31 @@ export const staticMap = {
             y: 106,
             sizeX: 2,
             sizeY: 2,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 122,
             y: 102,
             sizeX: 2,
             sizeY: 2,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 138,
             y: 100,
             sizeX: 2,
             sizeY: 2,
-            angle: Math.PI / 2,
+            angle: 90,
         },
         {
             x: 136,
             y: 106,
             sizeX: 2,
             sizeY: 4,
-            angle: Math.PI / 2,
+            angle: 90,
         },
     ],
-    crossyRoadTurnCont: [
+    crossyRoadsTurnCont: [
         { x: 42, y: 52, angle: 0 },
         { x: 60, y: 88, angle: 0 },
         { x: 48, y: 16, angle: 0 },
@@ -682,32 +705,32 @@ export const staticMap = {
         { x: 136, y: 104, angle: 0 },
         { x: 128, y: 76, angle: 0 },
 
-        { x: 16, y: 96, angle: Math.PI / 2 },
-        { x: 16, y: 24, angle: Math.PI / 2 },
-        { x: 38, y: 70, angle: Math.PI / 2 },
-        { x: 32, y: 46, angle: Math.PI / 2 },
-        { x: 32, y: 52, angle: Math.PI / 2 },
-        { x: 66, y: 46, angle: Math.PI / 2 },
-        { x: 72, y: 68, angle: Math.PI / 2 },
-        { x: 72, y: 78, angle: Math.PI / 2 },
-        { x: 138, y: 102, angle: Math.PI / 2 },
+        { x: 16, y: 96, angle: 270 },
+        { x: 16, y: 24, angle: 270 },
+        { x: 38, y: 70, angle: 270 },
+        { x: 32, y: 46, angle: 270 },
+        { x: 32, y: 52, angle: 270 },
+        { x: 66, y: 46, angle: 270 },
+        { x: 72, y: 68, angle: 270 },
+        { x: 72, y: 78, angle: 270 },
+        { x: 138, y: 102, angle: 270 },
 
-        { x: 16, y: 64, angle: Math.PI },
-        { x: 40, y: 16, angle: Math.PI },
-        { x: 48, y: 80, angle: Math.PI },
-        { x: 54, y: 88, angle: Math.PI },
-        { x: 72, y: 88, angle: Math.PI },
-        { x: 84, y: 52, angle: Math.PI },
-        { x: 76, y: 16, angle: Math.PI },
-        { x: 66, y: 52, angle: Math.PI },
-        { x: 134, y: 36, angle: Math.PI },
-        { x: 122, y: 104, angle: Math.PI },
+        { x: 16, y: 64, angle: 180 },
+        { x: 40, y: 16, angle: 180 },
+        { x: 48, y: 80, angle: 180 },
+        { x: 54, y: 88, angle: 180 },
+        { x: 72, y: 88, angle: 180 },
+        { x: 84, y: 52, angle: 180 },
+        { x: 76, y: 16, angle: 180 },
+        { x: 66, y: 52, angle: 180 },
+        { x: 134, y: 36, angle: 180 },
+        { x: 122, y: 104, angle: 180 },
 
-        { x: 32, y: 64, angle: (3 * Math.PI) / 2 },
-        { x: 32, y: 84, angle: (3 * Math.PI) / 2 },
-        { x: 128, y: 40, angle: (3 * Math.PI) / 2 },
+        { x: 32, y: 64, angle: 90 },
+        { x: 32, y: 84, angle: 90 },
+        { x: 128, y: 40, angle: 90 },
     ],
-    crossyRoadTurn: [
+    crossyRoadsTurn: [
         { x: 32, y: 24, angle: 0 },
         { x: 24, y: 96, angle: 0 },
         { x: 48, y: 70, angle: 0 },
@@ -717,51 +740,51 @@ export const staticMap = {
         { x: 142, y: 76, angle: 0 },
         { x: 128, y: 52, angle: 0 },
 
-        { x: 16, y: 102, angle: Math.PI / 2 },
-        { x: 42, y: 58, angle: Math.PI / 2 },
-        { x: 78, y: 24, angle: Math.PI / 2 },
-        { x: 128, y: 44, angle: Math.PI / 2 },
-        { x: 138, y: 104, angle: Math.PI / 2 },
+        { x: 16, y: 102, angle: 90 },
+        { x: 42, y: 58, angle: 90 },
+        { x: 78, y: 24, angle: 90 },
+        { x: 128, y: 44, angle: 90 },
+        { x: 138, y: 104, angle: 90 },
 
-        { x: 32, y: 88, angle: Math.PI },
-        { x: 38, y: 80, angle: Math.PI },
-        { x: 60, y: 98, angle: Math.PI },
-        { x: 136, y: 110, angle: Math.PI },
+        { x: 32, y: 88, angle: 180 },
+        { x: 38, y: 80, angle: 180 },
+        { x: 60, y: 98, angle: 180 },
+        { x: 136, y: 110, angle: 180 },
 
-        { x: 14, y: 64, angle: (3 * Math.PI) / 2 },
-        { x: 16, y: 16, angle: (3 * Math.PI) / 2 },
-        { x: 16, y: 84, angle: (3 * Math.PI) / 2 },
-        { x: 38, y: 58, angle: (3 * Math.PI) / 2 },
-        { x: 76, y: 8, angle: (3 * Math.PI) / 2 },
-        { x: 128, y: 36, angle: (3 * Math.PI) / 2 },
+        { x: 14, y: 64, angle: 270 },
+        { x: 16, y: 16, angle: 270 },
+        { x: 16, y: 84, angle: 270 },
+        { x: 38, y: 58, angle: 270 },
+        { x: 76, y: 8, angle: 270 },
+        { x: 128, y: 36, angle: 270 },
     ],
-    crossyRoadEnd: [
+    crossyRoadsEnd: [
         { x: 14, y: 102, angle: 0 },
         { x: 76, y: 24, angle: 0 },
         { x: 124, y: 40, angle: 0 },
 
-        { x: 16, y: 60, angle: Math.PI / 2 },
-        { x: 40, y: 6, angle: Math.PI / 2 },
-        { x: 66, y: 44, angle: Math.PI / 2 },
-        { x: 122, y: 100, angle: Math.PI / 2 },
-        { x: 138, y: 98, angle: Math.PI / 2 },
-        { x: 134, y: 34, angle: Math.PI / 2 },
+        { x: 16, y: 60, angle: 90 },
+        { x: 40, y: 6, angle: 90 },
+        { x: 66, y: 44, angle: 90 },
+        { x: 122, y: 100, angle: 90 },
+        { x: 138, y: 98, angle: 90 },
+        { x: 134, y: 34, angle: 90 },
 
-        { x: 34, y: 46, angle: Math.PI },
-        { x: 34, y: 46, angle: Math.PI },
-        { x: 78, y: 8, angle: Math.PI },
-        { x: 76, y: 68, angle: Math.PI },
-        { x: 140, y: 110, angle: Math.PI },
-        { x: 138, y: 36, angle: Math.PI },
+        { x: 34, y: 46, angle: 180 },
+        { x: 34, y: 46, angle: 180 },
+        { x: 78, y: 8, angle: 180 },
+        { x: 76, y: 68, angle: 180 },
+        { x: 140, y: 110, angle: 180 },
+        { x: 138, y: 36, angle: 180 },
 
-        { x: 16, y: 28, angle: (3 * Math.PI) / 2 },
-        { x: 14, y: 72, angle: (3 * Math.PI) / 2 },
-        { x: 24, y: 100, angle: (3 * Math.PI) / 2 },
-        { x: 48, y: 20, angle: (3 * Math.PI) / 2 },
-        { x: 66, y: 104, angle: (3 * Math.PI) / 2 },
-        { x: 128, y: 60, angle: (3 * Math.PI) / 2 },
-        { x: 128, y: 80, angle: (3 * Math.PI) / 2 },
-        { x: 142, y: 80, angle: (3 * Math.PI) / 2 },
-        { x: 120, y: 108, angle: (3 * Math.PI) / 2 },
+        { x: 16, y: 28, angle: 270 },
+        { x: 14, y: 72, angle: 270 },
+        { x: 24, y: 100, angle: 270 },
+        { x: 48, y: 20, angle: 270 },
+        { x: 66, y: 104, angle: 270 },
+        { x: 128, y: 60, angle: 270 },
+        { x: 128, y: 80, angle: 270 },
+        { x: 142, y: 80, angle: 270 },
+        { x: 120, y: 108, angle: 270 },
     ],
 };

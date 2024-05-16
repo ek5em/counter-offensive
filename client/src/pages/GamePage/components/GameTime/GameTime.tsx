@@ -1,30 +1,31 @@
-import { FC, useContext, useEffect, useState } from "react";
-import { MediatorContext } from "../../../../App";
+import { FC, useEffect, useState } from "react";
+import { useGlobalContext } from "../../../../hooks/useGlobalContext";
+import { timeConvert } from "../../../../helpers";
 
-import "./GameTime.css";
+import styles from "./GameTime.module.scss";
 
 const GameTime: FC = () => {
-    const mediator = useContext(MediatorContext);
-    const { UPDATE_TIME } = mediator.getTriggerTypes();
+    const { mediator } = useGlobalContext();
+    const { UPDATE_TIME } = mediator.getEventTypes();
     const [time, setTime] = useState<number>(0);
 
     useEffect(() => {
-        mediator.set(UPDATE_TIME, (time: number) => {
+        mediator.subscribe(UPDATE_TIME, (time: number) => {
             setTime(time);
         });
-    });
 
-    const timeConvert = (ms: number): string => {
-        const min = Math.floor((ms / (1000 * 60)) % 60);
-        const sec = Math.floor((ms / 1000) % 60);
-        const formMin = min < 10 ? `0${min}` : `${min}`;
-        const formSec = sec < 10 ? `0${sec}` : `${sec}`;
-        return `${formMin}:${formSec}`;
-    };
+        const timer = setInterval(() => {
+            setTime((t) => t + 1000);
+        }, 1000);
+
+        return () => {
+            clearInterval(timer);
+        };
+    }, []);
 
     return (
-        <div className="game_time_div">
-            <span className="game_time_span">{timeConvert(time)}</span>
+        <div className={styles.time}>
+            <span>{timeConvert(time)}</span>
         </div>
     );
 };

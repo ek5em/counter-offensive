@@ -13,9 +13,22 @@ export interface IMessage {
     userId: number;
 }
 
-export interface IMessages {
-    chatHash: string;
-    messages: IMessage[];
+export enum EResult {
+    ok = "ok",
+    error = "error",
+}
+
+export interface IAnswer<T> {
+    result: EResult.ok;
+    data: T;
+}
+
+export interface IError {
+    result: EResult.error;
+    error: {
+        code: number;
+        text: string;
+    };
 }
 
 export interface IMiddleTank {
@@ -29,31 +42,28 @@ export interface IHeavyTank extends IMiddleTank {
 }
 
 export interface ILobby {
-    userInfo: IUserInfo | null;
     general: boolean;
     bannerman: boolean;
     tanks: {
         heavyTank: IHeavyTank[];
         middleTank: IMiddleTank[];
     };
-    is_alive: IUserUnit | null;
 }
 
-export interface ILobbyState {
-    lobby: ILobby;
-    lobbyHash: string;
+export interface IToken {
+    token: string;
 }
 
-export interface IUserInfo {
-    id: number;
-    login: string;
-    nickname: string;
-    token: string | null;
-    rank_name: ERank;
+export interface IGamerInfo {
     gamer_exp: number;
-    next_rang: number;
+    id: number;
+    is_alive: null | IUserUnit;
     level: number;
-    unit: IUserUnit;
+    login: string;
+    next_rank: number;
+    nickname: string;
+    rank_name: ERank;
+    token: string;
 }
 
 interface IPoint {
@@ -64,6 +74,7 @@ interface IPoint {
 
 export interface IUserUnit extends IPoint {
     personId: EGamerRole;
+    speed: number;
 }
 
 export interface IBullet extends Omit<IPoint, "angle"> {
@@ -95,11 +106,32 @@ export interface ITank extends IPoint {
 }
 
 export interface IMapObject extends IPoint {
-    type: EMapObject;
     sizeX: number;
     sizeY: number;
-    isVert: boolean;
-    r: number;
+}
+
+export interface IDynamicMap {
+    houses: IMapObject[];
+    sands: IMapObject[];
+    spikes: IMapObject[];
+    stones: IMapObject[];
+    stumps: IMapObject[];
+}
+
+export interface IStaticMap {
+    bushes: any[];
+    trees: any[];
+    roads: any[];
+    crossyRoads: any[];
+    crossyRoadsTurnCont: any[];
+    crossyRoadsTurn: any[];
+    crossyRoadsEnd: any[];
+    base: { x: number; y: number; radius: number };
+}
+
+export interface IMap {
+    dynamic: IDynamicMap;
+    static: IStaticMap;
 }
 
 export interface IScene {
@@ -110,11 +142,6 @@ export interface IScene {
     bodies: IBody[] | null;
     map: IMapObject[] | null;
     mobBase: IPoint & { radius: number };
-    hashMap: string;
-    hashBodies: string;
-    hashGamers: string;
-    hashMobs: string;
-    hashBullets: string;
     gamer: IUserUnit | null;
     is_dead: boolean;
     is_end: boolean;
@@ -140,19 +167,9 @@ export enum ERank {
     General = "General",
 }
 
-export enum EHash {
-    lobby = "lobby",
-    bullets = "bullets",
-    gamers = "gamers",
-    mobs = "mobs",
-    chat = "chat",
-    map = "map",
-    bodies = "bodies",
-}
-
 export enum ETank {
-    middle,
     heavy,
+    middle,
 }
 
 export enum EMapObject {

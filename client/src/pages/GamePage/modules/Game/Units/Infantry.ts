@@ -1,4 +1,4 @@
-import { IPressedKeys } from "../../../components/GameCanvas/GameCanvas";
+import { TPressedKeys } from "../Game";
 import BaseUnit from "./BaseUnit";
 
 export default class Infantry extends BaseUnit {
@@ -17,7 +17,7 @@ export default class Infantry extends BaseUnit {
         this.diagonalSpeed = (this.speed * Math.sqrt(2)) / 2;
     }
 
-    move(keyPressed: IPressedKeys, time: number) {
+    move(keyPressed: TPressedKeys, time: number) {
         const speed =
             time *
             ((keyPressed.Up && keyPressed.Left) ||

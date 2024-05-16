@@ -1,0 +1,24 @@
+@import "../../styles/root.scss";
+@import "../../styles/mixins.scss";
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    gap: $gap;
+}
+
+.lobby {
+    display: grid;
+    grid-template-columns: [start] repeat(2, 1fr) [tanksend] repeat(5, 1fr) [end];
+    height: 100%;
+    width: 100%;
+    gap: $gap;
+}
+
+.tank_selected {
+    @include border(3px, 5px);
+    border-color: $green;
+}

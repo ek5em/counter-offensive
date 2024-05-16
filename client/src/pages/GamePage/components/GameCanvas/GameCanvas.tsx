@@ -1,14 +1,12 @@
-import { FC, useContext, useEffect } from "react";
+import { FC, useEffect } from "react";
 import {
     MAP_SIZE,
     WINConf,
     entitiesConfig,
     objectConf,
-    requestDelay,
     walls,
 } from "../../../../config";
-import { MediatorContext, ServerContext } from "../../../../App";
-import { TCircle, TPoint, TUnit } from "../../types";
+import { TCircle, TPoint } from "../../types";
 import {
     EBody,
     EGamerRole,
@@ -18,186 +16,26 @@ import {
     IBody,
     IBullet,
     IGamer,
+    IMap,
     IMapObject,
     IMob,
     ITank,
 } from "../../../../modules/Server/interfaces";
+import { useGlobalContext } from "../../../../hooks/useGlobalContext";
 import useCanvas from "../../hooks/useCanvas";
 import useSprites, { SpriteFrame } from "../../hooks/useSprites";
-import {
-    BaseUnit,
-    Canvas,
-    Collision,
-    Game,
-    TraceMask,
-    Infantry,
-    InfantryRPG,
-    MiddleCorpus,
-    MiddleTower,
-    HeavyCorpus,
-    HeavyTower,
-    TankCommander,
-    Bannerman,
-    General,
-} from "../../modules";
-import { IGameScene } from "../../modules/Game/Game";
+import { Canvas, Collision, Game, TraceMask, General } from "../../modules";
+import { EKeys, IGameScene } from "../../modules/Game/Game";
 
-export interface IPressedKeys {
-    Up: boolean;
-    Down: boolean;
-    Right: boolean;
-    Left: boolean;
-    Space: boolean;
-}
+import styles from "./GameCanvas.module.scss";
 
 interface GameCanvasProps {
     inputRef: React.MutableRefObject<HTMLInputElement | null>;
 }
 
 const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
-    const server = useContext(ServerContext);
-    const mediator = useContext(MediatorContext);
-
+    const { server, mediator } = useGlobalContext();
     const canvasId = "canvas";
-
-    let unit: TUnit = new BaseUnit();
-    if (server.STORE.user) {
-        const { x, y, angle } = server.STORE.user.unit;
-        switch (server.STORE.user.unit.personId) {
-            case EGamerRole.infantryRPG: {
-                const { r, speed, weaponLength, visiableAngle } =
-                    entitiesConfig.infantryRGP;
-                unit = new InfantryRPG(
-                    x,
-                    y,
-                    angle,
-                    r,
-                    speed,
-                    weaponLength,
-                    visiableAngle
-                );
-                break;
-            }
-            case EGamerRole.middleTankGunner: {
-                const {
-                    rotateTowerSpeed,
-                    weaponLength,
-                    towerR,
-                    visiableAngle,
-                } = entitiesConfig.middleTank;
-                unit = new MiddleTower(
-                    x,
-                    y,
-                    angle,
-                    towerR,
-                    rotateTowerSpeed,
-                    weaponLength,
-                    visiableAngle.gunner
-                );
-                break;
-            }
-            case EGamerRole.middleTankMeh: {
-                const { corpusR, rotateSpeed, speed, visiableAngle } =
-                    entitiesConfig.middleTank;
-                unit = new MiddleCorpus(
-                    x,
-                    y,
-                    angle,
-                    corpusR,
-                    speed,
-                    rotateSpeed,
-                    visiableAngle.driver
-                );
-                break;
-            }
-            case EGamerRole.heavyTankGunner: {
-                const {
-                    rotateTowerSpeed,
-                    weaponLength,
-                    towerR,
-                    visiableAngle,
-                } = entitiesConfig.heavyTank;
-                unit = new HeavyTower(
-                    x,
-                    y,
-                    angle,
-                    towerR,
-                    rotateTowerSpeed,
-                    weaponLength,
-                    visiableAngle.gunner
-                );
-                break;
-            }
-
-            case EGamerRole.heavyTankMeh: {
-                const { corpusR, rotateSpeed, speed, visiableAngle } =
-                    entitiesConfig.heavyTank;
-                unit = new HeavyCorpus(
-                    x,
-                    y,
-                    angle,
-                    corpusR,
-                    speed,
-                    rotateSpeed,
-                    visiableAngle.driver
-                );
-                break;
-            }
-
-            case EGamerRole.heavyTankCommander: {
-                const { visiableAngle } = entitiesConfig.heavyTank;
-                unit = new TankCommander(x, y, angle, visiableAngle.comander);
-                break;
-            }
-            case EGamerRole.bannerman: {
-                const { r, speed } = entitiesConfig.bannerman;
-                unit = new Bannerman(x, y, angle, r, speed, 0);
-                break;
-            }
-            case EGamerRole.general: {
-                const { speed } = entitiesConfig.general;
-                unit = new General(x, y, angle, speed);
-                break;
-            }
-
-            default: {
-                const { r, speed, weaponLength } = entitiesConfig.infantry;
-                unit = new Infantry(x, y, angle, r, speed, weaponLength);
-                break;
-            }
-        }
-    }
-
-    const updateUnitInterval = setInterval(() => {
-        const { x, y, angle } = unit;
-        const user = server.STORE.user;
-        if (user) {
-            const userUnit = user.unit.personId;
-            if (
-                userUnit !== EGamerRole.middleTankGunner &&
-                userUnit !== EGamerRole.heavyTankGunner &&
-                userUnit !== EGamerRole.heavyTankCommander
-            ) {
-                server.unitMotion(x, y, angle);
-            } else {
-                server.unitMotion(null, null, angle);
-                if (game.serverUnit) {
-                    unit.x = game.serverUnit.x;
-                    unit.y = game.serverUnit.y;
-                }
-            }
-
-            if (
-                keyPressed.Space &&
-                (userUnit === EGamerRole.infantry ||
-                    userUnit === EGamerRole.infantryRPG ||
-                    userUnit === EGamerRole.middleTankGunner ||
-                    userUnit === EGamerRole.heavyTankGunner)
-            ) {
-                makeShot();
-            }
-        }
-    }, requestDelay.gamerUpdate);
 
     const height = window.innerHeight;
     const width = window.innerWidth;
@@ -235,20 +73,18 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
                 mouseUp: mouseUpHandler,
             },
         });
-        tracer = new TraceMask({
+
+        /* tracer = new TraceMask({
             WIN,
             canvas,
             mediator,
             width,
             height,
             cellSize: SPRITE_SIZE,
-        });
+        }); */
         return () => {
             canvas = null;
             tracer = null;
-            clearInterval(game.interval);
-            game.server.STORE.clearHash();
-            clearInterval(updateUnitInterval);
         };
     });
 
@@ -260,24 +96,24 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         boom,
         middleTank,
         heavyTank,
-        grass,
-        stone,
-        bush,
-        stump,
-        spike,
-        box,
-        sand,
-        tree,
-        home,
-        veranda,
-        wall,
-        road,
-        crossyRoadEnd,
-        crossyRoad,
-        crossyRoadTurn,
-        crossyRoadTurnCont,
-        fence,
-        fenceTurn,
+        grassSprite,
+        stoneSprite,
+        bushSprite,
+        stumpSprite,
+        spikeSprite,
+        boxSprite,
+        sandSprite,
+        treeSprite,
+        houseSprite,
+        verandaSprite,
+        wallSprite,
+        roadSprite,
+        crossyRoadEndSprite,
+        crossyRoadSprite,
+        crossyRoadTurnSprite,
+        crossyRoadTurnContSprite,
+        fenceSprite,
+        fenceTurnSprite,
         bulletAutomat,
         bulletRPG,
         manDead,
@@ -300,20 +136,9 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const game = new Game({
         server,
         mediator,
-        cbs: {
-            roundEnd,
-        },
     });
 
     const collision = new Collision(game.getScene());
-
-    const keyPressed: IPressedKeys = {
-        Down: false,
-        Up: false,
-        Right: false,
-        Left: false,
-        Space: false,
-    };
 
     const mousePos: TPoint = {
         x: 0,
@@ -325,20 +150,20 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const keyDownHandler = (e: KeyboardEvent) => {
         if (inputRef.current !== document.activeElement) {
             if (e.code === "ArrowUp" || e.code === "KeyW") {
-                keyPressed.Up = true;
+                game.keyDown(EKeys.Up);
             }
             if (e.code === "ArrowDown" || e.code === "KeyS") {
-                keyPressed.Down = true;
+                game.keyDown(EKeys.Down);
             }
             if (e.code === "ArrowRight" || e.code === "KeyD") {
-                keyPressed.Right = true;
+                game.keyDown(EKeys.Right);
             }
             if (e.code === "ArrowLeft" || e.code === "KeyA") {
-                keyPressed.Left = true;
+                game.keyDown(EKeys.Left);
             }
             if (e.code === "Space") {
-                makeShot();
-                keyPressed.Space = true;
+                game.unitShot();
+                game.keyDown(EKeys.Space);
             }
         }
     };
@@ -346,19 +171,19 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const keyUpHandler = (e: KeyboardEvent) => {
         if (inputRef.current !== document.activeElement) {
             if (e.code === "ArrowUp" || e.code === "KeyW") {
-                keyPressed.Up = false;
+                game.keyUp(EKeys.Up);
             }
             if (e.code === "ArrowDown" || e.code === "KeyS") {
-                keyPressed.Down = false;
+                game.keyUp(EKeys.Down);
             }
             if (e.code === "ArrowRight" || e.code === "KeyD") {
-                keyPressed.Right = false;
+                game.keyUp(EKeys.Right);
             }
             if (e.code === "ArrowLeft" || e.code === "KeyA") {
-                keyPressed.Left = false;
+                game.keyUp(EKeys.Left);
             }
             if (e.code === "Space") {
-                keyPressed.Space = false;
+                game.keyUp(EKeys.Space);
             }
         }
     };
@@ -369,32 +194,12 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const mouseUpHandler = () => {
-        keyPressed.Space = false;
+        game.keyPressed.Space = false;
     };
 
     const mouseDownHandler = () => {
-        makeShot();
-        keyPressed.Space = true;
-    };
-
-    const makeShot = () => {
-        const { x, y, angle, weaponLength } = unit;
-        const user = server.STORE.user;
-        if (user) {
-            const userUnit = user.unit.personId;
-            if (
-                userUnit !== EGamerRole.heavyTankCommander &&
-                userUnit !== EGamerRole.heavyTankMeh &&
-                userUnit !== EGamerRole.middleTankMeh &&
-                userUnit !== EGamerRole.bannerman
-            ) {
-                server.makeShot(
-                    x + Math.cos(angle) * weaponLength,
-                    y + Math.sin(angle) * weaponLength,
-                    angle
-                );
-            }
-        }
+        game.unitShot();
+        game.keyDown(EKeys.Space);
     };
 
     /* БЛОК ПРО РИСОВАНИЕ */
@@ -403,7 +208,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         walls.forEach((block) => {
             for (let i = block[1].x; i < block[3].x; i++) {
                 for (let j = block[1].y; j > block[3].y; j--) {
-                    canvas?.spriteMap(img, i, j, ...wall);
+                    canvas?.spriteMap(img, i, j, ...wallSprite);
                 }
             }
         });
@@ -412,201 +217,244 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const drawGrass = () => {
         for (let i = 0; i < MAP_SIZE.width; i += 5) {
             for (let j = MAP_SIZE.height; j > 0; j -= 5) {
-                canvas?.spriteMap(img, i, j, ...grass);
+                canvas?.spriteMap(img, i, j, ...grassSprite);
             }
         }
     };
 
-    const drawHouse = (house: IMapObject) => {
-        const { x, y, sizeY, sizeX, isVert, angle } = house;
-        canvas?.spriteDir(img, x, y, ...home, isVert ? (3 * Math.PI) / 2 : 0);
-        switch (angle) {
-            case 0: {
-                return canvas?.spriteDir(
-                    img,
-                    x + sizeX / 2 - 1,
-                    y - sizeY + 0.5,
-                    ...veranda,
-                    -angle + Math.PI
-                );
+    const drawHouses = (houses: IMapObject[]) => {
+        houses.forEach((house) => {
+            const { x, y, sizeY, sizeX, angle } = house;
+            const isVert = sizeY > sizeX;
+            canvas?.spriteDir(img, x, y, ...houseSprite, isVert ? 270 : 0);
+            switch (angle) {
+                case 0: {
+                    return canvas?.spriteDir(
+                        img,
+                        x + sizeX / 2 - 1,
+                        y - sizeY + 0.5,
+                        ...verandaSprite,
+                        -angle + 180
+                    );
+                }
+                case 90: {
+                    return canvas?.spriteDir(
+                        img,
+                        x + sizeX - 0.5,
+                        y - sizeY / 2 + 1,
+                        ...verandaSprite,
+                        -angle + 180
+                    );
+                }
+                case 180: {
+                    return canvas?.spriteDir(
+                        img,
+                        x + sizeX / 2 - 1,
+                        y + sizeY / 2,
+                        ...verandaSprite,
+                        -angle + 180
+                    );
+                }
+                case 270: {
+                    return canvas?.spriteDir(
+                        img,
+                        x - sizeX / 2,
+                        y - sizeY / 2 + 1,
+                        ...verandaSprite,
+                        -angle + 180
+                    );
+                }
             }
-            case Math.PI / 2: {
-                return canvas?.spriteDir(
-                    img,
-                    x + sizeX - 0.5,
-                    y - sizeY / 2 + 1,
-                    ...veranda,
-                    -angle + Math.PI
-                );
+        });
+    };
+
+    const drawSands = (sands: IMapObject[]) => {
+        sands.forEach((sand) => {
+            const { angle, sizeX, sizeY, x, y } = sand;
+
+            switch (angle) {
+                case 0: {
+                    return canvas?.spriteDir(
+                        img,
+                        x,
+                        y + 0.5,
+                        ...sandSprite,
+                        -angle
+                    );
+                }
+                case 90: {
+                    return canvas?.spriteDir(
+                        img,
+                        x,
+                        y - 0.1,
+                        ...sandSprite,
+                        -angle
+                    );
+                }
+                case 180: {
+                    return canvas?.spriteDir(
+                        img,
+                        x - 0.2,
+                        y + sizeX,
+                        ...sandSprite,
+                        -angle
+                    );
+                }
+                case 270: {
+                    return canvas?.spriteDir(
+                        img,
+                        x - sizeY + 0.5,
+                        y - 0.1,
+                        ...sandSprite,
+                        -angle
+                    );
+                }
             }
-            case Math.PI: {
-                return canvas?.spriteDir(
-                    img,
-                    x + sizeX / 2 - 1,
-                    y + sizeY / 2,
-                    ...veranda,
-                    -angle + Math.PI
-                );
-            }
-            case (3 * Math.PI) / 2: {
-                return canvas?.spriteDir(
-                    img,
-                    x - sizeX / 2,
-                    y - sizeY / 2 + 1,
-                    ...veranda,
-                    -angle + Math.PI
-                );
-            }
-        }
+        });
     };
 
     const drawCircleObj = ({ x, y, r }: TCircle, sprite: SpriteFrame) => {
         canvas?.spriteMap(img, x - r, y + r, ...sprite);
     };
 
-    const drawObjects = (objects: IMapObject[]) => {
-        drawGrass();
-        drawWalls(walls);
-        objects.forEach((obj) => {
-            const { x, y, angle, sizeX, sizeY } = obj;
-            switch (obj.type) {
-                case EMapObject.house: {
-                    return drawHouse(obj);
-                }
-                case EMapObject.stone: {
-                    const { r } = objectConf.stone;
-                    return drawCircleObj({ x, y, r }, stone);
-                }
-                case EMapObject.stump: {
-                    const { r } = objectConf.stump;
-                    return drawCircleObj({ x, y, r }, stump);
-                }
-                case EMapObject.bush: {
-                    const { r } = objectConf.bush;
-                    return drawCircleObj({ x, y, r }, bush);
-                }
-                case EMapObject.tree: {
-                    canvas?.spriteMap(img, x, y, ...tree);
-                    break;
-                }
-                case EMapObject.sand: {
-                    switch (angle) {
-                        case 0: {
-                            return canvas?.spriteDir(
-                                img,
-                                x,
-                                y + 0.5,
-                                ...sand,
-                                -angle
-                            );
-                        }
-                        case Math.PI / 2: {
-                            return canvas?.spriteDir(
-                                img,
-                                x,
-                                y - 0.1,
-                                ...sand,
-                                -angle
-                            );
-                        }
-                        case Math.PI: {
-                            return canvas?.spriteDir(
-                                img,
-                                x - 0.2,
-                                y + sizeX,
-                                ...sand,
-                                -angle
-                            );
-                        }
-                        case (3 * Math.PI) / 2: {
-                            return canvas?.spriteDir(
-                                img,
-                                x - sizeY + 0.5,
-                                y - 0.1,
-                                ...sand,
-                                -angle
-                            );
-                        }
-                    }
-                    return;
-                }
-                case EMapObject.base: {
-                    const { innerColor: c1, outerColor: c2 } = objectConf.base;
-                    const r = obj.r ? obj.r : objectConf.base.r;
-                    canvas?.circle({ x, y, r }, c2);
-                    canvas?.circle({ x, y, r: r * 0.9 }, c1);
-                    return;
-                }
-                case EMapObject.box: {
-                    return canvas?.sprite(img, x, y, ...box);
-                }
-                case EMapObject.spike: {
-                    return canvas?.sprite(img, x, y, ...spike);
-                }
-                case EMapObject.road: {
-                    for (let i = 1; i <= sizeY / 4; i++) {
-                        canvas?.sprite(img, x, y + i * 4, ...road);
-                    }
-                    return;
-                }
-                case EMapObject.crossyRoad: {
-                    if (sizeX > sizeY) {
-                        for (let i = 0; i < sizeX / 2; i++) {
-                            canvas?.spriteDir(
-                                img,
-                                x + i * 2,
-                                y + sizeY,
-                                ...crossyRoad,
-                                angle
-                            );
-                        }
-                    } else {
-                        for (let i = 1; i <= sizeY / 2; i++) {
-                            canvas?.spriteDir(
-                                img,
-                                x,
-                                y + i * 2,
-                                ...crossyRoad,
-                                angle
-                            );
-                        }
-                    }
-                    return;
-                }
-                case EMapObject.crossyRoadEnd: {
-                    return canvas?.spriteDir(
-                        img,
-                        x,
-                        y + sizeY,
-                        ...crossyRoadEnd,
-                        -angle
-                    );
-                }
-                case EMapObject.crossyRoadTurn: {
+    const drawSpikes = (spikes: IMapObject[]) => {
+        spikes.forEach((spike) => {
+            const { x, y } = spike;
+            canvas?.sprite(img, x, y, ...spikeSprite);
+        });
+    };
+
+    const drawStones = (stones: IMapObject[]) => {
+        const { r } = objectConf.stone;
+        stones.forEach((stone) => {
+            const { x, y } = stone;
+            drawCircleObj({ x, y, r }, stoneSprite);
+        });
+    };
+
+    const drawStumps = (stumps: IMapObject[]) => {
+        const { r } = objectConf.stump;
+        stumps.forEach((stump) => {
+            const { x, y } = stump;
+            drawCircleObj({ x, y, r }, stumpSprite);
+        });
+    };
+
+    const drawTrees = (trees: IMapObject[]) => {
+        trees.forEach((tree) => {
+            const { x, y } = tree;
+            canvas?.spriteMap(img, x, y, ...treeSprite);
+        });
+    };
+
+    const drawBushes = (bushes: IMapObject[]) => {
+        const { r } = objectConf.bush;
+        bushes.forEach((bush) => {
+            const { x, y } = bush;
+            drawCircleObj({ x, y, r }, bushSprite);
+        });
+    };
+
+    const drawRoads = (roads: IMapObject[]) => {
+        roads.forEach((road) => {
+            const { x, y, sizeY } = road;
+            for (let i = 1; i <= sizeY / 4; i++) {
+                canvas?.sprite(img, x, y + i * 4, ...roadSprite);
+            }
+        });
+    };
+
+    const drawCrossyRoads = (roads: IMapObject[]) => {
+        roads.forEach((road) => {
+            const { x, y, sizeX, sizeY, angle } = road;
+            if (sizeX > sizeY) {
+                for (let i = 0; i < sizeX / 2; i++) {
                     canvas?.spriteDir(
                         img,
-                        x,
+                        x + i * 2,
                         y + sizeY,
-                        ...crossyRoadTurn,
-                        -angle
-                    );
-                    return;
-                }
-                case EMapObject.crossyRoadTurnCont: {
-                    return canvas?.spriteDir(
-                        img,
-                        x,
-                        y + sizeY,
-                        ...crossyRoadTurnCont,
+                        ...crossyRoadSprite,
                         angle
                     );
                 }
-
-                case EMapObject.trusovMoment: {
-                    //return canvas?.spriteDir(img, x, y, ...fence, -angle);
+            } else {
+                for (let i = 1; i <= sizeY / 2; i++) {
+                    canvas?.spriteDir(
+                        img,
+                        x,
+                        y + i * 2,
+                        ...crossyRoadSprite,
+                        angle
+                    );
                 }
             }
         });
+    };
+
+    const drawCrossyRoadsEnd = (roads: IMapObject[]) => {
+        roads.forEach((road) => {
+            const { x, y, angle } = road;
+            canvas?.spriteDir(img, x, y + 2, ...crossyRoadEndSprite, -angle);
+        });
+    };
+
+    const drawCrossyRoadsTurn = (roads: IMapObject[]) => {
+        roads.forEach((road) => {
+            const { x, angle, y } = road;
+            canvas?.spriteDir(img, x, y + 2, ...crossyRoadTurnSprite, -angle);
+        });
+    };
+
+    const drawCrossyRoadsTurnCont = (roads: IMapObject[]) => {
+        roads.forEach((road) => {
+            const { x, angle, y } = road;
+            canvas?.spriteDir(
+                img,
+                x,
+                y + 2,
+                ...crossyRoadTurnContSprite,
+                -angle
+            );
+        });
+    };
+
+    const drawBase = (base: { x: number; y: number; radius: number }) => {
+        const { innerColor: c1, outerColor: c2 } = objectConf.base;
+        const { x, y, radius } = base;
+        canvas?.circle({ x, y, r: radius }, c2);
+        canvas?.circle({ x, y, r: radius * 0.8 }, c1);
+        return;
+    };
+
+    const drawObjects = (map: IMap) => {
+        const { houses, sands, spikes, stones, stumps } = map.dynamic;
+        const {
+            bushes,
+            trees,
+            roads,
+            crossyRoads,
+            crossyRoadsEnd,
+            crossyRoadsTurn,
+            crossyRoadsTurnCont,
+            base,
+        } = map.static;
+
+        drawGrass();
+        drawWalls(walls);
+        drawCrossyRoads(crossyRoads);
+        drawCrossyRoadsEnd(crossyRoadsEnd);
+        drawCrossyRoadsTurn(crossyRoadsTurn);
+        drawCrossyRoadsTurnCont(crossyRoadsTurnCont);
+        drawRoads(roads);
+        drawTrees(trees);
+        drawBushes(bushes);
+
+        drawHouses(houses);
+        drawSands(sands);
+        drawSpikes(spikes);
+        drawStones(stones);
+        drawStumps(stumps);
+        drawBase(base);
     };
 
     const drawBullets = (bullets: IBullet[]) => {
@@ -761,7 +609,8 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         });
     };
 
-    const showTarget = (base: IMapObject) => {
+    const showEnemyBase = (base: { x: number; y: number; radius: number }) => {
+        const unit = game.getUnit();
         const { left, bottom, width, height } = WIN;
         const vectorToBase = {
             x: base.x - unit.x,
@@ -769,8 +618,8 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         };
 
         if (
-            Math.abs(vectorToBase.y) > height / 2 + base.r ||
-            Math.abs(vectorToBase.x) > width / 2 + base.r
+            Math.abs(vectorToBase.y) > height / 2 + base.radius ||
+            Math.abs(vectorToBase.x) > width / 2 + base.radius
         ) {
             let x = base.x,
                 y = base.y;
@@ -791,7 +640,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
                 {
                     x,
                     y,
-                    r: 0.5,
+                    r: 1,
                 },
                 "#f00"
             );
@@ -799,6 +648,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const drawScene = (scene: IGameScene) => {
+        const unit = game.getUnit();
         const { bodies, bullets, gamers, mobs, map, tanks } = scene;
         drawObjects(map);
         drawBodies(bodies);
@@ -806,17 +656,14 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         drawMobs(mobs);
         drawTanks(tanks);
 
-        !(unit instanceof General)  && tracer?.trace(unit, WIN);
+        !(unit instanceof General) && tracer?.trace(unit, WIN);
 
         drawGamers(gamers);
-        const base = map.find((el) => el.type === EMapObject.base);
-        base && showTarget(base);
+        showEnemyBase(game.getScene().map.static.base);
     };
 
-    /*  */
-
     const updateWIN = () => {
-        const { x, y } = unit;
+        const { x, y } = game.getUnit();
         const { left, right, down, up } = visualBorders;
         WIN.left = x - halfW;
         WIN.bottom = y - halfH;
@@ -842,56 +689,53 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const updateUnit = (time: number) => {
-        if (game.serverUnit) {
-            if (canvas) {
-                const { x, y } = unit;
-                const { down, left, right, up } = visualBorders;
-                if (unit instanceof General) {
-                    unit.move(keyPressed, time);
-                    if (x < left) {
-                        unit.x = left;
-                    }
-                    if (y < down) {
-                        unit.y = down;
-                    }
-                    if (x > right) {
-                        unit.x = right;
-                    }
-                    if (y > up) {
-                        unit.y = up;
-                    }
-                } else {
-                    unit.move(keyPressed, time);
-                    collision.checkAllBlocksUnit(unit);
-                    unit.rotate(
-                        Math.atan2(
-                            canvas.sy(mousePos.y) - y,
-                            canvas.sx(mousePos.x) - x
-                        )
-                    );
+        const unit = game.getUnit();
+        if (canvas) {
+            const { x, y } = unit;
+            const { down, left, right, up } = visualBorders;
+            if (unit instanceof General) {
+                unit.move(game.keyPressed, time);
+                if (x < left) {
+                    unit.x = left;
                 }
-                updateWIN();
+                if (y < down) {
+                    unit.y = down;
+                }
+                if (x > right) {
+                    unit.x = right;
+                }
+                if (y > up) {
+                    unit.y = up;
+                }
+            } else {
+                unit.move(game.keyPressed, time);
+                collision.checkAllBlocksUnit(unit);
+                unit.rotate(
+                    Math.atan2(
+                        canvas.sy(mousePos.y) - y,
+                        canvas.sx(mousePos.x) - x
+                    )
+                );
             }
+            updateWIN();
         }
     };
 
-    function roundEnd() {}
-
     function render(FPS: number) {
+        const unit = game.getUnit();
         const renderTime = FPS ? 1000 / FPS : 0;
         const scene = game.getScene();
-        if (scene.map.length !== 0) {
-        }
         if (canvas) {
             canvas.clear();
             drawScene(scene);
             updateUnit(renderTime);
             updateEntity(scene, renderTime);
+            canvas.circle({ ...unit });
             canvas.render();
         }
     }
 
-    return <canvas id={canvasId} />;
+    return <canvas id={canvasId} className={styles.game_scene} />;
 };
 
 export default GameCanvas;

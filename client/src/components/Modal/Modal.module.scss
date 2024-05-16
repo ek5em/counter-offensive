@@ -1,0 +1,21 @@
+@import "../../styles/root.scss";
+@import "../../styles/mixins.scss";
+
+.modal {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    background-color: rgb(0, 0, 0, 0.4);
+    z-index: 100;
+}
+
+.message {
+    @include border(2px);
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background-color: $yellow;
+    font-size: 30px;
+    text-align: center;
+    padding: 5px 10px;
+}
