@@ -2,25 +2,15 @@ import { staticMap } from "../../../../config";
 import { Mediator, Server } from "../../../../modules";
 import {
     EGamerRole,
-    IBody,
-    IBullet,
-    IGamer,
+    IEntities,
     IMap,
-    IMapObject,
-    IMob,
-    IScene,
-    ITank,
     IUserUnit,
 } from "../../../../modules/Server/interfaces";
 import { getUnit } from "../../components/GameCanvas/getUnit";
 import { BaseUnit } from "./Units";
 
 export interface IGameScene {
-    tanks: ITank[];
-    bullets: IBullet[];
-    mobs: IMob[];
-    gamers: IGamer[];
-    bodies: IBody[];
+    entities: IEntities;
     map: IMap;
 }
 
@@ -55,11 +45,13 @@ export default class Game {
         this.mediator = mediator;
         this.serverUnit = { personId: 1, x: 0, y: 0, angle: 0, speed: 0 };
         this.scene = {
-            bullets: [],
-            mobs: [],
-            gamers: [],
-            tanks: [],
-            bodies: [],
+            entities: {
+                bullets: [],
+                mobs: [],
+                gamers: [],
+                tanks: [],
+                bodies: [],
+            },
             map: {
                 dynamic: {
                     houses: [],
@@ -89,8 +81,13 @@ export default class Game {
             Space: false,
         };
 
-        const { THROW_TO_LOBBY, UPDATE_MAP, MOVE_UNIT, UPDATE_TIME } =
-            mediator.getEventTypes();
+        const {
+            THROW_TO_LOBBY,
+            UPDATE_MAP,
+            MOVE_UNIT,
+            UPDATE_TIME,
+            UPDATE_ENTITIES,
+        } = mediator.getEventTypes();
 
         this.user = server.STORE.getUser()?.is_alive ?? null;
         this.unit = getUnit(this.user);
@@ -119,6 +116,10 @@ export default class Game {
 
             this.scene.map = map;
             this.scene.map.static = { ...map.static, ...staticMap };
+        });
+
+        this.mediator.subscribe(UPDATE_ENTITIES, (entities: IEntities) => {
+            this.scene.entities = entities;
         });
 
         this.mediator.subscribe(MOVE_UNIT, () => {

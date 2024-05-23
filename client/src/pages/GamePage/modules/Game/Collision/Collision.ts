@@ -1,20 +1,10 @@
-import {
-    MAP_SIZE,
-    entitiesConfig,
-    objectConf,
-    walls,
-} from "../../../../../config";
-import { EBody, EMapObject } from "../../../../../modules/Server/interfaces";
+import { MAP_SIZE, objectConf } from "../../../../../config";
 import { IGameScene } from "../Game";
-import { TCircle, TPoint, TUnit } from "../../../types";
+import { TCircle, TPoint } from "../../../types";
+import { BaseUnit } from "../Units";
 
 class Collision {
-    scene: IGameScene;
-    constructor(scene: IGameScene) {
-        this.scene = scene;
-    }
-
-    blockUnit(unit: TUnit, block: TPoint, width: number, height: number) {
+    blockUnit(unit: BaseUnit, block: TPoint, width: number, height: number) {
         const centerBlock: TPoint = {
             x: block.x + width / 2,
             y: block.y - height / 2,
@@ -47,7 +37,7 @@ class Collision {
         }
     }
 
-    circleUnit(unit: TUnit, circle: TCircle) {
+    circleUnit(unit: BaseUnit, circle: TCircle) {
         const distance: TPoint = {
             x: unit.x - circle.x,
             y: unit.y - circle.y,
@@ -73,7 +63,7 @@ class Collision {
         }
     }
 
-    bordersUnit(unit: TUnit) {
+    bordersUnit(unit: BaseUnit) {
         const { x, y, r } = unit;
         if (x - r < 0) {
             unit.x = r;
@@ -89,70 +79,71 @@ class Collision {
         }
     }
 
-    checkAllBlocksUnit(unit: TUnit): void {
-       /*  this.scene.map.forEach((obj) => {
-            const { x, y, sizeX, sizeY, type, angle } = obj;
-            switch (type) {
-                case EMapObject.house: {
-                    this.blockUnit(unit, { x, y }, sizeX, sizeY);
+    checkAllBlocksUnit(unit: BaseUnit, scene: IGameScene): void {
+        const { houses, stones, stumps, sands, spikes } = scene.map.dynamic;
+        houses.forEach((house) => {
+            const { x, y, sizeX, sizeY } = house;
+            this.blockUnit(unit, { x, y }, sizeX, sizeY);
+        });
+
+        stones.forEach((stone) => {
+            const { x, y } = stone;
+            const { r } = objectConf.stone;
+            this.circleUnit(unit, { x, y, r });
+        });
+
+        stumps.forEach((stump) => {
+            const { x, y } = stump;
+            const { r } = objectConf.stump;
+            this.circleUnit(unit, { x, y, r });
+        });
+
+        spikes.forEach((spike) => {
+            const { x, y, sizeX, sizeY } = spike;
+            this.blockUnit(unit, { x, y }, sizeX, sizeY);
+        });
+        sands.forEach((sand) => {
+        
+            const { x, y, sizeX, sizeY, angle } = sand;
+            switch (angle) {
+                case 0: {
+                    this.blockUnit(unit, { x, y }, sizeX, 0.2);
                     break;
                 }
-                case EMapObject.stone: {
-                    const { r } = objectConf.stone;
-                    this.circleUnit(unit, { x, y, r });
+                case 90: {
+                    this.blockUnit(
+                        unit,
+                        { x: x + 0.5, y },
+                        0.3,
+                        sizeY - 0.25
+                    );
                     break;
                 }
-                case EMapObject.stump: {
-                    const { r } = objectConf.stump;
-                    this.circleUnit(unit, { x, y, r });
+                case 180: {
+                    this.blockUnit(
+                        unit,
+                        { x: x - 0.15, y: y + 0.9 },
+                        sizeX,
+                        0.3
+                    );
                     break;
                 }
-                case EMapObject.spike: {
-                    this.blockUnit(unit, { x, y }, sizeX, sizeY);
+                case 270: {
+                    this.blockUnit(
+                        unit,
+                        { x: x - 0.3, y },
+                        0.3,
+                        sizeY - 0.25
+                    );
                     break;
                 }
-                case EMapObject.sand: {
-                    switch (angle) {
-                        case 0: {
-                            this.blockUnit(unit, { x, y }, sizeX, 0.2);
-                            break;
-                        }
-                        case Math.PI / 2: {
-                            this.blockUnit(
-                                unit,
-                                { x: x + 0.5, y },
-                                0.3,
-                                sizeY - 0.25
-                            );
-                            break;
-                        }
-                        case Math.PI: {
-                            this.blockUnit(
-                                unit,
-                                { x: x - 0.15, y: y + 0.9 },
-                                sizeX,
-                                0.3
-                            );
-                            break;
-                        }
-                        case (3 * Math.PI) / 2: {
-                            this.blockUnit(
-                                unit,
-                                { x: x - 0.3, y },
-                                0.3,
-                                sizeY - 0.25
-                            );
-                            break;
-                        }
-                        default: {
-                            break;
-                        }
-                    }
+                default: {
                     break;
                 }
             }
         });
 
+        /*  
         this.scene.bodies.forEach((body) => {
             if (body.type === EBody.heavyTank) {
                 this.circleUnit(unit, {

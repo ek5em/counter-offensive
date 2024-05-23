@@ -27,7 +27,7 @@ export type TCircle = TPoint & {
     r: number;
 };
 
-export type TUnit =
+/* export type TUnit =
     | Infantry
     | InfantryRPG
     | MiddleCorpus
@@ -38,3 +38,4 @@ export type TUnit =
     | TankCommander
     | BaseUnit
     | General;
+ */

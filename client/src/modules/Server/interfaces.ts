@@ -89,11 +89,11 @@ export interface IBody extends IPoint {
 }
 
 export interface IMob extends IPoint {
-    person_id: EGamerRole.infantry | EGamerRole.infantryRPG;
+    type: EGamerRole.infantry | EGamerRole.infantryRPG;
 }
 
 export interface IGamer extends IPoint {
-    person_id:
+    roleId:
         | EGamerRole.general
         | EGamerRole.bannerman
         | EGamerRole.infantry
@@ -103,6 +103,14 @@ export interface IGamer extends IPoint {
 export interface ITank extends IPoint {
     type: ETank;
     tower_angle: number;
+}
+
+export interface IEntities {
+    tanks: ITank[];
+    bullets: IBullet[];
+    mobs: IMob[];
+    gamers: IGamer[];
+    bodies: IBody[];
 }
 
 export interface IMapObject extends IPoint {
@@ -132,20 +140,6 @@ export interface IStaticMap {
 export interface IMap {
     dynamic: IDynamicMap;
     static: IStaticMap;
-}
-
-export interface IScene {
-    tanks: ITank[] | null;
-    gamers: IGamer[] | null;
-    mobs: IMob[] | null;
-    bullets: IBullet[] | null;
-    bodies: IBody[] | null;
-    map: IMapObject[] | null;
-    mobBase: IPoint & { radius: number };
-    gamer: IUserUnit | null;
-    is_dead: boolean;
-    is_end: boolean;
-    gametime: number;
 }
 
 export enum EGamerRole {
