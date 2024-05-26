@@ -6,7 +6,6 @@ import {
     IGamerInfo,
     IError,
     EGamerRole,
-    IScene,
     IToken,
     IAnswer,
     ILobby,
@@ -99,7 +98,9 @@ export default class Server {
                 mediator.call(this.events.UPDATE_MAP, answer.data);
             });
 
-            this.socket.on(ESOCKET.GAME_ENTITIES, (answer) => {});
+            this.socket.on(ESOCKET.GAME_ENTITIES, (answer) => {
+                mediator.call(this.events.UPDATE_ENTITIES, answer.data);
+            });
 
             this.socket.on(ESOCKET.MOTION, () => {
                 mediator.call(this.events.MOVE_UNIT, true);

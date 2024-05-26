@@ -1,10 +1,9 @@
 import { MAP_SIZE, WINConf, objectConf, walls } from "../../../../config";
-import { EMapObject, IMapObject } from "../../../../modules/Server/interfaces";
-import { TPoint, TUnit, TWIN } from "../../types";
+import { IMap } from "../../../../modules/Server/interfaces";
+import { TPoint, TWIN } from "../../types";
 import Canvas from "./Canvas/Canvas";
-import Infantry from "../Game/Units/Infantry";
-import { IGameScene } from "../Game/Game";
 import { Mediator } from "../../../../modules";
+import { BaseUnit } from "../Game/Units";
 
 interface ITraceMaskProps {
     canvas: Canvas;
@@ -53,9 +52,9 @@ export default class TraceMask {
         this.traceCanv.width = width;
         this.traceCanv.height = height;
 
-        const { UPDATE_SCENE } = mediator.getEventTypes();
-        mediator.subscribe(UPDATE_SCENE, (scena: IMapObject[]) => {
-            this.drawScene(scena);
+        const { UPDATE_MAP } = mediator.getEventTypes();
+        mediator.subscribe(UPDATE_MAP, (map: IMap) => {
+            this.drawScene(map);
             this.pixelScene = this.getMaskImage();
         });
 
@@ -101,7 +100,9 @@ export default class TraceMask {
         this.maskContext.closePath();
     }
 
-    drawScene(scene: IMapObject[]) {
+    drawScene(map: IMap) {
+        const { houses, stones } = map.dynamic;
+        const { bushes, trees } = map.static;
         this.maskContext.beginPath();
         this.maskContext.fillStyle = "#000f";
         this.maskContext.fillRect(
@@ -115,34 +116,34 @@ export default class TraceMask {
             this.polygon(wall);
         });
 
-        scene.forEach((obj) => {
-            const { x, y, sizeX: dx, sizeY: dy } = obj;
-            const { stone, bush, tree } = objectConf;
-            /* switch (obj.type) {
-                case EMapObject.house: {
-                    this.polygon([
-                        { x, y },
-                        { x: x + dx, y },
-                        { x: x + dx, y: y - dy },
-                        { x, y: y - dy },
-                    ]);
-                    break;
-                }
-                case EMapObject.stone: {
-                    this.circle({ x: x, y: y, r: stone.r });
-                    break;
-                }
-
-                case EMapObject.bush: {
-                    this.circle({ x: x, y: y, r: bush.r });
-                    break;
-                }
-
-                case EMapObject.tree: {
-                    this.circle({ x: x + tree.r, y: y - tree.r, r: tree.r });
-                }
-            } */
+        houses.forEach((house) => {
+            const { x, y, sizeX: dx, sizeY: dy } = house;
+            this.polygon([
+                { x, y },
+                { x: x + dx, y },
+                { x: x + dx, y: y - dy },
+                { x, y: y - dy },
+            ]);
         });
+
+        stones.forEach((stone) => {
+            const { x, y } = stone;
+            const { r } = objectConf.stone;
+            this.circle({ x, y, r });
+        });
+
+        bushes.forEach((bush) => {
+            const { x, y } = bush;
+            const { r } = objectConf.bush;
+            this.circle({ x, y, r });
+        });
+
+        trees.forEach((tree) => {
+            const { x, y } = tree;
+            const { r } = objectConf.tree;
+            this.circle({ x: x + r, y: y - r, r });
+        });
+
         this.maskContext.closePath();
     }
 
@@ -217,7 +218,7 @@ export default class TraceMask {
         return { x: this.canvas.xs(start.x), y: this.canvas.ys(start.y) };
     }
 
-    drawTrace(area: TPoint[], unit: TUnit) {
+    drawTrace(area: TPoint[], unit: BaseUnit) {
         let r;
         this.traceContext.clearRect(
             0,
@@ -262,7 +263,7 @@ export default class TraceMask {
         this.traceContext.closePath();
     }
 
-    trace(unit: TUnit, WIN: TWIN) {
+    trace(unit: BaseUnit, WIN: TWIN) {
         if (this.pixelScene) {
             const offsetMask: TPoint = {
                 x: Math.floor(this.xs(WIN.left)),

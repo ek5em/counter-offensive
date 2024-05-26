@@ -74,14 +74,14 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
             },
         });
 
-        /* tracer = new TraceMask({
+        tracer = new TraceMask({
             WIN,
             canvas,
             mediator,
             width,
             height,
             cellSize: SPRITE_SIZE,
-        }); */
+        });
         return () => {
             canvas = null;
             tracer = null;
@@ -138,7 +138,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
         mediator,
     });
 
-    const collision = new Collision(game.getScene());
+    const collision = new Collision();
 
     const mousePos: TPoint = {
         x: 0,
@@ -475,7 +475,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const drawMobs = (mobs: IMob[]) => {
         mobs.forEach((mob) => {
             const mobSprite: SpriteFrame =
-                mob.person_id === EGamerRole.infantry ? mobAutomat : mobRPG;
+                mob.type === EGamerRole.infantry ? mobAutomat : mobRPG;
             canvas?.spriteDir(
                 img,
                 mob.x - 1,
@@ -512,7 +512,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     const drawGamers = (gamers: IGamer[]) => {
         gamers.forEach((gamer) => {
             let gamerSprite: SpriteFrame | null = null;
-            switch (gamer.person_id) {
+            switch (gamer.roleId) {
                 case EGamerRole.bannerman: {
                     gamerSprite = manFlag;
                     break;
@@ -640,7 +640,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
                 {
                     x,
                     y,
-                    r: 1,
+                    r: 0.5,
                 },
                 "#f00"
             );
@@ -649,17 +649,18 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
 
     const drawScene = (scene: IGameScene) => {
         const unit = game.getUnit();
-        const { bodies, bullets, gamers, mobs, map, tanks } = scene;
+        const { bodies, bullets, gamers, mobs, tanks } = scene.entities;
+        const { map } = scene;
         drawObjects(map);
-        drawBodies(bodies);
+        // drawBodies(bodies);
         drawBullets(bullets);
         drawMobs(mobs);
         drawTanks(tanks);
 
+        drawGamers(gamers);
         !(unit instanceof General) && tracer?.trace(unit, WIN);
 
-        drawGamers(gamers);
-        showEnemyBase(game.getScene().map.static.base);
+        showEnemyBase(map.static.base);
     };
 
     const updateWIN = () => {
@@ -682,7 +683,7 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
     };
 
     const updateEntity = (scene: IGameScene, time: number) => {
-        scene.bullets.forEach((bullet) => {
+        scene.entities.bullets.forEach((bullet) => {
             bullet.x += bullet.dx * (entitiesConfig.bulletSpeed / time);
             bullet.y += bullet.dy * (entitiesConfig.bulletSpeed / time);
         });
@@ -709,7 +710,6 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
                 }
             } else {
                 unit.move(game.keyPressed, time);
-                collision.checkAllBlocksUnit(unit);
                 unit.rotate(
                     Math.atan2(
                         canvas.sy(mousePos.y) - y,
@@ -729,8 +729,9 @@ const GameCanvas: FC<GameCanvasProps> = ({ inputRef }) => {
             canvas.clear();
             drawScene(scene);
             updateUnit(renderTime);
+            collision.checkAllBlocksUnit(unit, scene);
             updateEntity(scene, renderTime);
-            canvas.circle({ ...unit });
+            /* canvas.circle({ ...unit }); */
             canvas.render();
         }
     }

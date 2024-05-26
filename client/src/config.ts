@@ -28,6 +28,7 @@ export const MEDIATOR = {
         NEW_MESSAGE: "NEW_MESSAGE",
         SEND_MESSAGE_STATUS: "SEND_MESSAGE_STATUS",
         MOVE_UNIT: "MOVE_UNIT",
+        UPDATE_ENTITIES: "UPDATE_ENTITIES",
     },
 
     TRIGGERS: {
@@ -105,7 +106,7 @@ export const entitiesConfig = {
     },
 
     bannerman: {
-        speed: 0.05 /* 0.0015 */,
+        speed: 0.0015,
         r: 0.35,
         visiableAngle: 120,
     },
@@ -142,8 +143,8 @@ export const objectConf = {
 };
 
 export const WINConf = {
-    width: 40,
-    height: 40,
+    width: 15,
+    height: 15,
 };
 
 export const walls = [
