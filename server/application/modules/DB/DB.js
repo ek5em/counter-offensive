@@ -67,18 +67,12 @@ class DB {
 
     async getGamerById(userId) {
         let query = "SELECT * FROM gamers WHERE userId=?";
-        const gamer = await this.queryHandler(query, [userId])
-        return gamer;
+        return await this.queryHandler(query, [userId])
     }
 
     async updateToken(userId, token) {
         let query = "UPDATE users SET tokenLastUse = NOW(), token = ? WHERE id=?";
         await this.queryHandler(query, [token, userId]);
-    }
-
-    async updatePassword(userId, newPassword){
-        let query = "UPDATE users SET password = ? WHERE id = ?";
-        await this.queryHandler(query, [newPassword, userId]);
     }
 
     async deleteToken(userId) {

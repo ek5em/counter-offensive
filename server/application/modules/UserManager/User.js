@@ -87,7 +87,7 @@ class User {
 
     async tokenVerification(token) {
         const user = await this.db.getUserByToken(token);
-        if (token === user.token) {
+        if (user && token === user.token) {
             const gamer = await this.db.getGamerById(user.id);
             this._includeGamerData(gamer);
             this._includeUserData(user, user.token);
