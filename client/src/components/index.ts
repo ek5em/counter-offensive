@@ -4,3 +4,8 @@ export { Chat, EChat } from "./Chat/Chat";
 export { Modal } from "./Modal/Modal";
 export { AppRouter } from "./AppRouter/AppRouter";
 export { Header } from "./Header/Header";
+export {
+  ContextProvider,
+  MediatorContext,
+  ServerContext,
+} from "./ContextProvider/ContextProvider";
