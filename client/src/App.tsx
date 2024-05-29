@@ -1,16 +1,19 @@
 import { FC } from "react";
-import { Modal, AppRouter } from "./components";
+import { Modal, AppRouter, ContextProvider } from "./components";
 
 import "./styles/global.scss";
-import { ContextProvider } from "./components/ContextProvider/ContextProvider";
 
 const App: FC = () => {
-  return (
-    <ContextProvider>
-      <Modal />
-      <AppRouter />
-    </ContextProvider>
-  );
+    const useMock = Boolean(
+        new URLSearchParams(window.location.search).get("useMock")
+    );
+    
+    return (
+        <ContextProvider useMock={useMock}>
+            <Modal />
+            <AppRouter />
+        </ContextProvider>
+    );
 };
 
 export default App;

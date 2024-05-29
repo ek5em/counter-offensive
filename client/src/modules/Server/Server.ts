@@ -26,15 +26,13 @@ export default class Server {
     events: TEVENTS;
     triggers: TEVENTS;
 
-    constructor(HOST: string, mediator: Mediator) {
+    constructor(HOST: string, mediator: Mediator, useMock: boolean) {
         this.HOST = HOST;
         this.mediator = mediator;
         this.STORE = new Store(mediator);
         this.events = mediator.getEventTypes();
         this.triggers = mediator.getTriggerTypes();
-        this.useMock = Boolean(
-            new URLSearchParams(window.location.search).get("useMock")
-        );
+        this.useMock = useMock;
 
         this.socket = this.useMock ? null : io(HOST);
         if (!this.useMock && this.socket) {
