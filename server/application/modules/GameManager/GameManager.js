@@ -1,8 +1,8 @@
 const BaseModule = require("../BaseModule/BaseModule");
-const Mob = require("./Entities/Mob.js");
+const Mob = require("./Mob/Mob.js");
 const MapObject = require("./MapObject.js");
 const Base = require("./Base.js");
-const Bullet = require("./Entities/Bullet.js");
+const Bullet = require("./Bullet.js");
 const GameMath = require("./GameMath");
 const easystarjs = require("easystarjs");
 
