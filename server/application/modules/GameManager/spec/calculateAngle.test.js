@@ -9,6 +9,6 @@ describe('GameMath -> calculateAngle', () => {
         x2 = 4;
         y2 = 6;
         result = gameMath.calculateAngle(x1, y1, x2, y2);
-        expect(result).toBe(Math.atan2(y1 - y2, x1 - x2));
+        expect(result).toBe(0.5880026035475675);
     })
 });

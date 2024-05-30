@@ -1,5 +1,5 @@
 const BaseModule = require("../BaseModule/BaseModule");
-const Mob = require("./Mob.js");
+const Mob = require("./Mob/Mob.js");
 const MapObject = require("./MapObject.js");
 const Base = require("./Base.js");
 const Bullet = require("./Bullet.js");

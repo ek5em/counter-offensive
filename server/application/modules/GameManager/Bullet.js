@@ -1,10 +1,12 @@
-class Bullet {
+const BaseEntity = require("./Entities/BaseEntity");
+class Bullet extends BaseEntity{
     constructor({userId, x, y, dx, dy, type}) {
-        this.type = type;
+        this.userId = userId;
         this.x = x;
         this.y = y;
         this.dx = dx;
         this.dy = dy;
+        this.type = type;
     }
 
     move() {
