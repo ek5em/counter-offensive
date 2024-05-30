@@ -13,7 +13,7 @@ import { Alert } from "../Alert/Alert";
 
 import styles from "../AuthPage.module.scss";
 
-const LoginPage: React.FC = () => {
+export const LoginPage: React.FC = () => {
     const [userData, setUserData] = useState<IUserData>({
         login: "",
         password: "",
@@ -95,4 +95,3 @@ const LoginPage: React.FC = () => {
     );
 };
 
-export default LoginPage;

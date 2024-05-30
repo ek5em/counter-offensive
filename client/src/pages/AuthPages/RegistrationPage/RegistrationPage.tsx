@@ -13,7 +13,7 @@ import { Alert } from "../Alert/Alert";
 
 import styles from "../AuthPage.module.scss";
 
-const RegistrationPage: FC = () => {
+export const RegistrationPage: FC = () => {
     const [userData, setUserData] = useState<IUserData>({
         login: "",
         password: "",
@@ -26,7 +26,7 @@ const RegistrationPage: FC = () => {
     const isPasswordValid = (pass: string) => {
         const passLength = pass.length;
         if (passLength < 8 || passLength > 20) {
-            mediator.get(WARNING, {
+            mediator.call(WARNING, {
                 message: "В пароле должно быть от 8 до 20 символов",
                 style: "warning",
                 id: "test_warning_reg_password_length",
@@ -39,7 +39,7 @@ const RegistrationPage: FC = () => {
     const isLoginValid = (login: string) => {
         const loginLength = login.length;
         if (loginLength < 6 || loginLength > 15) {
-            mediator.get(WARNING, {
+            mediator.call(WARNING, {
                 message: "Логин должен содержать от 6 до 15 символов",
                 style: "warning",
                 id: "test_warning_reg_login_length",
@@ -48,7 +48,7 @@ const RegistrationPage: FC = () => {
         }
         const validLoginRegExp = /^[a-zA-Zа-яА-Я0-9Ёё]*$/;
         if (!validLoginRegExp.test(login)) {
-            mediator.get(WARNING, {
+            mediator.call(WARNING, {
                 message:
                     "Логин может содержать символы кириллицы, латиницы и цифры",
                 style: "warning",
@@ -62,7 +62,7 @@ const RegistrationPage: FC = () => {
     const isNicknameValid = (nick: string) => {
         const nickLength = nick.length;
         if (nickLength < 3 || nickLength > 16) {
-            mediator.get(WARNING, {
+            mediator.call(WARNING, {
                 message: "Никнейм должен содержать от 3 до 16 символов",
                 style: "warning",
                 id: "test_warning_reg_nickname_length",
@@ -71,7 +71,7 @@ const RegistrationPage: FC = () => {
         }
         const validNickRegExp = /^[0-9\p{L}]+$/u;
         if (!validNickRegExp.test(nick)) {
-            mediator.get(WARNING, {
+            mediator.call(WARNING, {
                 message: "Никнейм может содержать символы любого языка и цифры",
                 style: "warning",
                 id: "test_warning_reg_acceptableSymbolsNickname",
@@ -157,5 +157,3 @@ const RegistrationPage: FC = () => {
         </div>
     );
 };
-
-export default RegistrationPage;

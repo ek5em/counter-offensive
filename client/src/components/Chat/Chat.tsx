@@ -84,6 +84,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                         <div className={styles.title}>
                             <span>Чат</span>
                             <img
+                                data-testid="chat-closer"
                                 src={closeIcon}
                                 className={styles.close}
                                 onClick={setIsOpen}
@@ -145,6 +146,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                                 onSubmit={handleSendMessage}
                             >
                                 <input
+                                    data-testid="chat-input"
                                     ref={ref}
                                     type="text"
                                     className={styles.input_chat}
@@ -161,6 +163,7 @@ export const Chat = forwardRef<HTMLInputElement | null, IChatProps>(
                 ) : (
                     <div>
                         <button
+                            data-testid="chat-opener"
                             onClick={setIsOpen}
                             className={styles.chatOpenner}
                             id="test-button-openCloseChat"

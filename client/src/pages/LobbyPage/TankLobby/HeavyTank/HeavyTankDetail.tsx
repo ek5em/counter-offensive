@@ -10,7 +10,7 @@ import { closeIcon } from "../../../../assets/png";
 
 import styles from "../Detail.module.scss";
 
-const HeavyTankDetail: FC = () => {
+const Component: FC = () => {
     const { server, mediator } = useGlobalContext();
     const [tank, setTank] = useState<IHeavyTank>({
         Commander: false,
@@ -128,4 +128,4 @@ const HeavyTankDetail: FC = () => {
     );
 };
 
-export default withLayout(HeavyTankDetail);
+export const HeavyTankDetail = withLayout(Component);
