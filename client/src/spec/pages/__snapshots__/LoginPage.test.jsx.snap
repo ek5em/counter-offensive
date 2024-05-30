@@ -1,0 +1,96 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Страничка авторизации Наличие всех элементов 1`] = `
+<DocumentFragment>
+  <div
+    class="authPage"
+  >
+    <div
+      class="logo"
+    >
+      <a
+        href="/"
+      >
+        <img
+          alt="counter-nastup"
+          src="Logo.png"
+        />
+      </a>
+    </div>
+    <div
+      class="wrapper"
+    >
+      <div
+        class="content"
+      >
+        <div
+          class="title"
+        >
+          <a
+            href="/registration"
+            tabindex="-1"
+          >
+            <button
+              class="button primary"
+              id="test_login_goToReg_button"
+            >
+              Получить повестку
+            </button>
+          </a>
+        </div>
+        <form
+          class="form"
+        >
+          <div
+            class="values"
+          >
+            <div
+              class="wrapper"
+            >
+              <input
+                autocomplete="off"
+                class="input"
+                id="test_login_log_input"
+                placeholder="Логин"
+                type="text"
+              />
+            </div>
+            <div
+              class="wrapper"
+            >
+              <input
+                autocomplete="off"
+                class="input password"
+                id="test_login_pass_input"
+                placeholder="Пароль"
+                type="password"
+              />
+              <div
+                class="eye"
+              >
+                <svg
+                  data-testid="close-eye-icon"
+                >
+                  closeEye.svg
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div
+            class="alert disabled"
+            id=""
+          >
+            <span />
+          </div>
+          <button
+            class="button submit primary"
+            id="test_login_submit_button"
+          >
+            Пойти на Бахмут
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
