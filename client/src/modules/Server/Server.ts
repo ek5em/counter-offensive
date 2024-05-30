@@ -26,15 +26,13 @@ export default class Server {
     events: TEVENTS;
     triggers: TEVENTS;
 
-    constructor(HOST: string, mediator: Mediator) {
+    constructor(HOST: string, mediator: Mediator, useMock: boolean) {
         this.HOST = HOST;
         this.mediator = mediator;
         this.STORE = new Store(mediator);
         this.events = mediator.getEventTypes();
         this.triggers = mediator.getTriggerTypes();
-        this.useMock = Boolean(
-            new URLSearchParams(window.location.search).get("useMock")
-        );
+        this.useMock = useMock;
 
         this.socket = this.useMock ? null : io(HOST);
         if (!this.useMock && this.socket) {
@@ -114,9 +112,9 @@ export default class Server {
         if (this.useMock) {
             const user = MOCK.users.find((el) => el.login === login);
             if (user) {
-                this.mediator.call(this.events.SERVER_ERROR, {
-                    code: 460,
-                    text: "Логин занят",
+                this.mediator.call(this.events.WARNING, {
+                    message: "Логин занят",
+                    id: "test_error_reg_loginOccupied",
                 });
             } else {
                 const newUser = {
@@ -142,13 +140,15 @@ export default class Server {
 
     login(login: string, password: string) {
         if (this.useMock) {
-            const user = MOCK.users.find((u) => u.login === login);
+            const user = MOCK.users.find(
+                (u) => u.login === login && u.password === password
+            );
             if (user) {
                 this.STORE.setToken(user.token);
             } else {
-                this.mediator.call(this.events.SERVER_ERROR, {
-                    code: 403,
-                    text: "Неверный логин или пароль",
+                this.mediator.call(this.events.WARNING, {
+                    message: "Неверный логин или пароль",
+                    id: "test_error_auth_wrongData",
                 });
             }
         } else {

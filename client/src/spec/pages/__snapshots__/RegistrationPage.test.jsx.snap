@@ -1,0 +1,108 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Страничка регистрации Наличиие всех элементов 1`] = `
+<DocumentFragment>
+  <div
+    class="authPage"
+  >
+    <div
+      class="logo"
+    >
+      <a
+        href="/"
+      >
+        <img
+          alt="counter-nastup"
+          src="Logo.png"
+        />
+      </a>
+    </div>
+    <div
+      class="wrapper"
+    >
+      <div
+        class="content"
+      >
+        <div
+          class="title"
+          id="test_auth_reg_title"
+        >
+          <a
+            href="/authorization"
+            tabindex="-1"
+          >
+            <button
+              class="button auth_switch_page primary"
+              id="test_login_go_log_button"
+            >
+              Уже служил
+            </button>
+          </a>
+        </div>
+        <form
+          class="form"
+        >
+          <div
+            class="values"
+          >
+            <div
+              class="wrapper"
+            >
+              <input
+                autocomplete="off"
+                class="input"
+                id="test_reg_log_input"
+                placeholder="Логин"
+                type="text"
+              />
+            </div>
+            <div
+              class="wrapper"
+            >
+              <input
+                autocomplete="off"
+                class="input"
+                id="test_reg_nick_input"
+                placeholder="Никнейм"
+                type="text"
+              />
+            </div>
+            <div
+              class="wrapper"
+            >
+              <input
+                autocomplete="off"
+                class="input password"
+                id="test_reg_pass_input"
+                placeholder="Пароль"
+                type="password"
+              />
+              <div
+                class="eye"
+              >
+                <svg
+                  data-testid="close-eye-icon"
+                >
+                  closeEye.svg
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div
+            class="alert disabled"
+            id=""
+          >
+            <span />
+          </div>
+          <button
+            class="button submit primary"
+            id="test_reg_submit_button"
+          >
+            Подписать повестку
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

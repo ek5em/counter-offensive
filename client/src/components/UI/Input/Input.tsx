@@ -51,9 +51,9 @@ export const Input: FC<IInputProps> = ({
             {type === EInput.password && (
                 <div onClick={changeType} className={styles.eye}>
                     {inputType === EInput.text ? (
-                        <OpenEyeIcon />
+                        <OpenEyeIcon data-testid="open-eye-icon" />
                     ) : (
-                        <CloseEyeIcon />
+                        <CloseEyeIcon data-testid="close-eye-icon" />
                     )}
                 </div>
             )}

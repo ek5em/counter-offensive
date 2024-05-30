@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { MediatorContext, ServerContext } from "../App";
+import { MediatorContext, ServerContext } from "../components";
 
 export const useGlobalContext = () => {
     const server = useContext(ServerContext);

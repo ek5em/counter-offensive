@@ -3,7 +3,7 @@ import GameCanvas from "./components/GameCanvas/GameCanvas";
 import { GameOverlay } from "./components/GameOverlay/GameOverlay";
 import styles from "./GamePage.module.scss";
 
-const GamePage: React.FC = () => {
+export const GamePage: React.FC = () => {
     const chatInputRef = useRef<HTMLInputElement | null>(null);
 
     return (
@@ -13,4 +13,3 @@ const GamePage: React.FC = () => {
         </div>
     );
 };
-export default GamePage;
