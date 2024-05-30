@@ -23,7 +23,7 @@ describe("Страничка регистрации", () => {
         password = "11111111",
         nickname = "superJaba123",
     } = {}) => {
-        const {asFragment} =  render(
+        render(
             <ContextProvider useMock={true}>
                 <RegistrationPage />
             </ContextProvider>
@@ -33,12 +33,10 @@ describe("Страничка регистрации", () => {
         fireEvent.change(getPasswordInput(), { target: { value: password } });
         fireEvent.change(getNicknameInput(), { target: { value: nickname } });
         fireEvent.click(getSubmitBtn());
-
-        expect(asFragment()).toMatchSnapshot();
     };
 
     test("Наличиие всех элементов", () => {
-        render(
+        const { asFragment } = render(
             <ContextProvider>
                 <RegistrationPage />
             </ContextProvider>
@@ -48,6 +46,8 @@ describe("Страничка регистрации", () => {
         expect(getPasswordInput()).toBeInTheDocument();
         expect(getSubmitBtn()).toBeInTheDocument();
         expect(getNavBtn()).toBeInTheDocument();
+        
+        expect(asFragment()).toMatchSnapshot();
     });
 
     test("Логин меньше 6 символов", () => {
