@@ -8,7 +8,7 @@ import { IHeavyTank } from "../../../../modules/Server/interfaces";
 
 import styles from "../Lobby.module.scss";
 
-const HeavyTankLobby: FC = () => {
+const Component: FC = () => {
     const { server, mediator } = useGlobalContext();
     const [tanks, setTanks] = useState<IHeavyTank[]>([]);
     const navigate = useNavigate();
@@ -89,4 +89,4 @@ const HeavyTankLobby: FC = () => {
     );
 };
 
-export default withLayout(HeavyTankLobby);
+export const HeavyTankLobby = withLayout(Component);

@@ -1,0 +1,111 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Chat component Отправка сообщений 1`] = `
+<DocumentFragment>
+  <div
+    class="lobby chat"
+  >
+    <div
+      class="title"
+    >
+      <span>
+        Чат
+      </span>
+      <img
+        class="close"
+        data-testid="chat-closer"
+        src="closeIcon.png"
+      />
+    </div>
+    <div>
+      <div
+        class="messages"
+      >
+        <div
+          class="message"
+        >
+          <span
+            class="name"
+          >
+            [Гришка
+            <img
+              alt="rank"
+              class="rank_img"
+              src="fourthRank.png"
+            />
+            ]
+          </span>
+          : 
+          <span
+            class="message_text"
+          >
+            1233221
+          </span>
+        </div>
+        <div
+          class="message"
+        >
+          <span
+            class="name"
+          >
+            [Петька заводной
+            <img
+              alt="rank"
+              class="rank_img"
+              src="fourthRank.png"
+            />
+            ]
+          </span>
+          : 
+          <span
+            class="message_text"
+          >
+            Привет, Гришка, ну чо как вчера жёско зарубимся в контр-нахрюк???!
+          </span>
+        </div>
+        <div
+          class="message"
+        >
+          <span
+            class="name"
+          >
+            [Гришка
+            <img
+              alt="rank"
+              class="rank_img"
+              src="fourthRank.png"
+            />
+            ]
+          </span>
+          : 
+          <span
+            class="message_text"
+          >
+            Привет, парни!
+          </span>
+        </div>
+        <div />
+      </div>
+      <form
+        class="form"
+      >
+        <input
+          class="input_chat"
+          data-testid="chat-input"
+          placeholder="Написать в чат"
+          type="text"
+          value=""
+        />
+        <button
+          class="send"
+        >
+          <img
+            alt="Send"
+            src="sendMessage.png"
+          />
+        </button>
+      </form>
+    </div>
+  </div>
+</DocumentFragment>
+`;

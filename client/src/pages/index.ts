@@ -1,14 +1,9 @@
-import LoadingPage from "./LoadingPage/LoadingPage";
-import GamePage from "./GamePage/GamePage";
-import ErrorPage from "./ErrorPage/ErrorPage";
-import { LoginPage, RegistrationPage } from "./AuthPages";
-
-export {
-   LoadingPage,
-   GamePage,
-   LoginPage,
-   RegistrationPage,
-   ErrorPage,
-};
-
-export * from "./LobbyPage";
+export { LobbyInfo } from "./LobbyPage/LobbyInfo/LobbyInfo";
+export { HeavyTankDetail } from "./LobbyPage/TankLobby/HeavyTank/HeavyTankDetail";
+export { HeavyTankLobby } from "./LobbyPage/TankLobby/HeavyTank/HeavyTankLobby";
+export { MiddleTankDetail } from "./LobbyPage/TankLobby/MiddleTank/MiddleTankDetail";
+export { MiddleTankLobby } from "./LobbyPage/TankLobby/MiddleTank/MiddleTankLobby";
+export { ErrorPage } from "./ErrorPage/ErrorPage";
+export { LoginPage } from "./AuthPages/LoginPage/LoginPage";
+export { RegistrationPage } from "./AuthPages/RegistrationPage/RegistrationPage";
+export { GamePage } from "./GamePage/GamePage";

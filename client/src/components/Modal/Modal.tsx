@@ -4,7 +4,7 @@ import { useGlobalContext } from "../../hooks/useGlobalContext";
 
 import styles from "./Modal.module.scss";
 
-interface MoodalError {
+interface ModalError {
     id: string;
     message: string;
 }
@@ -12,7 +12,7 @@ interface MoodalError {
 const clearDelay = 4000;
 
 export const Modal: FC = () => {
-    const [message, setMessage] = useState<MoodalError>({
+    const [message, setMessage] = useState<ModalError>({
         message: "",
         id: "",
     });
@@ -24,7 +24,7 @@ export const Modal: FC = () => {
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
 
-        mediator.subscribe(ROLE_ERROR, (newMessaage: MoodalError) => {
+        mediator.subscribe(ROLE_ERROR, (newMessaage: ModalError) => {
             setMessage(newMessaage);
 
             clearTimeout(timeoutId);

@@ -10,7 +10,7 @@ import { ReactComponent as MiddleTank } from "./middleTank.svg";
 
 import styles from "../Detail.module.scss";
 
-const TankDetail: FC = () => {
+const Component: FC = () => {
     const { server, mediator } = useGlobalContext();
     const [tank, setTank] = useState<IMiddleTank>({
         Gunner: false,
@@ -103,4 +103,4 @@ const TankDetail: FC = () => {
     );
 };
 
-export default withLayout(TankDetail);
+export const MiddleTankDetail = withLayout(Component);

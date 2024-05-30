@@ -5,7 +5,7 @@ import { IError } from "../../modules/Server/interfaces";
 
 import styles from "./ErrorPage.module.scss";
 
-const ErrorPage: FC = () => {
+export const ErrorPage: FC = () => {
     const { state }: { state: { error: IError } | null } = useLocation();
     const error = state?.error ?? { code: 404, text: "Страница не найдена" };
     return (
@@ -30,4 +30,3 @@ const ErrorPage: FC = () => {
     );
 };
 
-export default ErrorPage;

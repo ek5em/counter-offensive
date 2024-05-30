@@ -8,7 +8,7 @@ import { Button, EButtonAppearance } from "../../../../components";
 
 import styles from "../Lobby.module.scss";
 
-const MiddleTankLobby: FC = () => {
+const Component: FC = () => {
     const { server, mediator } = useGlobalContext();
     const [tanks, setTanks] = useState<IMiddleTank[]>([]);
     const navigate = useNavigate();
@@ -83,4 +83,4 @@ const MiddleTankLobby: FC = () => {
     );
 };
 
-export default withLayout(MiddleTankLobby);
+export const MiddleTankLobby = withLayout(Component);

@@ -10,7 +10,7 @@ import { automat, RPG, flag, general } from "./assets";
 
 import styles from "./LobbyInfo.module.scss";
 
-const LobbyInfo: FC = () => {
+export const Component: FC = () => {
     const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
     const { server } = useGlobalContext();
 
@@ -91,4 +91,4 @@ const LobbyInfo: FC = () => {
     );
 };
 
-export default withLayout(LobbyInfo);
+export const LobbyInfo = withLayout(Component);
