@@ -10,7 +10,6 @@ describe('GameMath -> movePoint', () => {
         y2 = 6;
         distance = 5;
         result = gameMath.calculateShiftPoint(x1, y1, x2, y2, distance);
-        expectedResult = [x1 + (x2-x1) * distance / Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)), y1 + (y2-y1) * distance / Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))];
-        expect(result).toStrictEqual(expectedResult);
+        expect(result).toStrictEqual([ 5.839748528310781, 7.226499018873854 ]);
     })
 });

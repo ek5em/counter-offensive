@@ -9,7 +9,6 @@ describe('GameMath -> movePoint', () => {
         angle = 3;
         distance = 5;
         result = gameMath.movePoint(x, y, angle, distance);
-        expectedResult = [x + distance * Math.cos(angle), y + distance * Math.sin(angle)];
-        expect(result).toStrictEqual(expectedResult);
+        expect(result).toStrictEqual([ -4.949962483002227, 0.7056000402993361 ]);
     })
 });
